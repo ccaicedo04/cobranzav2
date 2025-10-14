@@ -48,4 +48,23 @@ class ParametroController extends Controller
 
         Helpers::redirect('index.php?route=parametros');
     }
+
+    public function update(): void
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !Helpers::validateCsrf($_POST['_token'] ?? '')) {
+            Helpers::redirect('index.php?route=parametros');
+        }
+
+        $id = (int) ($_POST['id_parametro'] ?? 0);
+        if (!$id) {
+            Helpers::redirect('index.php?route=parametros');
+        }
+
+        $this->parametros->update($id, [
+            'valor' => $_POST['valor'] ?? '',
+            'descripcion' => $_POST['descripcion'] ?? '',
+        ]);
+
+        Helpers::redirect('index.php?route=parametros');
+    }
 }

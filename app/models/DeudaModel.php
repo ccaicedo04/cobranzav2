@@ -62,4 +62,17 @@ class DeudaModel extends BaseModel
 
         return $stmt->fetchAll();
     }
+
+    public function porEstudiante(int $idEstudiante): array
+    {
+        $sql = 'SELECT d.*, c.nombre AS concepto_nombre, p.nombre AS periodo_nombre'
+            . ' FROM deuda d'
+            . ' LEFT JOIN concepto_deuda c ON c.id_concepto = d.id_concepto'
+            . ' LEFT JOIN periodo p ON p.id_periodo = d.id_periodo'
+            . ' WHERE d.eliminado = 0 AND d.id_estudiante = :id_estudiante';
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([':id_estudiante' => $idEstudiante]);
+
+        return $stmt->fetchAll();
+    }
 }

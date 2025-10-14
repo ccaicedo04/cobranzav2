@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Models\AuditoriaModel;
 use App\Models\ColegioModel;
+use App\Models\SedeModel;
 use Core\Controller;
 use Core\Helpers;
 use Core\Session;
@@ -12,6 +13,7 @@ class ColegioController extends Controller
 {
     private ColegioModel $colegios;
     private AuditoriaModel $auditoria;
+    private SedeModel $sedes;
 
     public function __construct()
     {
@@ -22,6 +24,7 @@ class ColegioController extends Controller
 
         $this->colegios = new ColegioModel();
         $this->auditoria = new AuditoriaModel();
+        $this->sedes = new SedeModel();
     }
 
     public function index(): void
@@ -65,5 +68,74 @@ class ColegioController extends Controller
         ]);
 
         Helpers::redirect('index.php?route=colegios');
+    }
+
+    public function edit(): void
+    {
+        $this->requireRole('admin_global');
+        $id = (int) ($_GET['id'] ?? 0);
+        $colegio = $this->colegios->find($id);
+        if (!$colegio) {
+            Helpers::redirect('index.php?route=colegios');
+        }
+
+        $this->view('administracion/colegios/form', [
+            'colegio' => $colegio,
+            'token' => Helpers::csrfToken(),
+        ]);
+    }
+
+    public function update(): void
+    {
+        $this->requireRole('admin_global');
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !Helpers::validateCsrf($_POST['_token'] ?? '')) {
+            Helpers::redirect('index.php?route=colegios');
+        }
+
+        $id = (int) ($_POST['id_colegio'] ?? 0);
+        if (!$id) {
+            Helpers::redirect('index.php?route=colegios');
+        }
+
+        $data = [
+            'nombre' => $_POST['nombre'] ?? '',
+            'nit' => $_POST['nit'] ?? '',
+            'direccion' => $_POST['direccion'] ?? '',
+            'telefono' => $_POST['telefono'] ?? '',
+            'correo' => $_POST['correo'] ?? '',
+            'estado' => $_POST['estado'] ?? 'activo',
+        ];
+
+        $this->colegios->update($id, $data);
+        $usuario = Session::get('user');
+        $this->auditoria->create([
+            'id_usuario' => $usuario['id_usuario'],
+            'id_colegio' => $usuario['id_colegio'],
+            'id_sede' => $usuario['id_sede'],
+            'modulo' => 'colegios',
+            'accion' => 'actualizar',
+            'detalle' => 'Colegio ' . $id,
+            'ip' => $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1',
+            'fecha_registro' => date('Y-m-d H:i:s'),
+        ]);
+
+        Helpers::redirect('index.php?route=colegios');
+    }
+
+    public function detalle(): void
+    {
+        $this->requireRole('admin_global');
+        $id = (int) ($_GET['id'] ?? 0);
+        $colegio = $this->colegios->find($id);
+        if (!$colegio) {
+            Helpers::redirect('index.php?route=colegios');
+        }
+
+        $sedes = $this->sedes->conColegio(['id_colegio' => $id]);
+
+        $this->view('administracion/colegios/detalle', [
+            'colegio' => $colegio,
+            'sedes' => $sedes,
+        ]);
     }
 }

@@ -13,11 +13,14 @@ use App\Controllers\DeudaController;
 use App\Controllers\EstudianteController;
 use App\Controllers\PagoController;
 use App\Controllers\ParametroController;
+use App\Controllers\PeriodoController;
 use App\Controllers\PerfilController;
 use App\Controllers\ReporteController;
 use App\Controllers\ResponsableController;
 use App\Controllers\SedeController;
 use App\Controllers\UsuarioController;
+use App\Controllers\ConceptoController;
+use App\Controllers\PlantillaController;
 use Core\Helpers;
 use Core\Router;
 use Core\Session;
@@ -78,18 +81,38 @@ $router->post('/carga-masiva/store', [CargaController::class, 'store']);
 
 $router->get('/reportes', [ReporteController::class, 'index']);
 $router->get('/reportes/export-excel', [ReporteController::class, 'exportExcel']);
+$router->get('/reportes/export-pdf', [ReporteController::class, 'exportPdf']);
 
 $router->get('/colegios', [ColegioController::class, 'index']);
 $router->post('/colegios/store', [ColegioController::class, 'store']);
+$router->get('/colegios/edit', [ColegioController::class, 'edit']);
+$router->post('/colegios/update', [ColegioController::class, 'update']);
+$router->get('/colegios/detalle', [ColegioController::class, 'detalle']);
 
 $router->get('/sedes', [SedeController::class, 'index']);
 $router->post('/sedes/store', [SedeController::class, 'store']);
+$router->get('/sedes/edit', [SedeController::class, 'edit']);
+$router->post('/sedes/update', [SedeController::class, 'update']);
+$router->get('/sedes/detalle', [SedeController::class, 'detalle']);
 
 $router->get('/usuarios', [UsuarioController::class, 'index']);
 $router->post('/usuarios/store', [UsuarioController::class, 'store']);
 
 $router->get('/parametros', [ParametroController::class, 'index']);
 $router->post('/parametros/store', [ParametroController::class, 'store']);
+$router->post('/parametros/update', [ParametroController::class, 'update']);
+
+$router->get('/conceptos', [ConceptoController::class, 'index']);
+$router->post('/conceptos/store', [ConceptoController::class, 'store']);
+$router->get('/conceptos/edit', [ConceptoController::class, 'edit']);
+$router->post('/conceptos/update', [ConceptoController::class, 'update']);
+
+$router->get('/periodos', [PeriodoController::class, 'index']);
+$router->post('/periodos/store', [PeriodoController::class, 'store']);
+$router->get('/periodos/edit', [PeriodoController::class, 'edit']);
+$router->post('/periodos/update', [PeriodoController::class, 'update']);
+
+$router->get('/plantillas', [PlantillaController::class, 'index']);
 
 $router->get('/auditoria', [AuditoriaController::class, 'index']);
 

@@ -8,6 +8,8 @@ include __DIR__ . '/../_partials/header.php';
     <div class="card">
         <h3>Información general</h3>
         <p><strong>Documento:</strong> <?= htmlspecialchars($responsable['tipo_documento'] . ' ' . $responsable['numero_documento']) ?></p>
+        <p><strong>Colegio:</strong> <?= htmlspecialchars($responsable['colegio_nombre'] ?? 'No asignado') ?></p>
+        <p><strong>Sede:</strong> <?= htmlspecialchars($responsable['sede_nombre'] ?? 'No asignada') ?></p>
         <p><strong>Teléfono:</strong> <?= htmlspecialchars($responsable['telefono']) ?></p>
         <p><strong>Correo:</strong> <?= htmlspecialchars($responsable['correo']) ?></p>
         <p><strong>Dirección:</strong> <?= htmlspecialchars($responsable['direccion']) ?></p>

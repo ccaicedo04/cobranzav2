@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Models\ReporteModel;
 use Core\Controller;
 use Core\Session;
+use Core\SimplePdf;
 
 class ReporteController extends Controller
 {
@@ -40,5 +41,24 @@ class ReporteController extends Controller
         }
         fclose($output);
         exit;
+    }
+
+    public function exportPdf(): void
+    {
+        $datos = $this->reportes->topResponsables(20);
+        $lineas = [
+            'Reporte de top responsables de cartera',
+            'Generado: ' . date('Y-m-d H:i'),
+            '',
+        ];
+        if ($datos) {
+            foreach ($datos as $fila) {
+                $lineas[] = $fila['nombre_completo'] . ' - $' . number_format((float) $fila['total'], 0, ',', '.');
+            }
+        } else {
+            $lineas[] = 'No hay información disponible para el periodo consultado.';
+        }
+
+        SimplePdf::download('reporte_top_responsables.pdf', $lineas);
     }
 }

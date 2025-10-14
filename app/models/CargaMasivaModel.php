@@ -6,6 +6,7 @@ class CargaMasivaModel extends BaseModel
 {
     protected string $table = 'carga_masiva';
     protected string $primaryKey = 'id_carga';
+    protected bool $softDelete = false;
     protected array $fillable = [
         'id_colegio',
         'id_sede',

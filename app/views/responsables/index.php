@@ -21,8 +21,9 @@ include __DIR__ . '/../_partials/header.php';
             <tr>
                 <th>Nombre</th>
                 <th>Documento</th>
-                <th>Correo</th>
-                <th>Celular</th>
+                <th>Colegio</th>
+                <th>Sede</th>
+                <th>Contacto</th>
                 <th>Estado</th>
                 <th>Acciones</th>
             </tr>
@@ -32,8 +33,12 @@ include __DIR__ . '/../_partials/header.php';
                 <tr>
                     <td><?= htmlspecialchars($responsable['nombre_completo']) ?></td>
                     <td><?= htmlspecialchars($responsable['numero_documento']) ?></td>
-                    <td><?= htmlspecialchars($responsable['correo']) ?></td>
-                    <td><?= htmlspecialchars($responsable['telefono']) ?></td>
+                    <td><?= htmlspecialchars($responsable['colegio_nombre']) ?></td>
+                    <td><?= htmlspecialchars($responsable['sede_nombre']) ?></td>
+                    <td>
+                        <div><?= htmlspecialchars($responsable['telefono'] ?: 'Sin teléfono') ?></div>
+                        <small><?= htmlspecialchars($responsable['correo'] ?: 'Sin correo') ?></small>
+                    </td>
                     <td><span class="badge" style="background:<?= $responsable['estado'] === 'activo' ? '#dcfce7' : '#fee2e2' ?>;color:<?= $responsable['estado'] === 'activo' ? '#166534' : '#991b1b' ?>;">
                         <?= strtoupper($responsable['estado']) ?></span></td>
                     <td>
@@ -42,7 +47,7 @@ include __DIR__ . '/../_partials/header.php';
                 </tr>
             <?php endforeach; ?>
             <?php if (empty($responsables)): ?>
-                <tr><td colspan="6">No se encontraron responsables con los filtros seleccionados.</td></tr>
+                <tr><td colspan="7">No se encontraron responsables con los filtros seleccionados.</td></tr>
             <?php endif; ?>
         </tbody>
     </table>

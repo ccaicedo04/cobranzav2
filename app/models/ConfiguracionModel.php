@@ -6,6 +6,7 @@ class ConfiguracionModel extends BaseModel
 {
     protected string $table = 'configuracion_colegio';
     protected string $primaryKey = 'id_configuracion';
+    protected bool $softDelete = false;
     protected array $fillable = [
         'id_colegio',
         'smtp_host',

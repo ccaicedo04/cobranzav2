@@ -19,6 +19,19 @@ class UsuarioModel extends BaseModel
         'estado',
     ];
 
+    public function listadoConContexto(): array
+    {
+        $sql = 'SELECT u.*, c.nombre AS colegio_nombre, s.nombre AS sede_nombre
+                FROM usuario u
+                LEFT JOIN colegio c ON c.id_colegio = u.id_colegio
+                LEFT JOIN sede s ON s.id_sede = u.id_sede
+                WHERE u.eliminado = 0
+                ORDER BY u.nombre_completo';
+        $stmt = $this->db->query($sql);
+
+        return $stmt->fetchAll();
+    }
+
     public function authenticate(string $username, string $password): ?array
     {
         $sql = 'SELECT u.*, c.nombre AS colegio_nombre, s.nombre AS sede_nombre

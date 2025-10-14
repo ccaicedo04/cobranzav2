@@ -49,7 +49,7 @@ class ResponsableController extends Controller
             'estado' => $_GET['estado'] ?? null,
         ];
 
-        $responsables = $this->responsables->all(array_filter($filtros));
+        $responsables = $this->responsables->conContexto(array_filter($filtros));
         $this->view('responsables/index', [
             'responsables' => $responsables,
             'filtros' => $filtros,
@@ -59,9 +59,15 @@ class ResponsableController extends Controller
     public function create(): void
     {
         $usuario = Session::get('user');
-        $sedes = $this->sedes->all(['id_colegio' => $usuario['id_colegio']]);
+        $sedes = $this->sedes->conColegio();
+        $colegios = [];
+        if ($usuario['rol'] === 'admin_global') {
+            $colegios = $this->colegios->all([], ['order' => 'nombre']);
+        }
         $this->view('responsables/form', [
             'sedes' => $sedes,
+            'colegios' => $colegios,
+            'usuario' => $usuario,
             'token' => Helpers::csrfToken(),
         ]);
     }
@@ -77,8 +83,12 @@ class ResponsableController extends Controller
         }
 
         $usuario = Session::get('user');
+        $idColegio = $_POST['id_colegio'] ?? $usuario['id_colegio'] ?? null;
+        if ($usuario['rol'] !== 'admin_global') {
+            $idColegio = $usuario['id_colegio'];
+        }
         $data = [
-            'id_colegio' => $usuario['id_colegio'],
+            'id_colegio' => $idColegio,
             'id_sede' => $_POST['id_sede'] ?? $usuario['id_sede'],
             'nombre_completo' => $_POST['nombre_completo'] ?? '',
             'tipo_documento' => $_POST['tipo_documento'] ?? '',
@@ -114,10 +124,16 @@ class ResponsableController extends Controller
         }
 
         $usuario = Session::get('user');
-        $sedes = $this->sedes->all(['id_colegio' => $usuario['id_colegio']]);
+        $sedes = $this->sedes->conColegio();
+        $colegios = [];
+        if ($usuario['rol'] === 'admin_global') {
+            $colegios = $this->colegios->all([], ['order' => 'nombre']);
+        }
         $this->view('responsables/form', [
             'responsable' => $responsable,
             'sedes' => $sedes,
+            'colegios' => $colegios,
+            'usuario' => $usuario,
             'token' => Helpers::csrfToken(),
         ]);
     }
@@ -134,7 +150,13 @@ class ResponsableController extends Controller
 
         $id = (int) ($_POST['id_responsable'] ?? 0);
         $usuario = Session::get('user');
+        $idColegio = $_POST['id_colegio'] ?? $usuario['id_colegio'] ?? null;
+        if ($usuario['rol'] !== 'admin_global') {
+            $idColegio = $usuario['id_colegio'];
+        }
+
         $data = [
+            'id_colegio' => $idColegio,
             'id_sede' => $_POST['id_sede'] ?? $usuario['id_sede'],
             'nombre_completo' => $_POST['nombre_completo'] ?? '',
             'tipo_documento' => $_POST['tipo_documento'] ?? '',
@@ -190,7 +212,8 @@ class ResponsableController extends Controller
     public function detalle(): void
     {
         $id = (int) ($_GET['id'] ?? 0);
-        $responsable = $this->responsables->find($id);
+        $listado = $this->responsables->conContexto(['id_responsable' => $id]);
+        $responsable = $listado[0] ?? null;
         if (!$responsable) {
             Helpers::redirect('index.php?route=responsables');
         }

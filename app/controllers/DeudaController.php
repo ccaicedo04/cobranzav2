@@ -7,6 +7,7 @@ use App\Models\ConceptoModel;
 use App\Models\DeudaModel;
 use App\Models\EstudianteModel;
 use App\Models\PeriodoModel;
+use App\Models\ResponsableModel;
 use Core\Controller;
 use Core\Helpers;
 use Core\Session;
@@ -44,9 +45,10 @@ class DeudaController extends Controller
     public function create(): void
     {
         $this->view('deudas/form', [
-            'estudiantes' => $this->estudiantes->all(),
-            'conceptos' => $this->conceptos->all(),
-            'periodos' => $this->periodos->all(),
+            'responsables' => $this->responsablesLista(),
+            'estudiantes' => $this->estudiantes->conContexto(),
+            'conceptos' => $this->conceptos->conColegio(),
+            'periodos' => $this->periodos->conColegio(),
             'token' => Helpers::csrfToken(),
         ]);
     }
@@ -58,10 +60,12 @@ class DeudaController extends Controller
         }
 
         $usuario = Session::get('user');
+        $idEstudiante = $_POST['id_estudiante'] ?? null;
+        $estudiante = $idEstudiante ? $this->estudiantes->find((int) $idEstudiante) : null;
         $data = [
-            'id_colegio' => $usuario['id_colegio'],
-            'id_sede' => $usuario['id_sede'],
-            'id_estudiante' => $_POST['id_estudiante'] ?? null,
+            'id_colegio' => $estudiante['id_colegio'] ?? $usuario['id_colegio'],
+            'id_sede' => $estudiante['id_sede'] ?? $usuario['id_sede'],
+            'id_estudiante' => $idEstudiante,
             'id_concepto' => $_POST['id_concepto'] ?? null,
             'id_periodo' => $_POST['id_periodo'] ?? null,
             'fecha_generacion' => $_POST['fecha_generacion'] ?? date('Y-m-d'),
@@ -80,11 +84,16 @@ class DeudaController extends Controller
             'id_sede' => $usuario['id_sede'],
             'modulo' => 'deudas',
             'accion' => 'crear',
-            'detalle' => 'Registro de deuda para estudiante ' . $data['id_estudiante'],
+            'detalle' => 'Registro de deuda para estudiante ' . ($estudiante['nombre_completo'] ?? $data['id_estudiante']),
             'ip' => $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1',
             'fecha_registro' => date('Y-m-d H:i:s'),
         ]);
 
         Helpers::redirect('index.php?route=deudas');
+    }
+
+    private function responsablesLista(): array
+    {
+        return (new ResponsableModel())->conContexto();
     }
 }

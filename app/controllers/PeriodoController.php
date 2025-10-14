@@ -4,18 +4,16 @@ namespace App\Controllers;
 
 use App\Models\AuditoriaModel;
 use App\Models\ColegioModel;
-use App\Models\EstudianteModel;
-use App\Models\ResponsableModel;
-use App\Models\SedeModel;
+use App\Models\PeriodoModel;
 use Core\Controller;
 use Core\Helpers;
 use Core\Session;
 
-class SedeController extends Controller
+class PeriodoController extends Controller
 {
-    private SedeModel $sedes;
-    private AuditoriaModel $auditoria;
+    private PeriodoModel $periodos;
     private ColegioModel $colegios;
+    private AuditoriaModel $auditoria;
 
     public function __construct()
     {
@@ -24,20 +22,15 @@ class SedeController extends Controller
             Helpers::redirect('index.php?route=auth/login');
         }
 
-        $this->sedes = new SedeModel();
-        $this->auditoria = new AuditoriaModel();
+        $this->periodos = new PeriodoModel();
         $this->colegios = new ColegioModel();
+        $this->auditoria = new AuditoriaModel();
     }
 
     public function index(): void
     {
         $usuario = Session::get('user');
-        $filtros = [];
-        if (!empty($_GET['id_colegio'])) {
-            $filtros['id_colegio'] = (int) $_GET['id_colegio'];
-        }
-
-        $sedes = $this->sedes->conColegio($filtros);
+        $periodos = $this->periodos->conColegio();
         $colegios = [];
         if ($usuario['rol'] === 'admin_global') {
             $colegios = $this->colegios->all([], ['order' => 'nombre']);
@@ -45,8 +38,8 @@ class SedeController extends Controller
             $colegios = $this->colegios->all(['id_colegio' => $usuario['id_colegio']]);
         }
 
-        $this->view('administracion/sedes/index', [
-            'sedes' => $sedes,
+        $this->view('parametrizacion/periodos/index', [
+            'periodos' => $periodos,
             'colegios' => $colegios,
             'usuario' => $usuario,
             'token' => Helpers::csrfToken(),
@@ -56,45 +49,45 @@ class SedeController extends Controller
     public function store(): void
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !Helpers::validateCsrf($_POST['_token'] ?? '')) {
-            Helpers::redirect('index.php?route=sedes');
+            Helpers::redirect('index.php?route=periodos');
         }
 
         $usuario = Session::get('user');
-        $idColegio = (int) ($_POST['id_colegio'] ?? 0);
-        if ($usuario['rol'] !== 'admin_global') {
-            $idColegio = (int) ($usuario['id_colegio'] ?? 0);
+        $idColegio = $_POST['id_colegio'] ?? $usuario['id_colegio'] ?? null;
+        if ($usuario['rol'] !== 'admin_global' && empty($idColegio)) {
+            Helpers::redirect('index.php?route=periodos');
         }
 
         $data = [
-            'id_colegio' => $idColegio,
+            'id_colegio' => $usuario['rol'] === 'admin_global' ? $idColegio : $usuario['id_colegio'],
             'nombre' => $_POST['nombre'] ?? '',
-            'direccion' => $_POST['direccion'] ?? '',
-            'telefono' => $_POST['telefono'] ?? '',
-            'correo' => $_POST['correo'] ?? '',
+            'fecha_inicio' => $_POST['fecha_inicio'] ?? null,
+            'fecha_fin' => $_POST['fecha_fin'] ?? null,
             'estado' => $_POST['estado'] ?? 'activo',
             'eliminado' => 0,
         ];
-        $id = $this->sedes->create($data);
+
+        $id = $this->periodos->create($data);
         $this->auditoria->create([
             'id_usuario' => $usuario['id_usuario'],
             'id_colegio' => $usuario['id_colegio'],
             'id_sede' => $usuario['id_sede'],
-            'modulo' => 'sedes',
+            'modulo' => 'periodos',
             'accion' => 'crear',
-            'detalle' => 'Sede ' . $id,
+            'detalle' => 'Período ' . $id,
             'ip' => $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1',
             'fecha_registro' => date('Y-m-d H:i:s'),
         ]);
 
-        Helpers::redirect('index.php?route=sedes');
+        Helpers::redirect('index.php?route=periodos');
     }
 
     public function edit(): void
     {
         $id = (int) ($_GET['id'] ?? 0);
-        $sede = $this->sedes->find($id);
-        if (!$sede) {
-            Helpers::redirect('index.php?route=sedes');
+        $periodo = $this->periodos->find($id);
+        if (!$periodo) {
+            Helpers::redirect('index.php?route=periodos');
         }
 
         $usuario = Session::get('user');
@@ -103,8 +96,8 @@ class SedeController extends Controller
             $colegios = $this->colegios->all([], ['order' => 'nombre']);
         }
 
-        $this->view('administracion/sedes/form', [
-            'sede' => $sede,
+        $this->view('parametrizacion/periodos/form', [
+            'periodo' => $periodo,
             'colegios' => $colegios,
             'usuario' => $usuario,
             'token' => Helpers::csrfToken(),
@@ -114,60 +107,40 @@ class SedeController extends Controller
     public function update(): void
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !Helpers::validateCsrf($_POST['_token'] ?? '')) {
-            Helpers::redirect('index.php?route=sedes');
+            Helpers::redirect('index.php?route=periodos');
         }
 
-        $id = (int) ($_POST['id_sede'] ?? 0);
+        $id = (int) ($_POST['id_periodo'] ?? 0);
         if (!$id) {
-            Helpers::redirect('index.php?route=sedes');
+            Helpers::redirect('index.php?route=periodos');
         }
 
         $usuario = Session::get('user');
-        $idColegio = (int) ($_POST['id_colegio'] ?? 0);
+        $idColegio = $_POST['id_colegio'] ?? $usuario['id_colegio'] ?? null;
         if ($usuario['rol'] !== 'admin_global') {
-            $idColegio = (int) ($usuario['id_colegio'] ?? 0);
+            $idColegio = $usuario['id_colegio'];
         }
 
         $data = [
             'id_colegio' => $idColegio,
             'nombre' => $_POST['nombre'] ?? '',
-            'direccion' => $_POST['direccion'] ?? '',
-            'telefono' => $_POST['telefono'] ?? '',
-            'correo' => $_POST['correo'] ?? '',
+            'fecha_inicio' => $_POST['fecha_inicio'] ?? null,
+            'fecha_fin' => $_POST['fecha_fin'] ?? null,
             'estado' => $_POST['estado'] ?? 'activo',
         ];
 
-        $this->sedes->update($id, $data);
+        $this->periodos->update($id, $data);
         $this->auditoria->create([
             'id_usuario' => $usuario['id_usuario'],
             'id_colegio' => $usuario['id_colegio'],
             'id_sede' => $usuario['id_sede'],
-            'modulo' => 'sedes',
+            'modulo' => 'periodos',
             'accion' => 'actualizar',
-            'detalle' => 'Actualización sede ' . $id,
+            'detalle' => 'Período ' . $id,
             'ip' => $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1',
             'fecha_registro' => date('Y-m-d H:i:s'),
         ]);
 
-        Helpers::redirect('index.php?route=sedes');
-    }
-
-    public function detalle(): void
-    {
-        $id = (int) ($_GET['id'] ?? 0);
-        $detalle = $this->sedes->conColegio(['id_sede' => $id]);
-        if (!$detalle) {
-            Helpers::redirect('index.php?route=sedes');
-        }
-
-        $sede = $detalle[0];
-        $responsables = (new ResponsableModel())->all(['id_sede' => $id]);
-        $estudiantes = (new EstudianteModel())->all(['id_sede' => $id]);
-
-        $this->view('administracion/sedes/detalle', [
-            'sede' => $sede,
-            'responsables' => $responsables,
-            'estudiantes' => $estudiantes,
-        ]);
+        Helpers::redirect('index.php?route=periodos');
     }
 }

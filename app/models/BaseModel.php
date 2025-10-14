@@ -12,8 +12,10 @@ abstract class BaseModel
     protected string $table;
     protected string $primaryKey = 'id';
     protected bool $softDelete = true;
+    protected ?string $softDeleteColumn = 'eliminado';
     protected array $fillable = [];
     protected array $tenantColumns = ['id_colegio', 'id_sede'];
+    protected static array $tableColumnsCache = [];
 
     public function __construct()
     {
@@ -35,8 +37,13 @@ abstract class BaseModel
             $params[":$column"] = $value;
         }
 
-        if ($this->softDelete && !isset($filters['eliminado'])) {
-            $where[] = 'eliminado = 0';
+        if (
+            $this->softDelete
+            && $this->softDeleteColumn
+            && !isset($filters[$this->softDeleteColumn])
+            && $this->tableHasColumn($this->softDeleteColumn)
+        ) {
+            $where[] = $this->softDeleteColumn . ' = 0';
         }
 
         $sql = 'SELECT * FROM ' . $this->table;
@@ -100,8 +107,8 @@ abstract class BaseModel
 
     public function delete(int $id): bool
     {
-        if ($this->softDelete) {
-            $sql = 'UPDATE ' . $this->table . ' SET eliminado = 1 WHERE ' . $this->primaryKey . ' = :id';
+        if ($this->softDelete && $this->softDeleteColumn && $this->tableHasColumn($this->softDeleteColumn)) {
+            $sql = 'UPDATE ' . $this->table . ' SET ' . $this->softDeleteColumn . ' = 1 WHERE ' . $this->primaryKey . ' = :id';
         } else {
             $sql = 'DELETE FROM ' . $this->table . ' WHERE ' . $this->primaryKey . ' = :id';
         }
@@ -138,5 +145,23 @@ abstract class BaseModel
         }
 
         return $filters;
+    }
+
+    protected function tableHasColumn(string $column): bool
+    {
+        if (!$this->table) {
+            return false;
+        }
+
+        if (!isset(self::$tableColumnsCache[$this->table])) {
+            $stmt = $this->db->query('DESCRIBE ' . $this->table);
+            $columns = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            self::$tableColumnsCache[$this->table] = array_map(
+                static fn (array $definition) => $definition['Field'] ?? '',
+                $columns
+            );
+        }
+
+        return in_array($column, self::$tableColumnsCache[$this->table], true);
     }
 }

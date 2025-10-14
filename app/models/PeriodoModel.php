@@ -14,4 +14,33 @@ class PeriodoModel extends BaseModel
         'estado',
         'eliminado',
     ];
+
+    public function conColegio(): array
+    {
+        $filters = $this->applyTenantFilters([]);
+        $where = ['p.eliminado = 0'];
+        $params = [];
+
+        foreach ($filters as $column => $value) {
+            if ($value === null || $value === '') {
+                continue;
+            }
+
+            $where[] = "p.$column = :$column";
+            $params[":$column"] = $value;
+        }
+
+        $sql = 'SELECT p.*, c.nombre AS colegio_nombre'
+            . ' FROM periodo p'
+            . ' INNER JOIN colegio c ON c.id_colegio = p.id_colegio';
+        if ($where) {
+            $sql .= ' WHERE ' . implode(' AND ', $where);
+        }
+        $sql .= ' ORDER BY c.nombre, p.nombre';
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+
+        return $stmt->fetchAll();
+    }
 }

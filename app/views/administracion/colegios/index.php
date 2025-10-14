@@ -8,15 +8,21 @@ include __DIR__ . '/../../_partials/header.php';
     <div class="card">
         <h3>Listado de colegios</h3>
         <table class="table">
-            <thead><tr><th>Nombre</th><th>NIT</th><th>Teléfono</th><th>Correo</th><th>Estado</th></tr></thead>
+            <thead><tr><th>Nombre</th><th>NIT</th><th>Contacto</th><th>Estado</th><th style="width:160px;">Acciones</th></tr></thead>
             <tbody>
                 <?php foreach ($colegios as $colegio): ?>
                     <tr>
-                        <td><?= htmlspecialchars($colegio['nombre']) ?></td>
+                        <td><strong><?= htmlspecialchars($colegio['nombre']) ?></strong><br><small><?= htmlspecialchars($colegio['direccion'] ?: 'Sin dirección') ?></small></td>
                         <td><?= htmlspecialchars($colegio['nit']) ?></td>
-                        <td><?= htmlspecialchars($colegio['telefono']) ?></td>
-                        <td><?= htmlspecialchars($colegio['correo']) ?></td>
-                        <td><?= htmlspecialchars($colegio['estado']) ?></td>
+                        <td>
+                            <div><?= htmlspecialchars($colegio['telefono'] ?: 'Sin teléfono') ?></div>
+                            <small><?= htmlspecialchars($colegio['correo'] ?: 'Sin correo') ?></small>
+                        </td>
+                        <td><span class="badge" style="background:<?= $colegio['estado'] === 'activo' ? '#dcfce7' : '#fee2e2' ?>;color:<?= $colegio['estado'] === 'activo' ? '#166534' : '#991b1b' ?>;"><?= strtoupper($colegio['estado']) ?></span></td>
+                        <td style="display:flex;gap:6px;">
+                            <a class="btn secondary" href="index.php?route=colegios/detalle&id=<?= $colegio['id_colegio'] ?>">Detalle</a>
+                            <a class="btn" href="index.php?route=colegios/edit&id=<?= $colegio['id_colegio'] ?>">Editar</a>
+                        </td>
                     </tr>
                 <?php endforeach; ?>
                 <?php if (empty($colegios)): ?>

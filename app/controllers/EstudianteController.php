@@ -3,9 +3,12 @@
 namespace App\Controllers;
 
 use App\Models\AuditoriaModel;
+use App\Models\DeudaModel;
 use App\Models\EstudianteModel;
+use App\Models\PagoModel;
 use App\Models\PeriodoModel;
 use App\Models\ResponsableModel;
+use App\Models\SedeModel;
 use Core\Controller;
 use Core\Helpers;
 use Core\Session;
@@ -16,6 +19,9 @@ class EstudianteController extends Controller
     private ResponsableModel $responsables;
     private PeriodoModel $periodos;
     private AuditoriaModel $auditoria;
+    private SedeModel $sedes;
+    private DeudaModel $deudas;
+    private PagoModel $pagos;
 
     public function __construct()
     {
@@ -28,6 +34,9 @@ class EstudianteController extends Controller
         $this->responsables = new ResponsableModel();
         $this->periodos = new PeriodoModel();
         $this->auditoria = new AuditoriaModel();
+        $this->sedes = new SedeModel();
+        $this->deudas = new DeudaModel();
+        $this->pagos = new PagoModel();
     }
 
     public function index(): void
@@ -36,7 +45,7 @@ class EstudianteController extends Controller
             'estado' => $_GET['estado'] ?? null,
         ];
 
-        $estudiantes = $this->estudiantes->all(array_filter($filtros));
+        $estudiantes = $this->estudiantes->conContexto(array_filter($filtros));
         $this->view('estudiantes/index', [
             'estudiantes' => $estudiantes,
             'filtros' => $filtros,
@@ -45,9 +54,11 @@ class EstudianteController extends Controller
 
     public function create(): void
     {
-        $responsables = $this->responsables->all();
+        $responsables = $this->responsables->conContexto();
+        $sedes = $this->sedesDisponibles();
         $this->view('estudiantes/form', [
             'responsables' => $responsables,
+            'sedes' => $sedes,
             'token' => Helpers::csrfToken(),
         ]);
     }
@@ -59,8 +70,12 @@ class EstudianteController extends Controller
         }
 
         $usuario = Session::get('user');
+        $idColegio = $_POST['id_colegio'] ?? $usuario['id_colegio'] ?? null;
+        if ($usuario['rol'] !== 'admin_global') {
+            $idColegio = $usuario['id_colegio'];
+        }
         $data = [
-            'id_colegio' => $usuario['id_colegio'],
+            'id_colegio' => $idColegio,
             'id_sede' => $_POST['id_sede'] ?? $usuario['id_sede'],
             'id_responsable' => $_POST['id_responsable'] ?? null,
             'codigo_estudiante' => $_POST['codigo_estudiante'] ?? '',
@@ -89,15 +104,18 @@ class EstudianteController extends Controller
     public function edit(): void
     {
         $id = (int) ($_GET['id'] ?? 0);
-        $estudiante = $this->estudiantes->find($id);
+        $datos = $this->estudiantes->conContexto(['id_estudiante' => $id]);
+        $estudiante = $datos[0] ?? null;
         if (!$estudiante) {
             Helpers::redirect('index.php?route=estudiantes');
         }
 
-        $responsables = $this->responsables->all();
+        $responsables = $this->responsables->conContexto();
+        $sedes = $this->sedesDisponibles();
         $this->view('estudiantes/form', [
             'estudiante' => $estudiante,
             'responsables' => $responsables,
+            'sedes' => $sedes,
             'token' => Helpers::csrfToken(),
         ]);
     }
@@ -110,7 +128,12 @@ class EstudianteController extends Controller
 
         $id = (int) ($_POST['id_estudiante'] ?? 0);
         $usuario = Session::get('user');
+        $idColegio = $_POST['id_colegio'] ?? $usuario['id_colegio'] ?? null;
+        if ($usuario['rol'] !== 'admin_global') {
+            $idColegio = $usuario['id_colegio'];
+        }
         $data = [
+            'id_colegio' => $idColegio,
             'id_sede' => $_POST['id_sede'] ?? $usuario['id_sede'],
             'id_responsable' => $_POST['id_responsable'] ?? null,
             'codigo_estudiante' => $_POST['codigo_estudiante'] ?? '',
@@ -162,13 +185,30 @@ class EstudianteController extends Controller
     public function detalle(): void
     {
         $id = (int) ($_GET['id'] ?? 0);
-        $estudiante = $this->estudiantes->find($id);
+        $datos = $this->estudiantes->conContexto(['id_estudiante' => $id]);
+        $estudiante = $datos[0] ?? null;
         if (!$estudiante) {
             Helpers::redirect('index.php?route=estudiantes');
         }
 
+        $deudas = $this->deudas->porEstudiante($id);
+        $pagos = $this->pagos->porEstudiante($id);
+
         $this->view('estudiantes/detalle', [
             'estudiante' => $estudiante,
+            'deudas' => $deudas,
+            'pagos' => $pagos,
         ]);
+    }
+
+    private function sedesDisponibles(): array
+    {
+        $usuario = Session::get('user');
+        $filtro = [];
+        if ($usuario['rol'] !== 'admin_global' && !empty($usuario['id_colegio'])) {
+            $filtro['id_colegio'] = $usuario['id_colegio'];
+        }
+
+        return $this->sedes->conColegio($filtro);
     }
 }

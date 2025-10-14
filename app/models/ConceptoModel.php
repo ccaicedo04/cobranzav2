@@ -15,4 +15,33 @@ class ConceptoModel extends BaseModel
         'estado',
         'eliminado',
     ];
+
+    public function conColegio(): array
+    {
+        $filters = $this->applyTenantFilters([]);
+        $where = ['c.eliminado = 0'];
+        $params = [];
+
+        foreach ($filters as $column => $value) {
+            if ($value === null || $value === '') {
+                continue;
+            }
+
+            $where[] = "c.$column = :$column";
+            $params[":$column"] = $value;
+        }
+
+        $sql = 'SELECT c.*, col.nombre AS colegio_nombre'
+            . ' FROM concepto_deuda c'
+            . ' INNER JOIN colegio col ON col.id_colegio = c.id_colegio';
+        if ($where) {
+            $sql .= ' WHERE ' . implode(' AND ', $where);
+        }
+        $sql .= ' ORDER BY col.nombre, c.nombre';
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+
+        return $stmt->fetchAll();
+    }
 }

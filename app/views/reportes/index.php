@@ -12,8 +12,11 @@ include __DIR__ . '/../_partials/header.php';
     </div>
     <div class="card">
         <h3>Descargar reportes</h3>
-        <p class="small">Genera reportes en formato CSV listos para abrir en Excel.</p>
-        <a class="btn" href="index.php?route=reportes/export-excel">Top responsables (CSV)</a>
+        <p class="small">Genera reportes en formatos CSV y PDF listos para compartir.</p>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+            <a class="btn" href="index.php?route=reportes/export-excel">Top responsables (CSV)</a>
+            <a class="btn secondary" href="index.php?route=reportes/export-pdf">Top responsables (PDF)</a>
+        </div>
     </div>
 </div>
 <div class="card">

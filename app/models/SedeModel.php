@@ -17,4 +17,34 @@ class SedeModel extends BaseModel
     ];
 
     protected array $tenantColumns = ['id_colegio'];
+
+    public function conColegio(array $filters = []): array
+    {
+        $filters = $this->applyTenantFilters($filters);
+        $where = ['s.eliminado = 0'];
+        $params = [];
+
+        foreach ($filters as $column => $value) {
+            if ($value === null || $value === '') {
+                continue;
+            }
+
+            $where[] = "s.$column = :$column";
+            $params[":$column"] = $value;
+        }
+
+        $sql = 'SELECT s.*, c.nombre AS colegio_nombre, c.nit AS colegio_nit'
+            . ' FROM sede s'
+            . ' INNER JOIN colegio c ON c.id_colegio = s.id_colegio';
+        if ($where) {
+            $sql .= ' WHERE ' . implode(' AND ', $where);
+        }
+
+        $sql .= ' ORDER BY c.nombre, s.nombre';
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+
+        return $stmt->fetchAll();
+    }
 }

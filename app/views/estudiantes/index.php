@@ -20,6 +20,9 @@ include __DIR__ . '/../_partials/header.php';
             <tr>
                 <th>Código</th>
                 <th>Nombre</th>
+                <th>Colegio</th>
+                <th>Sede</th>
+                <th>Responsable</th>
                 <th>Grado</th>
                 <th>Curso</th>
                 <th>Estado</th>
@@ -31,6 +34,9 @@ include __DIR__ . '/../_partials/header.php';
                 <tr>
                     <td><?= htmlspecialchars($estudiante['codigo_estudiante']) ?></td>
                     <td><?= htmlspecialchars($estudiante['nombre_completo']) ?></td>
+                    <td><?= htmlspecialchars($estudiante['colegio_nombre'] ?? 'No asignado') ?></td>
+                    <td><?= htmlspecialchars($estudiante['sede_nombre'] ?? 'No asignada') ?></td>
+                    <td><?= htmlspecialchars($estudiante['responsable_nombre'] ?? 'Sin responsable') ?></td>
                     <td><?= htmlspecialchars($estudiante['grado']) ?></td>
                     <td><?= htmlspecialchars($estudiante['curso']) ?></td>
                     <td><?= htmlspecialchars($estudiante['estado']) ?></td>
@@ -40,7 +46,7 @@ include __DIR__ . '/../_partials/header.php';
                 </tr>
             <?php endforeach; ?>
             <?php if (empty($estudiantes)): ?>
-                <tr><td colspan="6">No hay estudiantes registrados.</td></tr>
+                <tr><td colspan="9">No hay estudiantes registrados.</td></tr>
             <?php endif; ?>
         </tbody>
     </table>

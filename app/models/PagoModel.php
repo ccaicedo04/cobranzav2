@@ -57,4 +57,16 @@ class PagoModel extends BaseModel
 
         return $stmt->fetchAll();
     }
+
+    public function porEstudiante(int $idEstudiante): array
+    {
+        $sql = 'SELECT p.*, e.nombre_completo AS estudiante_nombre'
+            . ' FROM registro_pago p'
+            . ' INNER JOIN estudiante e ON e.id_estudiante = p.id_estudiante'
+            . ' WHERE p.eliminado = 0 AND p.id_estudiante = :id_estudiante';
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([':id_estudiante' => $idEstudiante]);
+
+        return $stmt->fetchAll();
+    }
 }

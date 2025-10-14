@@ -8,17 +8,24 @@ include __DIR__ . '/../../_partials/header.php';
     <div class="card">
         <h3>Parámetros configurados</h3>
         <table class="table">
-            <thead><tr><th>Clave</th><th>Valor</th><th>Descripción</th></tr></thead>
+            <thead><tr><th>Clave</th><th>Valor y descripción</th></tr></thead>
             <tbody>
                 <?php foreach ($parametros as $parametro): ?>
                     <tr>
                         <td><?= htmlspecialchars($parametro['clave']) ?></td>
-                        <td><?= htmlspecialchars($parametro['valor']) ?></td>
-                        <td><?= htmlspecialchars($parametro['descripcion']) ?></td>
+                        <td>
+                            <form method="post" action="index.php?route=parametros/update" style="display:flex;gap:8px;align-items:flex-start;">
+                                <input type="hidden" name="_token" value="<?= htmlspecialchars($token) ?>">
+                                <input type="hidden" name="id_parametro" value="<?= $parametro['id_parametro'] ?>">
+                                <input name="valor" value="<?= htmlspecialchars($parametro['valor']) ?>" style="width:160px;">
+                                <textarea name="descripcion" rows="2" style="flex:1;min-width:220px;"><?= htmlspecialchars($parametro['descripcion']) ?></textarea>
+                                <button class="btn" type="submit">Actualizar</button>
+                            </form>
+                        </td>
                     </tr>
                 <?php endforeach; ?>
                 <?php if (empty($parametros)): ?>
-                    <tr><td colspan="3">No hay parámetros registrados.</td></tr>
+                    <tr><td colspan="2">No hay parámetros registrados.</td></tr>
                 <?php endif; ?>
             </tbody>
         </table>

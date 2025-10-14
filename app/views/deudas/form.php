@@ -9,13 +9,24 @@ include __DIR__ . '/../_partials/header.php';
         <input type="hidden" name="_token" value="<?= htmlspecialchars($token) ?>">
         <div class="two">
             <div>
-                <label>Estudiante</label>
-                <select name="id_estudiante" required>
-                    <?php foreach ($estudiantes as $estudiante): ?>
-                        <option value="<?= $estudiante['id_estudiante'] ?>"><?= htmlspecialchars($estudiante['nombre_completo']) ?></option>
+                <label>Responsable</label>
+                <select id="responsableSelector" onchange="filtrarEstudiantes()">
+                    <option value="">Todos</option>
+                    <?php foreach ($responsables as $responsable): ?>
+                        <option value="<?= $responsable['id_responsable'] ?>" data-colegio="<?= $responsable['id_colegio'] ?>"><?= htmlspecialchars($responsable['nombre_completo'] . ' (' . ($responsable['colegio_nombre'] ?? 'Sin colegio') . ')') ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
+            <div>
+                <label>Estudiante</label>
+                <select name="id_estudiante" id="estudianteSelector" required>
+                    <?php foreach ($estudiantes as $estudiante): ?>
+                        <option value="<?= $estudiante['id_estudiante'] ?>" data-responsable="<?= $estudiante['id_responsable'] ?>" data-colegio="<?= $estudiante['id_colegio'] ?>"><?= htmlspecialchars($estudiante['nombre_completo'] . ' - ' . ($estudiante['responsable_nombre'] ?? 'Sin responsable')) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+        </div>
+        <div class="two">
             <div>
                 <label>Concepto</label>
                 <select name="id_concepto" required>
@@ -74,4 +85,23 @@ include __DIR__ . '/../_partials/header.php';
         </div>
     </form>
 </div>
+<script>
+function filtrarEstudiantes() {
+    const responsable = document.getElementById('responsableSelector');
+    const estudiantes = document.getElementById('estudianteSelector');
+    const seleccionado = responsable.value;
+    [...estudiantes.options].forEach(op => {
+        if (!op.value) return;
+        op.hidden = seleccionado && op.dataset.responsable !== seleccionado;
+    });
+    if (seleccionado) {
+        const visible = [...estudiantes.options].find(op => !op.hidden && op.value);
+        if (visible) {
+            estudiantes.value = visible.value;
+        }
+    }
+}
+
+filtrarEstudiantes();
+</script>
 <?php include __DIR__ . '/../_partials/footer.php'; ?>
