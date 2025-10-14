@@ -2,6 +2,7 @@
 $title = 'Detalle usuario';
 $pageTitle = 'Detalle de usuario';
 $breadcrumbs = 'Administración / Usuarios / Detalle';
+$rolesDisponibles = $rolesDisponibles ?? ['agente' => 'Agente'];
 include __DIR__ . '/../../_partials/header.php';
 
 $idsColegios = array_map('intval', $colegios ? array_column($colegios, 'id_colegio') : []);
@@ -41,9 +42,9 @@ foreach ($modulosDisponibles as $moduloDisponible) {
             <input type="password" name="password" placeholder="Actualizar contraseña opcional">
             <label>Rol</label>
             <select name="rol" id="rolDetalle" onchange="toggleAsignacionDetalle()">
-                <option value="admin_global" <?= $usuarioDetalle['rol'] === 'admin_global' ? 'selected' : '' ?>>Administrador Global</option>
-                <option value="admin_colegio" <?= $usuarioDetalle['rol'] === 'admin_colegio' ? 'selected' : '' ?>>Administrador Colegio</option>
-                <option value="agente" <?= $usuarioDetalle['rol'] === 'agente' ? 'selected' : '' ?>>Agente</option>
+                <?php foreach ($rolesDisponibles as $claveRol => $nombreRol): ?>
+                    <option value="<?= htmlspecialchars($claveRol) ?>" <?= $usuarioDetalle['rol'] === $claveRol ? 'selected' : '' ?>><?= htmlspecialchars($nombreRol) ?></option>
+                <?php endforeach; ?>
             </select>
             <div id="asignacionDetalle" style="margin-top:12px;">
                 <label>Colegios asignados</label>

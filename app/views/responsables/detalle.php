@@ -44,7 +44,7 @@ include __DIR__ . '/../_partials/header.php';
                     <td><?= htmlspecialchars($estudiante['grado']) ?></td>
                     <td><?= htmlspecialchars($estudiante['curso']) ?></td>
                     <td><?= htmlspecialchars($estudiante['estado']) ?></td>
-                    <td><a class="btn secondary sm" href="index.php?route=estudiantes/detalle&id=<?= $estudiante['id_estudiante'] ?>">Ver detalle</a></td>
+                    <td><a class="btn ghost sm" href="index.php?route=estudiantes/detalle&id=<?= $estudiante['id_estudiante'] ?>">Ver detalle</a></td>
                 </tr>
             <?php endforeach; ?>
             <?php if (empty($estudiantes)): ?>

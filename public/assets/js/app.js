@@ -60,22 +60,72 @@
       });
     }
 
+    function openGroup(group) {
+      const toggle = group.querySelector('[data-dropdown-toggle]');
+      closeAll(group);
+      group.classList.add('open');
+      if (toggle) {
+        toggle.setAttribute('aria-expanded', 'true');
+      }
+    }
+
+    function closeGroup(group) {
+      const toggle = group.querySelector('[data-dropdown-toggle]');
+      group.classList.remove('open');
+      if (toggle) {
+        toggle.setAttribute('aria-expanded', 'false');
+      }
+    }
+
     groups.forEach(function (group) {
       const toggle = group.querySelector('[data-dropdown-toggle]');
       if (!toggle) {
         return;
       }
 
+      let hoverTimeout;
+
       toggle.addEventListener('click', function (event) {
         event.preventDefault();
-        const isOpen = group.classList.contains('open');
-        if (isOpen) {
-          group.classList.remove('open');
-          toggle.setAttribute('aria-expanded', 'false');
+        if (group.classList.contains('open')) {
+          closeGroup(group);
         } else {
-          closeAll(group);
-          group.classList.add('open');
-          toggle.setAttribute('aria-expanded', 'true');
+          openGroup(group);
+        }
+      });
+
+      group.addEventListener('mouseenter', function () {
+        if (!window.matchMedia('(pointer:fine)').matches) {
+          return;
+        }
+        window.clearTimeout(hoverTimeout);
+        openGroup(group);
+      });
+
+      group.addEventListener('mouseleave', function () {
+        if (!window.matchMedia('(pointer:fine)').matches) {
+          return;
+        }
+        window.clearTimeout(hoverTimeout);
+        hoverTimeout = window.setTimeout(function () {
+          if (!group.matches(':hover')) {
+            closeGroup(group);
+          }
+        }, 320);
+      });
+
+      group.addEventListener('focusin', function (event) {
+        if (group.contains(event.target)) {
+          openGroup(group);
+        }
+      });
+
+      group.addEventListener('focusout', function (event) {
+        if (!group.contains(event.relatedTarget)) {
+          window.clearTimeout(hoverTimeout);
+          hoverTimeout = window.setTimeout(function () {
+            closeGroup(group);
+          }, 200);
         }
       });
     });
@@ -131,6 +181,7 @@
   function setupContextFiltering() {
     const colegio = document.getElementById('navColegio');
     const sede = document.getElementById('navSede');
+    const form = colegio ? colegio.form : null;
     if (!colegio || !sede) {
       return;
     }
@@ -150,7 +201,12 @@
             keepPrevious = true;
           }
           if (!matches) {
+            option.hidden = true;
+            option.disabled = true;
             option.selected = false;
+          } else {
+            option.hidden = false;
+            option.disabled = false;
           }
         });
       });
@@ -162,6 +218,12 @@
 
     applyFilter();
     colegio.addEventListener('change', applyFilter);
+
+    if (form) {
+      form.addEventListener('submit', function () {
+        applyFilter();
+      });
+    }
   }
 
   onReady(function () {

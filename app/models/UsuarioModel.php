@@ -19,15 +19,71 @@ class UsuarioModel extends BaseModel
         'estado',
     ];
 
-    public function listadoConContexto(): array
+    public function listadoConContexto(array $restricciones = []): array
     {
+        $where = ['u.eliminado = 0'];
+        $params = [];
+
+        $joins = 'LEFT JOIN colegio c ON c.id_colegio = u.id_colegio
+                LEFT JOIN sede s ON s.id_sede = u.id_sede
+                LEFT JOIN usuario_colegio uc ON uc.id_usuario = u.id_usuario';
+
+        if (!empty($restricciones['colegios'])) {
+            $colegios = array_values(array_unique(array_filter(array_map('intval', (array) $restricciones['colegios']))));
+            if ($colegios) {
+                $placeholders = [];
+                foreach ($colegios as $index => $colegio) {
+                    $placeholder = ':colegio_' . $index;
+                    $placeholders[] = $placeholder;
+                    $params[$placeholder] = $colegio;
+                }
+                $inClause = implode(',', $placeholders);
+                $where[] = '(
+                    (u.id_colegio IS NOT NULL AND u.id_colegio IN (' . $inClause . '))
+                    OR uc.id_colegio IN (' . $inClause . ')
+                )';
+            }
+        }
+
+        if (!empty($restricciones['roles_permitidos'])) {
+            $roles = array_values(array_unique(array_filter((array) $restricciones['roles_permitidos'], static fn ($rol) => is_string($rol) && $rol !== '')));
+            if ($roles) {
+                $placeholders = [];
+                foreach ($roles as $index => $rol) {
+                    $placeholder = ':rol_' . $index;
+                    $placeholders[] = $placeholder;
+                    $params[$placeholder] = $rol;
+                }
+                $where[] = 'u.rol IN (' . implode(',', $placeholders) . ')';
+            }
+        }
+
+        if (!empty($restricciones['roles_excluidos'])) {
+            $roles = array_values(array_unique(array_filter((array) $restricciones['roles_excluidos'], static fn ($rol) => is_string($rol) && $rol !== '')));
+            if ($roles) {
+                $placeholders = [];
+                foreach ($roles as $index => $rol) {
+                    $placeholder = ':rol_ex_' . $index;
+                    $placeholders[] = $placeholder;
+                    $params[$placeholder] = $rol;
+                }
+                $where[] = 'u.rol NOT IN (' . implode(',', $placeholders) . ')';
+            }
+        }
+
         $sql = 'SELECT u.*, c.nombre AS colegio_nombre, s.nombre AS sede_nombre
                 FROM usuario u
-                LEFT JOIN colegio c ON c.id_colegio = u.id_colegio
-                LEFT JOIN sede s ON s.id_sede = u.id_sede
-                WHERE u.eliminado = 0
-                ORDER BY u.nombre_completo';
-        $stmt = $this->db->query($sql);
+                ' . $joins;
+
+        if ($where) {
+            $sql .= ' WHERE ' . implode(' AND ', $where);
+        }
+
+        $sql .= ' GROUP BY u.id_usuario
+                 ORDER BY u.nombre_completo';
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
         $usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         $ids = array_map(static fn ($fila) => (int) $fila['id_usuario'], $usuarios);

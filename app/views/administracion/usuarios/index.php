@@ -2,6 +2,8 @@
 $title = 'Usuarios';
 $pageTitle = 'Usuarios';
 $breadcrumbs = 'Administración / Usuarios';
+$rolesDisponibles = $rolesDisponibles ?? ['agente' => 'Agente'];
+$modulosPorDefecto = $modulosPorDefecto ?? [];
 include __DIR__ . '/../../_partials/header.php';
 ?>
 <div class="grid" style="grid-template-columns:2fr 1fr;">
@@ -66,9 +68,9 @@ include __DIR__ . '/../../_partials/header.php';
             <input type="password" name="password" required>
             <label>Rol</label>
             <select name="rol" id="rolSelector" onchange="toggleAsignacion()">
-                <option value="admin_global">Administrador Global</option>
-                <option value="admin_colegio">Administrador Colegio</option>
-                <option value="agente" selected>Agente</option>
+                <?php foreach ($rolesDisponibles as $claveRol => $nombreRol): ?>
+                    <option value="<?= htmlspecialchars($claveRol) ?>" <?= $claveRol === 'agente' ? 'selected' : '' ?>><?= htmlspecialchars($nombreRol) ?></option>
+                <?php endforeach; ?>
             </select>
             <div id="asignacionColegio" style="margin-top:12px;">
                 <label>Colegios asignados</label>
@@ -89,7 +91,7 @@ include __DIR__ . '/../../_partials/header.php';
                 <div class="chips">
                     <?php foreach ($modulos as $modulo): ?>
                         <label style="display:block;margin-bottom:6px;">
-                            <input type="checkbox" name="permisos_modulos[]" value="<?= htmlspecialchars($modulo['codigo']) ?>" checked>
+                            <input type="checkbox" name="permisos_modulos[]" value="<?= htmlspecialchars($modulo['codigo']) ?>" <?= in_array($modulo['codigo'], $modulosPorDefecto, true) ? 'checked' : '' ?>>
                             <?= htmlspecialchars($modulo['nombre']) ?>
                         </label>
                     <?php endforeach; ?>

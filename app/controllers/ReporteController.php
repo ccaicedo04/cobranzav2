@@ -71,8 +71,8 @@ class ReporteController extends Controller
         $config = $this->definicionesReporte()[$tipo];
         $datos = $this->obtenerDatosPorTipo($tipo, $filtros);
 
-        $lineas = $this->construirLineasPdf($config, $datos, $filtros, $tipo);
-        SimplePdf::download('reporte_' . $tipo . '.pdf', $lineas);
+        $documento = $this->construirDocumentoPdf($config, $datos, $filtros, $tipo);
+        SimplePdf::downloadTable('reporte_' . $tipo . '.pdf', $documento);
     }
 
     private function obtenerDatosPorTipo(string $tipo, array $filtros): array
@@ -176,83 +176,184 @@ class ReporteController extends Controller
         return $prefijo . (string) $valor . $sufijo;
     }
 
-    private function construirLineasPdf(array $config, array $datos, array $filtros, string $tipo): array
+    private function construirDocumentoPdf(array $config, array $datos, array $filtros, string $tipo): array
+    {
+        $usuario = Session::get('user');
+        $columnas = array_map(static function (array $columna): array {
+            return [
+                'campo' => $columna['campo'],
+                'etiqueta' => $columna['etiqueta'],
+                'ancho' => (float) ($columna['ancho'] ?? 20),
+            ];
+        }, $config['columnas']);
+
+        $rows = [];
+        foreach ($datos as $fila) {
+            $rows[] = array_map(function (array $columna) use ($fila): string {
+                $valor = $fila[$columna['campo']] ?? '';
+                return $this->formatearValor($valor, $columna);
+            }, $config['columnas']);
+        }
+
+        $contexto = $this->resumenContextoPdf();
+        $meta = array_filter([
+            'Generado' => date('Y-m-d H:i'),
+            'Usuario' => $this->descripcionUsuario($usuario),
+            'Colegio' => $contexto['colegio'],
+            'Sede' => $contexto['sede'],
+            'Registros' => number_format(count($rows), 0, ',', '.'),
+        ], static fn ($valor) => $valor !== null && $valor !== '');
+
+        return [
+            'title' => $config['titulo'],
+            'subtitle' => $config['descripcion'] ?? '',
+            'columns' => $columnas,
+            'rows' => $rows,
+            'meta' => $meta,
+            'filters' => $this->resumenFiltrosPdf($filtros, $tipo),
+            'summary' => $this->totalesReporte($tipo, $datos),
+        ];
+    }
+
+    private function resumenFiltrosPdf(array $filtros, string $tipo): array
     {
         $lineas = [];
-        $lineas[] = strtoupper($config['titulo']);
-        if (!empty($config['descripcion'])) {
-            $lineas[] = $config['descripcion'];
+        if (!empty($filtros['desde']) || !empty($filtros['hasta'])) {
+            $rango = trim(($filtros['desde'] ?: 'Desde inicio') . ' — ' . ($filtros['hasta'] ?: 'Hasta hoy'));
+            $lineas[] = 'Rango de fechas: ' . $rango;
         }
-        $lineas[] = 'Generado: ' . date('Y-m-d H:i');
-        $lineas[] = 'Registros: ' . count($datos);
 
-        $resumenFiltros = [];
-        if (!empty($filtros['desde'])) {
-            $resumenFiltros[] = 'Desde ' . $filtros['desde'];
-        }
-        if (!empty($filtros['hasta'])) {
-            $resumenFiltros[] = 'Hasta ' . $filtros['hasta'];
-        }
         if ($tipo === 'pagos' && !empty($filtros['metodo'])) {
-            $resumenFiltros[] = 'Método ' . strtoupper($filtros['metodo']);
+            $lineas[] = 'Método de pago: ' . strtoupper($filtros['metodo']);
         }
+
         if ($tipo !== 'pagos' && !empty($filtros['estado'])) {
-            $resumenFiltros[] = 'Estado ' . strtoupper($filtros['estado']);
+            $lineas[] = 'Estado filtrado: ' . ucfirst($filtros['estado']);
         }
-        if ($resumenFiltros) {
-            $lineas[] = implode(' | ', $resumenFiltros);
-        }
-
-        $lineas[] = str_repeat('-', $this->anchoTabla($config['columnas']));
-        $encabezado = [];
-        foreach ($config['columnas'] as $columna) {
-            $encabezado[] = $this->ajustarAnchura($columna['etiqueta'], $columna['ancho']);
-        }
-        $lineas[] = implode(' ', $encabezado);
-        $lineas[] = str_repeat('-', $this->anchoTabla($config['columnas']));
-
-        if (!$datos) {
-            $lineas[] = 'No hay información para los filtros aplicados.';
-        } else {
-            foreach ($datos as $fila) {
-                $row = [];
-                foreach ($config['columnas'] as $columna) {
-                    $valor = $this->formatearValor($fila[$columna['campo']] ?? '', $columna);
-                    $row[] = $this->ajustarAnchura($valor, $columna['ancho']);
-                }
-                $lineas[] = implode(' ', $row);
-            }
-        }
-
-        $lineas[] = str_repeat('-', $this->anchoTabla($config['columnas']));
-        $lineas[] = 'Desarrollado por: Technology and Innovation';
 
         return $lineas;
     }
 
-    private function ajustarAnchura(string $texto, int $ancho): string
+    private function resumenContextoPdf(): array
     {
-        if ($ancho <= 0) {
+        $usuario = Session::get('user') ?: [];
+        $contexto = Session::get('context') ?: [];
+
+        $colegio = 'Todos los colegios asignados';
+        if (!empty($contexto['id_colegio'])) {
+            foreach ($usuario['colegios_disponibles'] ?? [] as $item) {
+                if ((int) $item['id_colegio'] === (int) $contexto['id_colegio']) {
+                    $colegio = $item['nombre'];
+                    break;
+                }
+            }
+        } elseif (!empty($usuario['colegio_nombre'])) {
+            $colegio = $usuario['colegio_nombre'];
+        }
+
+        $sede = 'Todas las sedes asignadas';
+        if (!empty($contexto['id_sede'])) {
+            foreach ($usuario['sedes_disponibles'] ?? [] as $item) {
+                if ((int) $item['id_sede'] === (int) $contexto['id_sede']) {
+                    $sede = $item['nombre'];
+                    break;
+                }
+            }
+        } elseif (!empty($usuario['sede_nombre'])) {
+            $sede = $usuario['sede_nombre'];
+        }
+
+        return ['colegio' => $colegio, 'sede' => $sede];
+    }
+
+    private function descripcionUsuario(?array $usuario): string
+    {
+        if (!$usuario) {
             return '';
         }
 
-        $truncado = mb_strimwidth($texto, 0, $ancho, '…', 'UTF-8');
-        $longitud = mb_strwidth($truncado, 'UTF-8');
-        if ($longitud < $ancho) {
-            $truncado .= str_repeat(' ', $ancho - $longitud);
+        $roles = [
+            'admin_global' => 'Administrador Global',
+            'admin_colegio' => 'Administrador de Colegio',
+            'agente' => 'Agente de Cobranzas',
+        ];
+
+        $rol = $roles[$usuario['rol'] ?? ''] ?? ucfirst((string) ($usuario['rol'] ?? ''));
+        $nombre = $usuario['nombre_completo'] ?? ($usuario['usuario'] ?? '');
+
+        if ($nombre === '') {
+            return $rol;
         }
 
-        return $truncado;
+        return trim($nombre . ' — ' . $rol);
     }
 
-    private function anchoTabla(array $columnas): int
+    private function totalesReporte(string $tipo, array $datos): array
     {
-        $ancho = 0;
-        $conteo = count($columnas);
-        foreach ($columnas as $columna) {
-            $ancho += (int) ($columna['ancho'] ?? 0);
+        if (!$datos) {
+            return [];
         }
 
-        return $ancho + max($conteo - 1, 0);
+        return match ($tipo) {
+            'pagos' => $this->totalesPagos($datos),
+            'acuerdos' => $this->totalesAcuerdos($datos),
+            default => $this->totalesCartera($datos),
+        };
+    }
+
+    private function totalesCartera(array $datos): array
+    {
+        $totalSaldo = 0.0;
+        $vencidas = 0;
+        foreach ($datos as $fila) {
+            $totalSaldo += (float) ($fila['saldo_actual'] ?? 0);
+            if (isset($fila['estado']) && strtolower((string) $fila['estado']) === 'vencida') {
+                $vencidas++;
+            }
+        }
+
+        return [
+            'Saldo pendiente' => '$ ' . number_format($totalSaldo, 0, ',', '.'),
+            'Deudas registradas' => number_format(count($datos), 0, ',', '.'),
+            'Deudas vencidas' => number_format($vencidas, 0, ',', '.'),
+        ];
+    }
+
+    private function totalesPagos(array $datos): array
+    {
+        $total = 0.0;
+        foreach ($datos as $fila) {
+            $total += (float) ($fila['valor_total'] ?? 0);
+        }
+        $promedio = $total > 0 && count($datos) > 0 ? $total / count($datos) : 0;
+
+        return [
+            'Recaudo total' => '$ ' . number_format($total, 0, ',', '.'),
+            'Pagos registrados' => number_format(count($datos), 0, ',', '.'),
+            'Promedio por pago' => '$ ' . number_format($promedio, 0, ',', '.'),
+        ];
+    }
+
+    private function totalesAcuerdos(array $datos): array
+    {
+        $total = 0.0;
+        $activos = 0;
+        $cerrados = 0;
+        foreach ($datos as $fila) {
+            $total += (float) ($fila['monto_total'] ?? 0);
+            $estado = strtolower((string) ($fila['estado'] ?? ''));
+            if (in_array($estado, ['activo', 'en seguimiento', 'vigente'], true)) {
+                $activos++;
+            }
+            if (in_array($estado, ['cerrado', 'finalizado'], true)) {
+                $cerrados++;
+            }
+        }
+
+        return [
+            'Monto comprometido' => '$ ' . number_format($total, 0, ',', '.'),
+            'Acuerdos activos' => number_format($activos, 0, ',', '.'),
+            'Acuerdos cerrados' => number_format($cerrados, 0, ',', '.'),
+        ];
     }
 }

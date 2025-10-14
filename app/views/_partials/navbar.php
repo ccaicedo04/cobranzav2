@@ -15,6 +15,29 @@ foreach ($sedesDisponibles as $sedeDisponible) {
     $sedesAgrupadas[$sedeDisponible['id_colegio']][] = $sedeDisponible;
 }
 $modulos = $user['modulos_permitidos'] ?? [];
+$colegioActual = 'Todos mis colegios';
+$sedeActual = 'Todas mis sedes';
+if (!empty($contexto['id_colegio'])) {
+    foreach ($colegiosDisponibles as $colegio) {
+        if ((int) $colegio['id_colegio'] === (int) $contexto['id_colegio']) {
+            $colegioActual = $colegio['nombre'];
+            break;
+        }
+    }
+} elseif (count($colegiosDisponibles) === 1) {
+    $colegioActual = $colegiosDisponibles[0]['nombre'];
+}
+
+if (!empty($contexto['id_sede'])) {
+    foreach ($sedesDisponibles as $sede) {
+        if ((int) $sede['id_sede'] === (int) $contexto['id_sede']) {
+            $sedeActual = $sede['nombre'];
+            break;
+        }
+    }
+} elseif (count($sedesDisponibles) === 1) {
+    $sedeActual = $sedesDisponibles[0]['nombre'];
+}
 ?>
 <div class="appbar">
     <div class="container">
@@ -25,6 +48,10 @@ $modulos = $user['modulos_permitidos'] ?? [];
         <form class="tenant" method="post" action="index.php?route=contexto/actualizar" id="formContextoNav">
             <span class="label">Contexto</span>
             <input type="hidden" name="_token" value="<?= htmlspecialchars($tokenNav) ?>">
+            <div class="tenant-summary">
+                <span class="tenant-pill" title="Colegio en uso"><?= htmlspecialchars($colegioActual) ?></span>
+                <span class="tenant-pill" title="Sede en uso"><?= htmlspecialchars($sedeActual) ?></span>
+            </div>
             <select name="id_colegio" id="navColegio">
                 <option value="">Todos mis colegios</option>
                 <?php foreach ($colegiosDisponibles as $colegio): ?>
