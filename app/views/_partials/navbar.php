@@ -73,7 +73,6 @@ if (!empty($contexto['id_sede'])) {
                     <?php endif; ?>
                 <?php endforeach; ?>
             </select>
-            <button type="submit" class="tenant-apply">Aplicar</button>
         </form>
         <nav class="nav">
             <?php if (in_array('cobranzas', $modulos, true)): ?>

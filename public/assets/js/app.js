@@ -182,8 +182,21 @@
     const colegio = document.getElementById('navColegio');
     const sede = document.getElementById('navSede');
     const form = colegio ? colegio.form : null;
-    if (!colegio || !sede) {
+    if (!colegio || !sede || !form) {
       return;
+    }
+
+    let submitTimeout = null;
+
+    function scheduleSubmit() {
+      window.clearTimeout(submitTimeout);
+      submitTimeout = window.setTimeout(function () {
+        if (typeof form.requestSubmit === 'function') {
+          form.requestSubmit();
+        } else {
+          form.submit();
+        }
+      }, 120);
     }
 
     function applyFilter() {
@@ -217,13 +230,15 @@
     }
 
     applyFilter();
-    colegio.addEventListener('change', applyFilter);
 
-    if (form) {
-      form.addEventListener('submit', function () {
-        applyFilter();
-      });
-    }
+    colegio.addEventListener('change', function () {
+      applyFilter();
+      scheduleSubmit();
+    });
+
+    sede.addEventListener('change', function () {
+      scheduleSubmit();
+    });
   }
 
   onReady(function () {

@@ -39,8 +39,6 @@ footer{margin:24px 0 40px 0;color:#4b5563;font-size:13px;text-align:center}
 .tenant-summary{display:flex;gap:6px;align-items:center;margin-right:4px}
 .tenant-pill{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.22);color:#f8fbff;padding:2px 10px;border-radius:999px;font-size:11px;line-height:1.6}
 .tenant select{appearance:none;background:#0f325d;border:1px solid rgba(255,255,255,.15);color:#e8f1ff;border-radius:10px;padding:6px 8px;min-width:150px}
-.tenant-apply{background:#0f325d;border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:10px;padding:6px 12px;cursor:pointer;font-weight:600}
-.tenant-apply:hover{background:rgba(255,255,255,.15)}
 .userbox{flex-shrink:0;position:relative}
 .userbox .user-toggle{background:#0f325d;color:#e8f1ff;border:1px solid rgba(255,255,255,.15);padding:6px 10px;border-radius:10px;cursor:pointer}
 .userbox .menu{position:absolute;right:0;top:40px;background:#0f325d;border:1px solid rgba(255,255,255,.22);border-radius:12px;padding:8px;display:none;min-width:220px;z-index:1300}
@@ -66,8 +64,8 @@ h2.section{margin:6px 0 14px 0;font-size:20px;letter-spacing:.2px}
 .tenant{margin-right:8px}
 .userbox{margin-left:8px}
 .dropdown{overflow:visible}
-.nav .group.open .dropdown,.nav .group:focus-within .dropdown{display:block}
-.nav .group.open .nav-toggle,.nav .group:focus-within .nav-toggle{background:rgba(255,255,255,.12)}
+.nav .group:hover .dropdown,.nav .group.open .dropdown,.nav .group:focus-within .dropdown{display:block}
+.nav .group:hover .nav-toggle,.nav .group.open .nav-toggle,.nav .group:focus-within .nav-toggle{background:rgba(255,255,255,.12)}
 .userbox.open .menu{display:block}
 .tenant select{cursor:pointer}
 
