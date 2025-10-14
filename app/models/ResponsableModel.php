@@ -22,17 +22,8 @@ class ResponsableModel extends BaseModel
     public function conContexto(array $filtros = []): array
     {
         $filtros = $this->applyTenantFilters($filtros);
-        $where = ['r.eliminado = 0'];
-        $params = [];
-
-        foreach ($filtros as $column => $valor) {
-            if ($valor === null || $valor === '') {
-                continue;
-            }
-
-            $where[] = "r.$column = :$column";
-            $params[":$column"] = $valor;
-        }
+        [$where, $params] = $this->compileFilters($filtros, 'r');
+        $where[] = 'r.eliminado = 0';
 
         $sql = 'SELECT r.*, c.nombre AS colegio_nombre, s.nombre AS sede_nombre'
             . ' FROM responsable_financiero r'

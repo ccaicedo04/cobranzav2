@@ -21,17 +21,8 @@ class EstudianteModel extends BaseModel
     public function conContexto(array $filtros = []): array
     {
         $filtros = $this->applyTenantFilters($filtros);
-        $where = ['e.eliminado = 0'];
-        $params = [];
-
-        foreach ($filtros as $columna => $valor) {
-            if ($valor === null || $valor === '') {
-                continue;
-            }
-
-            $where[] = "e.$columna = :$columna";
-            $params[":$columna"] = $valor;
-        }
+        [$where, $params] = $this->compileFilters($filtros, 'e');
+        $where[] = 'e.eliminado = 0';
 
         $sql = 'SELECT e.*, c.nombre AS colegio_nombre, s.nombre AS sede_nombre, r.nombre_completo AS responsable_nombre'
             . ' FROM estudiante e'

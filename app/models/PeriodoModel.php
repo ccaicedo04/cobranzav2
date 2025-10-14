@@ -18,17 +18,8 @@ class PeriodoModel extends BaseModel
     public function conColegio(): array
     {
         $filters = $this->applyTenantFilters([]);
-        $where = ['p.eliminado = 0'];
-        $params = [];
-
-        foreach ($filters as $column => $value) {
-            if ($value === null || $value === '') {
-                continue;
-            }
-
-            $where[] = "p.$column = :$column";
-            $params[":$column"] = $value;
-        }
+        [$where, $params] = $this->compileFilters($filters, 'p');
+        $where[] = 'p.eliminado = 0';
 
         $sql = 'SELECT p.*, c.nombre AS colegio_nombre'
             . ' FROM periodo p'

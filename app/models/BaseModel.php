@@ -25,31 +25,7 @@ abstract class BaseModel
     public function all(array $filters = [], array $options = []): array
     {
         $filters = $this->applyTenantFilters($filters);
-        $where = [];
-        $params = [];
-
-        foreach ($filters as $column => $value) {
-            if ($value === null || $value === '') {
-                continue;
-            }
-
-            if (is_array($value)) {
-                $value = array_values(array_filter($value, static fn ($item) => $item !== null && $item !== ''));
-                if (!$value) {
-                    continue;
-                }
-                $placeholders = [];
-                foreach ($value as $idx => $item) {
-                    $placeholder = ':' . $column . '_' . $idx;
-                    $placeholders[] = $placeholder;
-                    $params[$placeholder] = $item;
-                }
-                $where[] = $column . ' IN (' . implode(',', $placeholders) . ')';
-            } else {
-                $where[] = "$column = :$column";
-                $params[":$column"] = $value;
-            }
-        }
+        [$where, $params] = $this->compileFilters($filters);
 
         if (
             $this->softDelete
@@ -154,6 +130,10 @@ abstract class BaseModel
         }
 
         foreach ($this->tenantColumns as $column) {
+            if (!$this->tableHasColumn($column)) {
+                continue;
+            }
+
             if (array_key_exists($column, $filters)) {
                 continue;
             }
@@ -190,6 +170,44 @@ abstract class BaseModel
         }
 
         return $filters;
+    }
+
+    protected function compileFilters(array $filters, string $alias = ''): array
+    {
+        $where = [];
+        $params = [];
+        $prefix = $alias !== '' ? $alias . '.' : '';
+
+        foreach ($filters as $column => $value) {
+            if ($value === null || $value === '') {
+                continue;
+            }
+
+            $sanitizedColumn = preg_replace('/[^a-zA-Z0-9_]/', '_', $column);
+
+            if (is_array($value)) {
+                $value = array_values(array_filter($value, static fn ($item) => $item !== null && $item !== ''));
+                if (!$value) {
+                    continue;
+                }
+
+                $placeholders = [];
+                foreach ($value as $idx => $item) {
+                    $placeholder = ':' . $sanitizedColumn . '_' . $idx;
+                    $placeholders[] = $placeholder;
+                    $params[$placeholder] = $item;
+                }
+
+                $where[] = $prefix . $column . ' IN (' . implode(',', $placeholders) . ')';
+                continue;
+            }
+
+            $placeholder = ':' . $sanitizedColumn;
+            $where[] = $prefix . $column . ' = ' . $placeholder;
+            $params[$placeholder] = $value;
+        }
+
+        return [$where, $params];
     }
 
     protected function tableHasColumn(string $column): bool

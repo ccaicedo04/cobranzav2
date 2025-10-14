@@ -21,17 +21,8 @@ class SedeModel extends BaseModel
     public function conColegio(array $filters = []): array
     {
         $filters = $this->applyTenantFilters($filters);
-        $where = ['s.eliminado = 0'];
-        $params = [];
-
-        foreach ($filters as $column => $value) {
-            if ($value === null || $value === '') {
-                continue;
-            }
-
-            $where[] = "s.$column = :$column";
-            $params[":$column"] = $value;
-        }
+        [$where, $params] = $this->compileFilters($filters, 's');
+        $where[] = 's.eliminado = 0';
 
         $sql = 'SELECT s.*, c.nombre AS colegio_nombre, c.nit AS colegio_nit'
             . ' FROM sede s'

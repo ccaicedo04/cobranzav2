@@ -19,17 +19,8 @@ class ConceptoModel extends BaseModel
     public function conColegio(): array
     {
         $filters = $this->applyTenantFilters([]);
-        $where = ['c.eliminado = 0'];
-        $params = [];
-
-        foreach ($filters as $column => $value) {
-            if ($value === null || $value === '') {
-                continue;
-            }
-
-            $where[] = "c.$column = :$column";
-            $params[":$column"] = $value;
-        }
+        [$where, $params] = $this->compileFilters($filters, 'c');
+        $where[] = 'c.eliminado = 0';
 
         $sql = 'SELECT c.*, col.nombre AS colegio_nombre'
             . ' FROM concepto_deuda c'
