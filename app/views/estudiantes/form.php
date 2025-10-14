@@ -5,7 +5,9 @@ $breadcrumbs = 'Cobranzas / Estudiantes / ' . $title;
 include __DIR__ . '/../_partials/header.php';
 ?>
 <div class="card">
-    <form method="post" action="index.php?route=estudiantes/<?= isset($estudiante) ? 'update' : 'store' ?>">
+    <form method="post" action="index.php?route=estudiantes/<?= isset($estudiante) ? 'update' : 'store' ?>" <?= isset($estudiante)
+        ? 'data-confirm="¿Deseas actualizar la ficha del estudiante?"'
+        : 'data-confirm="¿Deseas registrar al nuevo estudiante?"' ?>>
         <input type="hidden" name="_token" value="<?= htmlspecialchars($token) ?>">
         <?php if (isset($estudiante)): ?>
             <input type="hidden" name="id_estudiante" value="<?= $estudiante['id_estudiante'] ?>">

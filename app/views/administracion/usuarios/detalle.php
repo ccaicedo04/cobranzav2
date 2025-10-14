@@ -3,6 +3,16 @@ $title = 'Detalle usuario';
 $pageTitle = 'Detalle de usuario';
 $breadcrumbs = 'Administración / Usuarios / Detalle';
 include __DIR__ . '/../../_partials/header.php';
+
+$idsColegios = json_decode($usuarioDetalle['permisos_colegios'] ?? '[]', true);
+if (!is_array($idsColegios)) {
+    $idsColegios = [];
+}
+$idsSedes = json_decode($usuarioDetalle['permisos_sedes'] ?? '[]', true);
+if (!is_array($idsSedes)) {
+    $idsSedes = [];
+}
+$modulosSeleccionados = is_array($modulos) ? $modulos : [];
 ?>
 <div class="grid" style="grid-template-columns:1.2fr 1fr;gap:18px;">
     <div class="card">
@@ -15,46 +25,125 @@ include __DIR__ . '/../../_partials/header.php';
         <p><strong>Último colegio base:</strong> <?= htmlspecialchars($usuarioDetalle['colegio_nombre'] ?? 'Sin definir') ?></p>
         <p><strong>Última sede base:</strong> <?= htmlspecialchars($usuarioDetalle['sede_nombre'] ?? 'Sin definir') ?></p>
         <div class="actions" style="margin-top:12px;display:flex;gap:10px;">
-            <a class="btn" href="index.php?route=usuarios">Volver</a>
+            <a class="btn secondary" href="index.php?route=usuarios">Regresar</a>
         </div>
     </div>
     <div class="card">
-        <h3>Módulos habilitados</h3>
-        <?php if (!empty($modulos)): ?>
-            <ul>
-                <?php foreach ($modulos as $modulo): ?>
-                    <li><?= htmlspecialchars(ucfirst($modulo)) ?></li>
-                <?php endforeach; ?>
-            </ul>
-        <?php else: ?>
-            <p>No hay módulos asociados.</p>
-        <?php endif; ?>
+        <h3>Actualizar usuario</h3>
+        <form method="post" action="index.php?route=usuarios/update" data-confirm="¿Deseas guardar los cambios de este usuario?" id="formActualizarUsuario">
+            <input type="hidden" name="_token" value="<?= htmlspecialchars($token) ?>">
+            <input type="hidden" name="id_usuario" value="<?= (int) $usuarioDetalle['id_usuario'] ?>">
+            <label>Nombre completo</label>
+            <input name="nombre_completo" value="<?= htmlspecialchars($usuarioDetalle['nombre_completo']) ?>" required>
+            <label>Correo</label>
+            <input type="email" name="email" value="<?= htmlspecialchars($usuarioDetalle['email']) ?>" required>
+            <label>Usuario</label>
+            <input name="usuario" value="<?= htmlspecialchars($usuarioDetalle['usuario']) ?>" required>
+            <label>Nueva contraseña <span class="small">(déjalo vacío si no deseas cambiarla)</span></label>
+            <input type="password" name="password" placeholder="Actualizar contraseña opcional">
+            <label>Rol</label>
+            <select name="rol" id="rolDetalle" onchange="toggleAsignacionDetalle()">
+                <option value="admin_global" <?= $usuarioDetalle['rol'] === 'admin_global' ? 'selected' : '' ?>>Administrador Global</option>
+                <option value="admin_colegio" <?= $usuarioDetalle['rol'] === 'admin_colegio' ? 'selected' : '' ?>>Administrador Colegio</option>
+                <option value="agente" <?= $usuarioDetalle['rol'] === 'agente' ? 'selected' : '' ?>>Agente</option>
+            </select>
+            <div id="asignacionDetalle" style="margin-top:12px;">
+                <label>Colegios asignados</label>
+                <select name="permisos_colegios[]" id="colegiosDetalle" multiple size="4" onchange="filtrarSedesDetalle()">
+                    <?php foreach ($opcionesColegios as $colegio): ?>
+                        <option value="<?= $colegio['id_colegio'] ?>" <?= in_array((int) $colegio['id_colegio'], array_map('intval', $idsColegios), true) ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($colegio['nombre']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+                <label>Sedes asignadas</label>
+                <select name="permisos_sedes[]" id="sedesDetalle" multiple size="6">
+                    <?php foreach ($opcionesSedes as $sede): ?>
+                        <option value="<?= $sede['id_sede'] ?>" data-colegio="<?= $sede['id_colegio'] ?>" <?= in_array((int) $sede['id_sede'], array_map('intval', $idsSedes), true) ? 'selected' : '' ?>>
+                            <?= htmlspecialchars(($sede['colegio_nombre'] ?? 'Colegio') . ' - ' . $sede['nombre']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <fieldset style="margin-top:12px;">
+                <legend>Módulos habilitados</legend>
+                <div class="chips">
+                    <?php foreach ($modulosDisponibles as $modulo): ?>
+                        <label style="display:block;margin-bottom:6px;">
+                            <input type="checkbox" name="permisos_modulos[]" value="<?= $modulo ?>" <?= in_array($modulo, $modulosSeleccionados, true) ? 'checked' : '' ?>> <?= ucfirst($modulo) ?>
+                        </label>
+                    <?php endforeach; ?>
+                </div>
+            </fieldset>
+            <label style="margin-top:12px;">Estado</label>
+            <select name="estado">
+                <option value="activo" <?= $usuarioDetalle['estado'] === 'activo' ? 'selected' : '' ?>>Activo</option>
+                <option value="inactivo" <?= $usuarioDetalle['estado'] === 'inactivo' ? 'selected' : '' ?>>Inactivo</option>
+            </select>
+            <div class="actions" style="display:flex;justify-content:flex-end;gap:10px;margin-top:12px;">
+                <button class="btn" type="submit">Guardar cambios</button>
+            </div>
+        </form>
     </div>
 </div>
 <div class="grid" style="grid-template-columns:1fr 1fr;gap:18px;margin-top:18px;">
     <div class="card">
         <h3>Colegios asignados</h3>
         <?php if (!empty($colegios)): ?>
-            <ul>
+            <ul class="small">
                 <?php foreach ($colegios as $colegio): ?>
-                    <li><?= htmlspecialchars($colegio['nombre']) ?> (NIT: <?= htmlspecialchars($colegio['nit'] ?? 'N/A') ?>)</li>
+                    <li><strong><?= htmlspecialchars($colegio['nombre']) ?></strong> <?= !empty($colegio['nit']) ? '(NIT ' . htmlspecialchars($colegio['nit']) . ')' : '' ?></li>
                 <?php endforeach; ?>
             </ul>
         <?php else: ?>
-            <p>Sin colegios asignados.</p>
+            <p class="small">Sin colegios asignados.</p>
         <?php endif; ?>
     </div>
     <div class="card">
         <h3>Sedes asignadas</h3>
         <?php if (!empty($sedes)): ?>
-            <ul>
+            <ul class="small">
                 <?php foreach ($sedes as $sede): ?>
-                    <li><?= htmlspecialchars(($sede['colegio_nombre'] ?? '') . ' - ' . $sede['nombre']) ?></li>
+                    <li><strong><?= htmlspecialchars($sede['nombre']) ?></strong> <?= htmlspecialchars($sede['colegio_nombre'] ?? '') ?></li>
                 <?php endforeach; ?>
             </ul>
         <?php else: ?>
-            <p>Sin sedes asignadas.</p>
+            <p class="small">Sin sedes asignadas.</p>
         <?php endif; ?>
     </div>
 </div>
+<div class="card" style="margin-top:18px;">
+    <h3>Resumen de módulos habilitados</h3>
+    <?php if (!empty($modulosSeleccionados)): ?>
+        <div class="chips" style="display:flex;flex-wrap:wrap;gap:8px;">
+            <?php foreach ($modulosSeleccionados as $modulo): ?>
+                <span class="badge" style="background:#eef2ff;color:#1d4ed8;"><?= htmlspecialchars(ucfirst($modulo)) ?></span>
+            <?php endforeach; ?>
+        </div>
+    <?php else: ?>
+        <p class="small">No hay módulos asociados actualmente.</p>
+    <?php endif; ?>
+</div>
+<script>
+function toggleAsignacionDetalle() {
+    const rol = document.getElementById('rolDetalle').value;
+    const contenedor = document.getElementById('asignacionDetalle');
+    contenedor.style.display = (rol === 'admin_global') ? 'none' : 'block';
+}
+
+function filtrarSedesDetalle() {
+    const selectColegio = document.getElementById('colegiosDetalle');
+    const selectSedes = document.getElementById('sedesDetalle');
+    if (!selectColegio || !selectSedes) return;
+    const seleccionados = Array.from(selectColegio.selectedOptions).map(option => option.value);
+    Array.from(selectSedes.options).forEach(option => {
+        if (!option.value) return;
+        const pertenece = option.dataset.colegio;
+        option.hidden = seleccionados.length && !seleccionados.includes(pertenece);
+    });
+}
+
+toggleAsignacionDetalle();
+filtrarSedesDetalle();
+</script>
 <?php include __DIR__ . '/../../_partials/footer.php'; ?>

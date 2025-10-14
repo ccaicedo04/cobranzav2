@@ -5,7 +5,7 @@ $breadcrumbs = 'Administración / Colegios / Edición';
 include __DIR__ . '/../../_partials/header.php';
 ?>
 <div class="card">
-    <form method="post" action="index.php?route=colegios/update">
+    <form method="post" action="index.php?route=colegios/update" data-confirm="¿Confirmas la actualización de la información institucional?">
         <input type="hidden" name="_token" value="<?= htmlspecialchars($token) ?>">
         <input type="hidden" name="id_colegio" value="<?= $colegio['id_colegio'] ?>">
         <label>Nombre</label>

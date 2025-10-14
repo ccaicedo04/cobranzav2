@@ -5,7 +5,7 @@ $breadcrumbs = 'Configuración';
 include __DIR__ . '/../_partials/header.php';
 ?>
 <div class="card">
-    <form method="post" action="index.php?route=configuracion/store">
+    <form method="post" action="index.php?route=configuracion/store" data-confirm="¿Deseas guardar la nueva configuración institucional?">
         <input type="hidden" name="_token" value="<?= htmlspecialchars($token) ?>">
         <div class="two">
             <div>

@@ -26,7 +26,7 @@ include __DIR__ . '/../_partials/header.php';
     </div>
     <div class="card">
         <h3>Subir archivo</h3>
-        <form method="post" action="index.php?route=carga-masiva/store" enctype="multipart/form-data">
+        <form method="post" action="index.php?route=carga-masiva/store" enctype="multipart/form-data" data-confirm="¿Deseas iniciar el proceso de carga masiva con el archivo seleccionado?">
             <input type="hidden" name="_token" value="<?= htmlspecialchars($token) ?>">
             <label>Archivo Excel (.xlsx)</label>
             <input type="file" name="archivo" accept=".xlsx">

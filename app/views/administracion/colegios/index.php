@@ -33,7 +33,7 @@ include __DIR__ . '/../../_partials/header.php';
     </div>
     <div class="card">
         <h3>Nuevo colegio</h3>
-        <form method="post" action="index.php?route=colegios/store">
+        <form method="post" action="index.php?route=colegios/store" data-confirm="¿Deseas registrar el nuevo colegio con los datos proporcionados?">
             <input type="hidden" name="_token" value="<?= htmlspecialchars($token) ?>">
             <label>Nombre</label>
             <input name="nombre" required>

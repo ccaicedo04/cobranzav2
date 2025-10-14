@@ -99,6 +99,7 @@ $router->get('/sedes/detalle', [SedeController::class, 'detalle']);
 $router->get('/usuarios', [UsuarioController::class, 'index']);
 $router->post('/usuarios/store', [UsuarioController::class, 'store']);
 $router->get('/usuarios/detalle', [UsuarioController::class, 'detalle']);
+$router->post('/usuarios/update', [UsuarioController::class, 'update']);
 
 $router->get('/parametros', [ParametroController::class, 'index']);
 $router->post('/parametros/store', [ParametroController::class, 'store']);

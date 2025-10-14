@@ -45,7 +45,7 @@ foreach ($estudiantes as $estudiante) {
     </div>
     <div class="card">
         <h3>Registrar comunicación</h3>
-        <form method="post" action="index.php?route=comunicaciones/store">
+        <form method="post" action="index.php?route=comunicaciones/store" data-confirm="¿Confirmas el registro de esta gestión de comunicación?">
             <input type="hidden" name="_token" value="<?= htmlspecialchars($token) ?>">
             <label>Responsable</label>
             <select name="id_responsable" required>

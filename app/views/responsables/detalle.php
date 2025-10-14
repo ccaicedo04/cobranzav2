@@ -14,11 +14,11 @@ include __DIR__ . '/../_partials/header.php';
         <p><strong>Correo:</strong> <?= htmlspecialchars($responsable['correo']) ?></p>
         <p><strong>Dirección:</strong> <?= htmlspecialchars($responsable['direccion']) ?></p>
         <p><strong>Estado:</strong> <?= htmlspecialchars($responsable['estado']) ?></p>
-        <div style="margin-top:16px;display:flex;gap:10px;">
+        <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;">
             <a class="btn" href="index.php?route=responsables/edit&id=<?= $responsable['id_responsable'] ?>">Editar</a>
             <a class="btn" href="index.php?route=pagos/create&responsable=<?= $responsable['id_responsable'] ?>">Registrar pago</a>
             <a class="btn" href="index.php?route=acuerdos&responsable=<?= $responsable['id_responsable'] ?>">Crear acuerdo</a>
-            <form method="post" action="index.php?route=responsables/delete" onsubmit="return confirm('¿Deseas eliminar este responsable?');">
+            <form method="post" action="index.php?route=responsables/delete" data-confirm="¿Deseas eliminar este responsable y su historial?">
                 <input type="hidden" name="id" value="<?= $responsable['id_responsable'] ?>">
                 <input type="hidden" name="_token" value="<?= htmlspecialchars(Core\Helpers::csrfToken()) ?>">
                 <button class="btn secondary" type="submit">Eliminar</button>
@@ -44,7 +44,7 @@ include __DIR__ . '/../_partials/header.php';
                     <td><?= htmlspecialchars($estudiante['grado']) ?></td>
                     <td><?= htmlspecialchars($estudiante['curso']) ?></td>
                     <td><?= htmlspecialchars($estudiante['estado']) ?></td>
-                    <td><a class="link" href="index.php?route=estudiantes/detalle&id=<?= $estudiante['id_estudiante'] ?>">Ver detalle</a></td>
+                    <td><a class="btn secondary sm" href="index.php?route=estudiantes/detalle&id=<?= $estudiante['id_estudiante'] ?>">Ver detalle</a></td>
                 </tr>
             <?php endforeach; ?>
             <?php if (empty($estudiantes)): ?>

@@ -52,7 +52,7 @@ include __DIR__ . '/../../_partials/header.php';
     </div>
     <div class="card">
         <h3>Crear usuario</h3>
-        <form method="post" action="index.php?route=usuarios/store">
+        <form method="post" action="index.php?route=usuarios/store" data-confirm="¿Deseas crear el nuevo usuario con los permisos seleccionados?">
             <input type="hidden" name="_token" value="<?= htmlspecialchars($token) ?>">
             <label>Nombre completo</label>
             <input name="nombre_completo" required>

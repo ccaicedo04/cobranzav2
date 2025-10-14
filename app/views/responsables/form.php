@@ -5,7 +5,9 @@ $breadcrumbs = 'Cobranzas / Responsables / ' . $title;
 include __DIR__ . '/../_partials/header.php';
 ?>
 <div class="card">
-    <form method="post" action="index.php?route=responsables/<?= isset($responsable) ? 'update' : 'store' ?>">
+    <form method="post" action="index.php?route=responsables/<?= isset($responsable) ? 'update' : 'store' ?>" <?= isset($responsable)
+        ? 'data-confirm="¿Deseas actualizar la información del responsable seleccionado?"'
+        : 'data-confirm="¿Deseas registrar al nuevo responsable financiero?"' ?>>
         <input type="hidden" name="_token" value="<?= htmlspecialchars($token) ?>">
         <?php if (isset($responsable)): ?>
             <input type="hidden" name="id_responsable" value="<?= $responsable['id_responsable'] ?>">

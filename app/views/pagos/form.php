@@ -5,7 +5,7 @@ $breadcrumbs = 'Cobranzas / Pagos / Registrar';
 include __DIR__ . '/../_partials/header.php';
 ?>
 <div class="card">
-    <form method="post" action="index.php?route=pagos/store" enctype="multipart/form-data">
+    <form method="post" action="index.php?route=pagos/store" enctype="multipart/form-data" data-confirm="¿Deseas registrar el pago con la información ingresada?">
         <input type="hidden" name="_token" value="<?= htmlspecialchars($token) ?>">
         <?php if (!empty($responsableId)): ?>
             <input type="hidden" name="responsable" value="<?= (int) $responsableId ?>">

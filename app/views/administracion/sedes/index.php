@@ -50,7 +50,7 @@ include __DIR__ . '/../../_partials/header.php';
     </div>
     <div class="card">
         <h3>Nueva sede</h3>
-        <form method="post" action="index.php?route=sedes/store">
+        <form method="post" action="index.php?route=sedes/store" data-confirm="¿Deseas registrar la nueva sede institucional?">
             <input type="hidden" name="_token" value="<?= htmlspecialchars($token) ?>">
             <?php if (($usuario['rol'] ?? '') === 'admin_global'): ?>
                 <label>Colegio</label>

@@ -5,7 +5,7 @@ $breadcrumbs = 'Parametrización / Períodos / Edición';
 include __DIR__ . '/../../_partials/header.php';
 ?>
 <div class="card">
-    <form method="post" action="index.php?route=periodos/update">
+    <form method="post" action="index.php?route=periodos/update" data-confirm="¿Deseas actualizar la configuración del período?">
         <input type="hidden" name="_token" value="<?= htmlspecialchars($token) ?>">
         <input type="hidden" name="id_periodo" value="<?= $periodo['id_periodo'] ?>">
         <?php if (($usuario['rol'] ?? '') === 'admin_global'): ?>

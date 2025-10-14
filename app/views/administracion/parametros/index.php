@@ -14,7 +14,7 @@ include __DIR__ . '/../../_partials/header.php';
                     <tr>
                         <td><?= htmlspecialchars($parametro['clave']) ?></td>
                         <td>
-                            <form method="post" action="index.php?route=parametros/update" style="display:flex;gap:8px;align-items:flex-start;">
+                            <form method="post" action="index.php?route=parametros/update" style="display:flex;gap:8px;align-items:flex-start;" data-confirm="¿Aplicar el nuevo valor del parámetro?">
                                 <input type="hidden" name="_token" value="<?= htmlspecialchars($token) ?>">
                                 <input type="hidden" name="id_parametro" value="<?= $parametro['id_parametro'] ?>">
                                 <input name="valor" value="<?= htmlspecialchars($parametro['valor']) ?>" style="width:160px;">

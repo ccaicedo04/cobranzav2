@@ -5,7 +5,7 @@ $breadcrumbs = 'Administración / Sedes / Edición';
 include __DIR__ . '/../../_partials/header.php';
 ?>
 <div class="card">
-    <form method="post" action="index.php?route=sedes/update">
+    <form method="post" action="index.php?route=sedes/update" data-confirm="¿Deseas guardar los cambios de la sede seleccionada?">
         <input type="hidden" name="_token" value="<?= htmlspecialchars($token) ?>">
         <input type="hidden" name="id_sede" value="<?= $sede['id_sede'] ?>">
         <?php if (($usuario['rol'] ?? '') === 'admin_global'): ?>

@@ -31,7 +31,7 @@ include __DIR__ . '/../../_partials/header.php';
     </div>
     <div class="card">
         <h3>Crear concepto</h3>
-        <form method="post" action="index.php?route=conceptos/store">
+        <form method="post" action="index.php?route=conceptos/store" data-confirm="¿Deseas registrar el nuevo concepto de cobro?">
             <input type="hidden" name="_token" value="<?= htmlspecialchars($token) ?>">
             <?php if (($usuario['rol'] ?? '') === 'admin_global'): ?>
                 <label>Colegio</label>

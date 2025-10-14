@@ -52,7 +52,7 @@ foreach ($estudiantes as $estudiante) {
     </div>
     <div class="card">
         <h3>Crear acuerdo</h3>
-        <form method="post" action="index.php?route=acuerdos/store">
+        <form method="post" action="index.php?route=acuerdos/store" data-confirm="¿Deseas guardar el acuerdo de pago?">
             <input type="hidden" name="_token" value="<?= htmlspecialchars($token) ?>">
             <?php if (!empty($responsableId)): ?>
                 <input type="hidden" name="responsable" value="<?= (int) $responsableId ?>">

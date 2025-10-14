@@ -5,7 +5,7 @@ $breadcrumbs = 'Parametrización / Conceptos / Edición';
 include __DIR__ . '/../../_partials/header.php';
 ?>
 <div class="card">
-    <form method="post" action="index.php?route=conceptos/update">
+    <form method="post" action="index.php?route=conceptos/update" data-confirm="¿Guardar cambios del concepto seleccionado?">
         <input type="hidden" name="_token" value="<?= htmlspecialchars($token) ?>">
         <input type="hidden" name="id_concepto" value="<?= $concepto['id_concepto'] ?>">
         <?php if (($usuario['rol'] ?? '') === 'admin_global'): ?>

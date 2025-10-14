@@ -11,6 +11,7 @@ $title = $title ?? 'Sistema de Cobranza Escolar';
     <title><?= htmlspecialchars($title) ?></title>
     <link rel="stylesheet" href="assets/css/global.css">
     <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script defer src="assets/js/app.js"></script>
 </head>
 <body>
 <?php if ($user): ?>
