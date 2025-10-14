@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Models\AuditoriaModel;
 use App\Models\ColegioModel;
+use App\Models\ModuloModel;
 use App\Models\SedeModel;
 use App\Models\UsuarioModel;
 use Core\Controller;
@@ -16,7 +17,7 @@ class UsuarioController extends Controller
     private SedeModel $sedes;
     private AuditoriaModel $auditoria;
     private ColegioModel $colegios;
-    private array $modulosPermitidos = ['cobranzas', 'administracion', 'parametrizacion'];
+    private ModuloModel $modulos;
 
     public function __construct()
     {
@@ -30,47 +31,32 @@ class UsuarioController extends Controller
         $this->sedes = new SedeModel();
         $this->auditoria = new AuditoriaModel();
         $this->colegios = new ColegioModel();
+        $this->modulos = new ModuloModel();
     }
 
     public function index(): void
     {
-        $listaBruto = $this->usuarios->listadoConContexto();
-        $lista = array_map(function (array $fila): array {
-            $fila['permisos_colegios_array'] = $this->decodeJson($fila['permisos_colegios'] ?? null);
-            $fila['permisos_sedes_array'] = $this->decodeJson($fila['permisos_sedes'] ?? null);
-            $fila['permisos_modulos_array'] = $this->decodeJson($fila['permisos_modulos'] ?? null);
-
-            return $fila;
-        }, $listaBruto);
+        $lista = $this->usuarios->listadoConContexto();
 
         $usuario = Session::get('user');
         $contextoForm = $this->contextoSelecciones();
+        $modulosDisponibles = $this->modulos->activos();
+        $mapModulos = [];
+        foreach ($modulosDisponibles as $modulo) {
+            $mapModulos[$modulo['codigo']] = $modulo['nombre'];
+        }
 
         $this->view('administracion/usuarios/index', [
             'usuarios' => $lista,
             'colegios' => $contextoForm['colegios'],
             'sedes' => $contextoForm['sedes'],
             'usuario' => $usuario,
-            'modulos' => $this->modulosPermitidos,
+            'modulos' => $modulosDisponibles,
             'mapColegios' => $contextoForm['mapColegios'],
             'mapSedes' => $contextoForm['mapSedes'],
+            'mapModulos' => $mapModulos,
             'token' => Helpers::csrfToken(),
         ]);
-    }
-
-    private function decodeJson(?string $payload): array
-    {
-        if (empty($payload)) {
-            return [];
-        }
-
-        try {
-            $decoded = json_decode($payload, true, 512, JSON_THROW_ON_ERROR);
-        } catch (\JsonException $e) {
-            return [];
-        }
-
-        return is_array($decoded) ? $decoded : [];
     }
 
     public function store(): void
@@ -101,7 +87,7 @@ class UsuarioController extends Controller
         }
 
         if ($rol === 'admin_global' && empty($permisosModulo)) {
-            $permisosModulo = $this->modulosPermitidos;
+            $permisosModulo = array_column($this->modulos->activos(), 'codigo');
         }
 
         $idColegio = null;
@@ -127,12 +113,12 @@ class UsuarioController extends Controller
             'usuario' => $_POST['usuario'] ?? '',
             'password_hash' => password_hash($_POST['password'] ?? '123456', PASSWORD_DEFAULT),
             'rol' => $rol,
-            'permisos_colegios' => $permisosColegio ? json_encode($permisosColegio, JSON_THROW_ON_ERROR) : null,
-            'permisos_sedes' => $permisosSede ? json_encode($permisosSede, JSON_THROW_ON_ERROR) : null,
-            'permisos_modulos' => $permisosModulo ? json_encode($permisosModulo, JSON_THROW_ON_ERROR) : null,
             'estado' => $_POST['estado'] ?? 'activo',
         ];
         $id = $this->usuarios->create($data);
+        $this->usuarios->syncColegios($id, $permisosColegio);
+        $this->usuarios->syncSedes($id, $permisosSede);
+        $this->usuarios->syncModulosPorCodigo($id, $permisosModulo);
         $this->auditoria->create([
             'id_usuario' => $usuarioSesion['id_usuario'],
             'id_colegio' => $usuarioSesion['id_colegio'],
@@ -159,12 +145,14 @@ class UsuarioController extends Controller
             Helpers::redirect('index.php?route=usuarios');
         }
 
-        $colegiosIds = $this->decodeJson($usuario['permisos_colegios'] ?? null);
-        $sedesIds = $this->decodeJson($usuario['permisos_sedes'] ?? null);
-        $modulos = $this->decodeJson($usuario['permisos_modulos'] ?? null);
+        $asignaciones = $usuario['asignaciones'];
+        $colegiosIds = array_map(static fn ($colegio) => (int) $colegio['id_colegio'], $asignaciones['colegios']);
+        $sedesIds = array_map(static fn ($sede) => (int) $sede['id_sede'], $asignaciones['sedes']);
+        $modulos = array_map(static fn ($modulo) => $modulo['codigo'], $asignaciones['modulos']);
 
-        $colegiosAsignados = $this->colegios->porIds($colegiosIds);
-        $sedesAsignadas = $this->sedes->porIds($sedesIds);
+        $colegiosAsignados = $asignaciones['colegios'];
+        $sedesAsignadas = $asignaciones['sedes'];
+        $modulosDisponibles = $this->modulos->activos();
         $contextoForm = $this->contextoSelecciones();
 
         $this->view('administracion/usuarios/detalle', [
@@ -174,7 +162,7 @@ class UsuarioController extends Controller
             'modulos' => $modulos,
             'opcionesColegios' => $contextoForm['colegios'],
             'opcionesSedes' => $contextoForm['sedes'],
-            'modulosDisponibles' => $this->modulosPermitidos,
+            'modulosDisponibles' => $modulosDisponibles,
             'token' => Helpers::csrfToken(),
         ]);
     }
@@ -212,7 +200,7 @@ class UsuarioController extends Controller
         }
 
         if ($rol === 'admin_global' && empty($permisosModulo)) {
-            $permisosModulo = $this->modulosPermitidos;
+            $permisosModulo = array_column($this->modulos->activos(), 'codigo');
         }
 
         $idColegio = null;
@@ -237,9 +225,6 @@ class UsuarioController extends Controller
             'email' => $_POST['email'] ?? '',
             'usuario' => $_POST['usuario'] ?? '',
             'rol' => $rol,
-            'permisos_colegios' => $permisosColegio ? json_encode($permisosColegio, JSON_THROW_ON_ERROR) : null,
-            'permisos_sedes' => $permisosSede ? json_encode($permisosSede, JSON_THROW_ON_ERROR) : null,
-            'permisos_modulos' => $permisosModulo ? json_encode($permisosModulo, JSON_THROW_ON_ERROR) : null,
             'estado' => $_POST['estado'] ?? 'activo',
         ];
 
@@ -249,6 +234,9 @@ class UsuarioController extends Controller
         }
 
         $this->usuarios->update($id, $data);
+        $this->usuarios->syncColegios($id, $permisosColegio);
+        $this->usuarios->syncSedes($id, $permisosSede);
+        $this->usuarios->syncModulosPorCodigo($id, $permisosModulo);
 
         $this->auditoria->create([
             'id_usuario' => $usuarioSesion['id_usuario'],
@@ -264,10 +252,50 @@ class UsuarioController extends Controller
         if ((int) $usuarioSesion['id_usuario'] === $id) {
             $refrescado = $this->usuarios->detalle($id);
             if ($refrescado) {
-                $refrescado['colegios_permitidos'] = $this->decodeJson($refrescado['permisos_colegios'] ?? null);
-                $refrescado['sedes_permitidas'] = $this->decodeJson($refrescado['permisos_sedes'] ?? null);
-                $refrescado['modulos_permitidos'] = $this->decodeJson($refrescado['permisos_modulos'] ?? null);
-                Session::set('user', array_merge($usuarioSesion, $refrescado));
+                $asignacionesActualizadas = $this->usuarios->asignacionesUsuario($id);
+                $primerColegio = $asignacionesActualizadas['colegios'][0] ?? null;
+                $primerSede = $asignacionesActualizadas['sedes'][0] ?? null;
+                Session::set('user', array_merge($usuarioSesion, [
+                    'nombre_completo' => $refrescado['nombre_completo'],
+                    'email' => $refrescado['email'],
+                    'usuario' => $refrescado['usuario'],
+                    'rol' => $refrescado['rol'],
+                    'id_colegio' => $refrescado['id_colegio'],
+                    'id_sede' => $refrescado['id_sede'],
+                    'colegio_nombre' => $primerColegio['nombre'] ?? ($refrescado['colegio_nombre'] ?? ($usuarioSesion['colegio_nombre'] ?? '')),
+                    'sede_nombre' => $primerSede['nombre'] ?? ($refrescado['sede_nombre'] ?? ($usuarioSesion['sede_nombre'] ?? '')),
+                    'colegios_permitidos' => array_map(
+                        static fn ($colegio) => (int) $colegio['id_colegio'],
+                        $asignacionesActualizadas['colegios']
+                    ),
+                    'sedes_permitidas' => array_map(
+                        static fn ($sede) => (int) $sede['id_sede'],
+                        $asignacionesActualizadas['sedes']
+                    ),
+                    'modulos_permitidos' => array_map(
+                        static fn ($modulo) => $modulo['codigo'],
+                        $asignacionesActualizadas['modulos']
+                    ),
+                    'colegios_disponibles' => array_map(
+                        static fn (array $colegio): array => [
+                            'id_colegio' => (int) $colegio['id_colegio'],
+                            'nombre' => $colegio['nombre'],
+                        ],
+                        $asignacionesActualizadas['colegios']
+                    ),
+                    'sedes_disponibles' => array_map(
+                        static fn (array $sede): array => [
+                            'id_sede' => (int) $sede['id_sede'],
+                            'nombre' => $sede['nombre'],
+                            'id_colegio' => (int) $sede['id_colegio'],
+                        ],
+                        $asignacionesActualizadas['sedes']
+                    ),
+                ]));
+                Session::set('context', [
+                    'id_colegio' => $primerColegio['id_colegio'] ?? ($usuarioSesion['id_colegio'] ?? null),
+                    'id_sede' => $primerSede['id_sede'] ?? ($usuarioSesion['id_sede'] ?? null),
+                ]);
             }
         }
 

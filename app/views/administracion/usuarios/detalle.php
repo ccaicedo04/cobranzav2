@@ -4,15 +4,13 @@ $pageTitle = 'Detalle de usuario';
 $breadcrumbs = 'Administración / Usuarios / Detalle';
 include __DIR__ . '/../../_partials/header.php';
 
-$idsColegios = json_decode($usuarioDetalle['permisos_colegios'] ?? '[]', true);
-if (!is_array($idsColegios)) {
-    $idsColegios = [];
-}
-$idsSedes = json_decode($usuarioDetalle['permisos_sedes'] ?? '[]', true);
-if (!is_array($idsSedes)) {
-    $idsSedes = [];
-}
+$idsColegios = array_map('intval', $colegios ? array_column($colegios, 'id_colegio') : []);
+$idsSedes = array_map('intval', $sedes ? array_column($sedes, 'id_sede') : []);
 $modulosSeleccionados = is_array($modulos) ? $modulos : [];
+$mapModuloNombres = [];
+foreach ($modulosDisponibles as $moduloDisponible) {
+    $mapModuloNombres[$moduloDisponible['codigo']] = $moduloDisponible['nombre'];
+}
 ?>
 <div class="grid" style="grid-template-columns:1.2fr 1fr;gap:18px;">
     <div class="card">
@@ -51,7 +49,7 @@ $modulosSeleccionados = is_array($modulos) ? $modulos : [];
                 <label>Colegios asignados</label>
                 <select name="permisos_colegios[]" id="colegiosDetalle" multiple size="4" onchange="filtrarSedesDetalle()">
                     <?php foreach ($opcionesColegios as $colegio): ?>
-                        <option value="<?= $colegio['id_colegio'] ?>" <?= in_array((int) $colegio['id_colegio'], array_map('intval', $idsColegios), true) ? 'selected' : '' ?>>
+                        <option value="<?= $colegio['id_colegio'] ?>" <?= in_array((int) $colegio['id_colegio'], $idsColegios, true) ? 'selected' : '' ?>>
                             <?= htmlspecialchars($colegio['nombre']) ?>
                         </option>
                     <?php endforeach; ?>
@@ -59,7 +57,7 @@ $modulosSeleccionados = is_array($modulos) ? $modulos : [];
                 <label>Sedes asignadas</label>
                 <select name="permisos_sedes[]" id="sedesDetalle" multiple size="6">
                     <?php foreach ($opcionesSedes as $sede): ?>
-                        <option value="<?= $sede['id_sede'] ?>" data-colegio="<?= $sede['id_colegio'] ?>" <?= in_array((int) $sede['id_sede'], array_map('intval', $idsSedes), true) ? 'selected' : '' ?>>
+                        <option value="<?= $sede['id_sede'] ?>" data-colegio="<?= $sede['id_colegio'] ?>" <?= in_array((int) $sede['id_sede'], $idsSedes, true) ? 'selected' : '' ?>>
                             <?= htmlspecialchars(($sede['colegio_nombre'] ?? 'Colegio') . ' - ' . $sede['nombre']) ?>
                         </option>
                     <?php endforeach; ?>
@@ -70,7 +68,7 @@ $modulosSeleccionados = is_array($modulos) ? $modulos : [];
                 <div class="chips">
                     <?php foreach ($modulosDisponibles as $modulo): ?>
                         <label style="display:block;margin-bottom:6px;">
-                            <input type="checkbox" name="permisos_modulos[]" value="<?= $modulo ?>" <?= in_array($modulo, $modulosSeleccionados, true) ? 'checked' : '' ?>> <?= ucfirst($modulo) ?>
+                            <input type="checkbox" name="permisos_modulos[]" value="<?= htmlspecialchars($modulo['codigo']) ?>" <?= in_array($modulo['codigo'], $modulosSeleccionados, true) ? 'checked' : '' ?>> <?= htmlspecialchars($modulo['nombre']) ?>
                         </label>
                     <?php endforeach; ?>
                 </div>
@@ -117,7 +115,9 @@ $modulosSeleccionados = is_array($modulos) ? $modulos : [];
     <?php if (!empty($modulosSeleccionados)): ?>
         <div class="chips" style="display:flex;flex-wrap:wrap;gap:8px;">
             <?php foreach ($modulosSeleccionados as $modulo): ?>
-                <span class="badge" style="background:#eef2ff;color:#1d4ed8;"><?= htmlspecialchars(ucfirst($modulo)) ?></span>
+                <span class="badge" style="background:#eef2ff;color:#1d4ed8;">
+                    <?= htmlspecialchars($mapModuloNombres[$modulo] ?? $modulo) ?>
+                </span>
             <?php endforeach; ?>
         </div>
     <?php else: ?>

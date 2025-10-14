@@ -35,7 +35,9 @@ include __DIR__ . '/../../_partials/header.php';
                         </td>
                         <td>
                             <?php if (!empty($fila['permisos_modulos_array'])): ?>
-                                <?= htmlspecialchars(implode(', ', array_map('ucfirst', $fila['permisos_modulos_array']))) ?>
+                                <?= htmlspecialchars(implode(', ', array_map(function ($codigo) use ($mapModulos) {
+                                    return $mapModulos[$codigo] ?? ucfirst($codigo);
+                                }, $fila['permisos_modulos_array']))) ?>
                             <?php else: ?>
                                 <span class="tag">Sin módulos</span>
                             <?php endif; ?>
@@ -87,7 +89,8 @@ include __DIR__ . '/../../_partials/header.php';
                 <div class="chips">
                     <?php foreach ($modulos as $modulo): ?>
                         <label style="display:block;margin-bottom:6px;">
-                            <input type="checkbox" name="permisos_modulos[]" value="<?= $modulo ?>" checked> <?= ucfirst($modulo) ?>
+                            <input type="checkbox" name="permisos_modulos[]" value="<?= htmlspecialchars($modulo['codigo']) ?>" checked>
+                            <?= htmlspecialchars($modulo['nombre']) ?>
                         </label>
                     <?php endforeach; ?>
                 </div>

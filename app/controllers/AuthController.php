@@ -51,9 +51,19 @@ class AuthController extends Controller
                 return;
             }
 
-            $colegiosPermitidos = $this->decodeJson($user['permisos_colegios'] ?? null);
-            $sedesPermitidas = $this->decodeJson($user['permisos_sedes'] ?? null);
-            $modulosPermitidos = $this->decodeJson($user['permisos_modulos'] ?? null);
+            $asignaciones = $user['asignaciones'] ?? ['colegios' => [], 'sedes' => [], 'modulos' => []];
+            $colegiosPermitidos = array_map(
+                static fn (array $colegio) => (int) $colegio['id_colegio'],
+                $asignaciones['colegios']
+            );
+            $sedesPermitidas = array_map(
+                static fn (array $sede) => (int) $sede['id_sede'],
+                $asignaciones['sedes']
+            );
+            $modulosPermitidos = array_map(
+                static fn (array $modulo) => $modulo['codigo'],
+                $asignaciones['modulos']
+            );
 
             if (!$modulosPermitidos) {
                 $modulosPermitidos = match ($user['rol']) {
@@ -70,8 +80,15 @@ class AuthController extends Controller
                 $sedesPermitidas = [(int) $user['id_sede']];
             }
 
-            $colegiosAsignados = $this->colegios->porIds($colegiosPermitidos);
-            $sedesAsignadas = $this->sedes->porIds($sedesPermitidas);
+            $colegiosAsignados = $asignaciones['colegios'];
+            if (!$colegiosAsignados && $colegiosPermitidos) {
+                $colegiosAsignados = $this->colegios->porIds($colegiosPermitidos);
+            }
+
+            $sedesAsignadas = $asignaciones['sedes'];
+            if (!$sedesAsignadas && $sedesPermitidas) {
+                $sedesAsignadas = $this->sedes->porIds($sedesPermitidas);
+            }
 
             $colegioNombre = $user['colegio_nombre'] ?? null;
             if (!$colegioNombre && $colegiosAsignados) {
@@ -138,21 +155,6 @@ class AuthController extends Controller
         $this->view('auth/login', [
             'token' => Helpers::csrfToken(),
         ]);
-    }
-
-    private function decodeJson(?string $json): array
-    {
-        if (empty($json)) {
-            return [];
-        }
-
-        try {
-            $decoded = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
-        } catch (\JsonException $e) {
-            return [];
-        }
-
-        return is_array($decoded) ? array_values($decoded) : [];
     }
 
     public function logout(): void

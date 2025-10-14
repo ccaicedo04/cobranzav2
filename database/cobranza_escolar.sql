@@ -40,12 +40,48 @@ CREATE TABLE usuario (
     usuario VARCHAR(60) NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     rol ENUM('admin_global','admin_colegio','agente') NOT NULL DEFAULT 'agente',
-    permisos_colegios TEXT NULL,
-    permisos_sedes TEXT NULL,
-    permisos_modulos TEXT NULL,
     estado ENUM('activo','inactivo') DEFAULT 'activo',
     eliminado TINYINT(1) DEFAULT 0,
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_usuario (usuario),
+    UNIQUE KEY uq_email (email)
+);
+
+-- Tabla modulo_sistema
+CREATE TABLE modulo_sistema (
+    id_modulo INT AUTO_INCREMENT PRIMARY KEY,
+    codigo VARCHAR(60) NOT NULL UNIQUE,
+    nombre VARCHAR(120) NOT NULL,
+    descripcion VARCHAR(255) NULL,
+    estado ENUM('activo','inactivo') DEFAULT 'activo',
     creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabla pivote usuario_colegio
+CREATE TABLE usuario_colegio (
+    id_usuario INT NOT NULL,
+    id_colegio INT NOT NULL,
+    PRIMARY KEY (id_usuario, id_colegio),
+    FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario) ON DELETE CASCADE,
+    FOREIGN KEY (id_colegio) REFERENCES colegio(id_colegio) ON DELETE CASCADE
+);
+
+-- Tabla pivote usuario_sede
+CREATE TABLE usuario_sede (
+    id_usuario INT NOT NULL,
+    id_sede INT NOT NULL,
+    PRIMARY KEY (id_usuario, id_sede),
+    FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario) ON DELETE CASCADE,
+    FOREIGN KEY (id_sede) REFERENCES sede(id_sede) ON DELETE CASCADE
+);
+
+-- Tabla pivote usuario_modulo
+CREATE TABLE usuario_modulo (
+    id_usuario INT NOT NULL,
+    id_modulo INT NOT NULL,
+    PRIMARY KEY (id_usuario, id_modulo),
+    FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario) ON DELETE CASCADE,
+    FOREIGN KEY (id_modulo) REFERENCES modulo_sistema(id_modulo) ON DELETE CASCADE
 );
 
 -- Tabla responsable financiero
@@ -256,15 +292,34 @@ INSERT INTO sede (id_colegio, nombre, direccion, telefono, correo) VALUES
 (2, 'Sede Principal', 'Calle 45 #12-15', '6017654321', 'principal@nuestraseñora.edu'),
 (2, 'Sede Campo', 'Km 3 vía occidente', '6017788990', 'campo@nuestraseñora.edu');
 
-INSERT INTO usuario (id_colegio, id_sede, nombre_completo, email, usuario, password_hash, rol, permisos_colegios, permisos_sedes, permisos_modulos) VALUES
-(NULL, NULL, 'Administrador Global', 'admin@demo.com', 'admin', '$2y$12$hHXFsDlS0/2j.nGkQB.i3OuuiKSSoIAdT/uyEyZ3ThjW3Xbkfnvhq', 'admin_global',
- '[1,2]', '[1,2,3,4]', '["cobranzas","administracion","parametrizacion"]'),
-(1, 1, 'Coordinador San José', 'admin1@sanjose.edu', 'admin1', '$2y$12$hHXFsDlS0/2j.nGkQB.i3OuuiKSSoIAdT/uyEyZ3ThjW3Xbkfnvhq', 'admin_colegio',
- '[1]', '[1,2]', '["cobranzas","administracion","parametrizacion"]'),
-(2, 3, 'Coordinador Nuestra Señora', 'admin2@nuestraseñora.edu', 'admin2', '$2y$12$hHXFsDlS0/2j.nGkQB.i3OuuiKSSoIAdT/uyEyZ3ThjW3Xbkfnvhq', 'admin_colegio',
- '[2]', '[3,4]', '["cobranzas","administracion","parametrizacion"]'),
-(1, 2, 'Agente de Cartera', 'agente1@sanjose.edu', 'agente1', '$2y$12$q1rtTLVlzStGU1IZKUC7F.t/M2.na5ZuiOl5J83kjAuylBxIwUekG', 'agente',
- '[1]', '[2]', '["cobranzas"]');
+INSERT INTO usuario (id_colegio, id_sede, nombre_completo, email, usuario, password_hash, rol, estado) VALUES
+(NULL, NULL, 'Administrador Global', 'admin@demo.com', 'admin', '$2y$12$hHXFsDlS0/2j.nGkQB.i3OuuiKSSoIAdT/uyEyZ3ThjW3Xbkfnvhq', 'admin_global', 'activo'),
+(1, 1, 'Coordinador San José', 'admin1@sanjose.edu', 'admin1', '$2y$12$hHXFsDlS0/2j.nGkQB.i3OuuiKSSoIAdT/uyEyZ3ThjW3Xbkfnvhq', 'admin_colegio', 'activo'),
+(2, 3, 'Coordinador Nuestra Señora', 'admin2@nuestraseñora.edu', 'admin2', '$2y$12$hHXFsDlS0/2j.nGkQB.i3OuuiKSSoIAdT/uyEyZ3ThjW3Xbkfnvhq', 'admin_colegio', 'activo'),
+(1, 2, 'Agente de Cartera', 'agente1@sanjose.edu', 'agente1', '$2y$12$q1rtTLVlzStGU1IZKUC7F.t/M2.na5ZuiOl5J83kjAuylBxIwUekG', 'agente', 'activo');
+
+INSERT INTO modulo_sistema (codigo, nombre, descripcion) VALUES
+('cobranzas', 'Cobranzas', 'Gestión integral de cartera, pagos, acuerdos y comunicaciones'),
+('administracion', 'Administración', 'Parametrización institucional y gestión de maestros'),
+('parametrizacion', 'Parametrización', 'Configuración avanzada de parámetros y catálogos');
+
+INSERT INTO usuario_colegio (id_usuario, id_colegio) VALUES
+(1, 1), (1, 2),
+(2, 1),
+(3, 2),
+(4, 1);
+
+INSERT INTO usuario_sede (id_usuario, id_sede) VALUES
+(1, 1), (1, 2), (1, 3), (1, 4),
+(2, 1), (2, 2),
+(3, 3), (3, 4),
+(4, 2);
+
+INSERT INTO usuario_modulo (id_usuario, id_modulo) VALUES
+(1, 1), (1, 2), (1, 3),
+(2, 1), (2, 2), (2, 3),
+(3, 1), (3, 2), (3, 3),
+(4, 1);
 
 INSERT INTO responsable_financiero (id_colegio, id_sede, nombre_completo, tipo_documento, numero_documento, telefono, correo, direccion) VALUES
 (1, 1, 'María Rodríguez', 'CC', '10203040', '3000000000', 'maria@sanjose.edu', 'Cra 12 #23-45'),

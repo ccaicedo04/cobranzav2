@@ -24,3 +24,7 @@ Usuarios demo:
 - agente1 / agente123 (Agente de cobranza)
 
 La plantilla Excel para carga masiva se genera dinámicamente mediante public/plantillas/plantilla_carga_masiva.php, evitando almacenar binarios en el repositorio.
+
+Notas de base de datos:
+- Los permisos de colegio, sede y módulos se administran mediante tablas pivote (`usuario_colegio`, `usuario_sede`, `usuario_modulo`).
+- El catálogo de módulos activos reside en `modulo_sistema`, permitiendo habilitar o deshabilitar vistas sin modificar código.
