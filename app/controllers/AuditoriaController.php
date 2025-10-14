@@ -17,13 +17,14 @@ class AuditoriaController extends Controller
         if (!Session::get('user')) {
             Helpers::redirect('index.php?route=auth/login');
         }
+        $this->requireModule('administracion');
 
         $this->auditoria = new AuditoriaModel();
     }
 
     public function index(): void
     {
-        $registros = $this->auditoria->all([], ['order' => 'fecha_registro DESC']);
+        $registros = $this->auditoria->conUsuarios();
         $this->view('administracion/auditoria/index', [
             'registros' => $registros,
         ]);

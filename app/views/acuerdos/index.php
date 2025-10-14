@@ -17,6 +17,13 @@ foreach ($estudiantes as $estudiante) {
 <div class="grid" style="grid-template-columns:2fr 1fr;">
     <div class="card">
         <h3>Acuerdos vigentes</h3>
+        <?php if (!empty($responsableId)): ?>
+            <?php
+                $responsableSeleccionado = array_filter($responsables, fn($item) => $item['id_responsable'] == $responsableId);
+                $responsableSeleccionado = array_shift($responsableSeleccionado);
+            ?>
+            <p class="alert">Filtrando estudiantes por responsable <?= htmlspecialchars($responsableSeleccionado['nombre_completo'] ?? ('#' . $responsableId)) ?>.</p>
+        <?php endif; ?>
         <table class="table">
             <thead>
                 <tr>
@@ -47,10 +54,13 @@ foreach ($estudiantes as $estudiante) {
         <h3>Crear acuerdo</h3>
         <form method="post" action="index.php?route=acuerdos/store">
             <input type="hidden" name="_token" value="<?= htmlspecialchars($token) ?>">
+            <?php if (!empty($responsableId)): ?>
+                <input type="hidden" name="responsable" value="<?= (int) $responsableId ?>">
+            <?php endif; ?>
             <label>Responsable</label>
             <select name="id_responsable" required>
                 <?php foreach ($responsables as $responsable): ?>
-                    <option value="<?= $responsable['id_responsable'] ?>"><?= htmlspecialchars($responsable['nombre_completo']) ?></option>
+                    <option value="<?= $responsable['id_responsable'] ?>" <?= (!empty($responsableId) && $responsableId == $responsable['id_responsable']) ? 'selected' : '' ?>><?= htmlspecialchars($responsable['nombre_completo']) ?></option>
                 <?php endforeach; ?>
             </select>
             <label>Estudiante</label>

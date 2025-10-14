@@ -23,6 +23,7 @@ class ComunicacionController extends Controller
         if (!Session::get('user')) {
             Helpers::redirect('index.php?route=auth/login');
         }
+        $this->requireModule('cobranzas');
 
         $this->comunicaciones = new ComunicacionModel();
         $this->responsables = new ResponsableModel();
@@ -35,8 +36,8 @@ class ComunicacionController extends Controller
         $comunicaciones = $this->comunicaciones->all();
         $this->view('comunicaciones/index', [
             'comunicaciones' => $comunicaciones,
-            'responsables' => $this->responsables->all(),
-            'estudiantes' => $this->estudiantes->all(),
+            'responsables' => $this->responsables->conContexto(),
+            'estudiantes' => $this->estudiantes->conContexto(),
             'token' => Helpers::csrfToken(),
         ]);
     }
@@ -48,9 +49,10 @@ class ComunicacionController extends Controller
         }
 
         $usuario = Session::get('user');
+        $tenant = Helpers::tenantContext();
         $data = [
-            'id_colegio' => $usuario['id_colegio'],
-            'id_sede' => $usuario['id_sede'],
+            'id_colegio' => $tenant['id_colegio'],
+            'id_sede' => $tenant['id_sede'],
             'id_responsable' => $_POST['id_responsable'] ?? null,
             'id_estudiante' => $_POST['id_estudiante'] ?? null,
             'tipo' => $_POST['tipo'] ?? 'gestion',
@@ -66,8 +68,8 @@ class ComunicacionController extends Controller
         $this->comunicaciones->create($data);
         $this->auditoria->create([
             'id_usuario' => $usuario['id_usuario'],
-            'id_colegio' => $usuario['id_colegio'],
-            'id_sede' => $usuario['id_sede'],
+            'id_colegio' => $tenant['id_colegio'],
+            'id_sede' => $tenant['id_sede'],
             'modulo' => 'comunicaciones',
             'accion' => 'registrar',
             'detalle' => 'Registro de comunicación ' . $data['canal'],

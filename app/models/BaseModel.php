@@ -33,8 +33,22 @@ abstract class BaseModel
                 continue;
             }
 
-            $where[] = "$column = :$column";
-            $params[":$column"] = $value;
+            if (is_array($value)) {
+                $value = array_values(array_filter($value, static fn ($item) => $item !== null && $item !== ''));
+                if (!$value) {
+                    continue;
+                }
+                $placeholders = [];
+                foreach ($value as $idx => $item) {
+                    $placeholder = ':' . $column . '_' . $idx;
+                    $placeholders[] = $placeholder;
+                    $params[$placeholder] = $item;
+                }
+                $where[] = $column . ' IN (' . implode(',', $placeholders) . ')';
+            } else {
+                $where[] = "$column = :$column";
+                $params[":$column"] = $value;
+            }
         }
 
         if (
@@ -133,13 +147,44 @@ abstract class BaseModel
     protected function applyTenantFilters(array $filters): array
     {
         $user = Session::get('user');
+        $context = Session::get('context');
 
         if (!$user) {
             return $filters;
         }
 
         foreach ($this->tenantColumns as $column) {
-            if (!array_key_exists($column, $filters) && isset($user[$column])) {
+            if (array_key_exists($column, $filters)) {
+                continue;
+            }
+
+            if ($column === 'id_colegio') {
+                $seleccionado = $context['id_colegio'] ?? null;
+                if ($seleccionado) {
+                    $filters[$column] = (int) $seleccionado;
+                    continue;
+                }
+
+                if (!empty($user['colegios_permitidos'])) {
+                    $filters[$column] = array_map('intval', (array) $user['colegios_permitidos']);
+                    continue;
+                }
+            }
+
+            if ($column === 'id_sede') {
+                $seleccionadoSede = $context['id_sede'] ?? null;
+                if ($seleccionadoSede) {
+                    $filters[$column] = (int) $seleccionadoSede;
+                    continue;
+                }
+
+                if (!empty($user['sedes_permitidas'])) {
+                    $filters[$column] = array_map('intval', (array) $user['sedes_permitidas']);
+                    continue;
+                }
+            }
+
+            if (isset($user[$column]) && $user[$column] !== null) {
                 $filters[$column] = $user[$column];
             }
         }

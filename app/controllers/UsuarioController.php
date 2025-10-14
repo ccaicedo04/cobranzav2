@@ -16,6 +16,7 @@ class UsuarioController extends Controller
     private SedeModel $sedes;
     private AuditoriaModel $auditoria;
     private ColegioModel $colegios;
+    private array $modulosPermitidos = ['cobranzas', 'administracion', 'parametrizacion'];
 
     public function __construct()
     {
@@ -23,6 +24,7 @@ class UsuarioController extends Controller
         if (!Session::get('user')) {
             Helpers::redirect('index.php?route=auth/login');
         }
+        $this->requireModule('administracion');
 
         $this->usuarios = new UsuarioModel();
         $this->sedes = new SedeModel();
@@ -32,22 +34,61 @@ class UsuarioController extends Controller
 
     public function index(): void
     {
-        $lista = $this->usuarios->listadoConContexto();
+        $listaBruto = $this->usuarios->listadoConContexto();
+        $lista = array_map(function (array $fila): array {
+            $fila['permisos_colegios_array'] = $this->decodeJson($fila['permisos_colegios'] ?? null);
+            $fila['permisos_sedes_array'] = $this->decodeJson($fila['permisos_sedes'] ?? null);
+            $fila['permisos_modulos_array'] = $this->decodeJson($fila['permisos_modulos'] ?? null);
+
+            return $fila;
+        }, $listaBruto);
         $usuario = Session::get('user');
         $colegios = [];
+        $todosLosColegios = $this->colegios->all([], ['order' => 'nombre']);
         if ($usuario['rol'] === 'admin_global') {
-            $colegios = $this->colegios->all([], ['order' => 'nombre']);
-        } elseif (!empty($usuario['id_colegio'])) {
-            $colegios = $this->colegios->all(['id_colegio' => $usuario['id_colegio']]);
+            $colegios = $todosLosColegios;
+        } elseif (!empty($usuario['colegios_permitidos'])) {
+            $colegios = $this->colegios->porIds($usuario['colegios_permitidos']);
+        }
+        $sedesConColegio = $this->sedes->conColegio();
+        if ($usuario['rol'] !== 'admin_global' && !empty($usuario['sedes_permitidas'])) {
+            $permitidas = array_map('intval', (array) $usuario['sedes_permitidas']);
+            $sedesConColegio = array_values(array_filter($sedesConColegio, static fn ($sede) => in_array((int) $sede['id_sede'], $permitidas, true)));
+        }
+        $mapColegios = [];
+        foreach ($todosLosColegios as $colegio) {
+            $mapColegios[$colegio['id_colegio']] = $colegio['nombre'];
+        }
+        $mapSedes = [];
+        foreach ($sedesConColegio as $sede) {
+            $mapSedes[$sede['id_sede']] = $sede['nombre'];
         }
 
         $this->view('administracion/usuarios/index', [
             'usuarios' => $lista,
             'colegios' => $colegios,
-            'sedes' => $this->sedes->conColegio(),
+            'sedes' => $sedesConColegio,
             'usuario' => $usuario,
+            'modulos' => $this->modulosPermitidos,
+            'mapColegios' => $mapColegios,
+            'mapSedes' => $mapSedes,
             'token' => Helpers::csrfToken(),
         ]);
+    }
+
+    private function decodeJson(?string $payload): array
+    {
+        if (empty($payload)) {
+            return [];
+        }
+
+        try {
+            $decoded = json_decode($payload, true, 512, JSON_THROW_ON_ERROR);
+        } catch (\JsonException $e) {
+            return [];
+        }
+
+        return is_array($decoded) ? $decoded : [];
     }
 
     public function store(): void
@@ -58,16 +99,42 @@ class UsuarioController extends Controller
 
         $usuarioSesion = Session::get('user');
         $rol = $_POST['rol'] ?? 'agente';
-        $idColegio = $_POST['id_colegio'] ?? $usuarioSesion['id_colegio'] ?? null;
-        $idSede = $_POST['id_sede'] ?? $usuarioSesion['id_sede'] ?? null;
+        $permisosColegio = array_values(array_unique(array_filter(array_map('intval', $_POST['permisos_colegios'] ?? []))));
+        $permisosSede = array_values(array_unique(array_filter(array_map('intval', $_POST['permisos_sedes'] ?? []))));
+        $permisosModulo = array_values(array_unique(array_filter($_POST['permisos_modulos'] ?? [])));
 
-        if ($rol === 'admin_global') {
-            $idColegio = null;
-            $idSede = null;
+        if ($rol === 'agente') {
+            $permisosModulo = array_values(array_intersect($permisosModulo, ['cobranzas']));
+            if (empty($permisosModulo)) {
+                $permisosModulo = ['cobranzas'];
+            }
         }
 
-        if ($rol !== 'admin_global' && empty($idColegio)) {
+        if ($rol === 'agente' && empty($permisosSede)) {
             Helpers::redirect('index.php?route=usuarios');
+        }
+
+        if ($rol === 'admin_colegio' && empty($permisosColegio)) {
+            Helpers::redirect('index.php?route=usuarios');
+        }
+
+        if ($rol === 'admin_global' && empty($permisosModulo)) {
+            $permisosModulo = $this->modulosPermitidos;
+        }
+
+        $idColegio = null;
+        $idSede = null;
+
+        if ($permisosColegio) {
+            $idColegio = $permisosColegio[0];
+        } elseif (!empty($usuarioSesion['id_colegio'])) {
+            $idColegio = $usuarioSesion['id_colegio'];
+        }
+
+        if ($permisosSede) {
+            $idSede = $permisosSede[0];
+        } elseif (!empty($usuarioSesion['id_sede'])) {
+            $idSede = $usuarioSesion['id_sede'];
         }
 
         $data = [
@@ -78,6 +145,9 @@ class UsuarioController extends Controller
             'usuario' => $_POST['usuario'] ?? '',
             'password_hash' => password_hash($_POST['password'] ?? '123456', PASSWORD_DEFAULT),
             'rol' => $rol,
+            'permisos_colegios' => $permisosColegio ? json_encode($permisosColegio, JSON_THROW_ON_ERROR) : null,
+            'permisos_sedes' => $permisosSede ? json_encode($permisosSede, JSON_THROW_ON_ERROR) : null,
+            'permisos_modulos' => $permisosModulo ? json_encode($permisosModulo, JSON_THROW_ON_ERROR) : null,
             'estado' => $_POST['estado'] ?? 'activo',
         ];
         $id = $this->usuarios->create($data);
@@ -93,5 +163,32 @@ class UsuarioController extends Controller
         ]);
 
         Helpers::redirect('index.php?route=usuarios');
+    }
+
+    public function detalle(): void
+    {
+        $id = (int) ($_GET['id'] ?? 0);
+        if ($id <= 0) {
+            Helpers::redirect('index.php?route=usuarios');
+        }
+
+        $usuario = $this->usuarios->detalle($id);
+        if (!$usuario) {
+            Helpers::redirect('index.php?route=usuarios');
+        }
+
+        $colegiosIds = $this->decodeJson($usuario['permisos_colegios'] ?? null);
+        $sedesIds = $this->decodeJson($usuario['permisos_sedes'] ?? null);
+        $modulos = $this->decodeJson($usuario['permisos_modulos'] ?? null);
+
+        $colegiosAsignados = $this->colegios->porIds($colegiosIds);
+        $sedesAsignadas = $this->sedes->porIds($sedesIds);
+
+        $this->view('administracion/usuarios/detalle', [
+            'usuarioDetalle' => $usuario,
+            'colegios' => $colegiosAsignados,
+            'sedes' => $sedesAsignadas,
+            'modulos' => $modulos,
+        ]);
     }
 }

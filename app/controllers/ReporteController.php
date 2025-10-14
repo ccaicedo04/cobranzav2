@@ -17,6 +17,7 @@ class ReporteController extends Controller
         if (!Session::get('user')) {
             \Core\Helpers::redirect('index.php?route=auth/login');
         }
+        $this->requireModule('administracion');
 
         $this->reportes = new ReporteModel();
     }

@@ -17,6 +17,7 @@ class ParametroController extends Controller
         if (!Session::get('user')) {
             Helpers::redirect('index.php?route=auth/login');
         }
+        $this->requireModule('parametrizacion');
 
         $this->parametros = new ParametroModel();
     }

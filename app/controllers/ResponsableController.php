@@ -31,6 +31,7 @@ class ResponsableController extends Controller
         if (!Session::get('user')) {
             Helpers::redirect('index.php?route=auth/login');
         }
+        $this->requireModule('cobranzas');
 
         $this->responsables = new ResponsableModel();
         $this->estudiantes = new EstudianteModel();
@@ -83,13 +84,14 @@ class ResponsableController extends Controller
         }
 
         $usuario = Session::get('user');
-        $idColegio = $_POST['id_colegio'] ?? $usuario['id_colegio'] ?? null;
+        $tenant = Helpers::tenantContext();
+        $idColegio = $_POST['id_colegio'] ?? $tenant['id_colegio'];
         if ($usuario['rol'] !== 'admin_global') {
-            $idColegio = $usuario['id_colegio'];
+            $idColegio = $tenant['id_colegio'];
         }
         $data = [
             'id_colegio' => $idColegio,
-            'id_sede' => $_POST['id_sede'] ?? $usuario['id_sede'],
+            'id_sede' => $_POST['id_sede'] ?? $tenant['id_sede'],
             'nombre_completo' => $_POST['nombre_completo'] ?? '',
             'tipo_documento' => $_POST['tipo_documento'] ?? '',
             'numero_documento' => $_POST['numero_documento'] ?? '',
@@ -103,8 +105,8 @@ class ResponsableController extends Controller
         $id = $this->responsables->create($data);
         $this->auditoria->create([
             'id_usuario' => $usuario['id_usuario'],
-            'id_colegio' => $usuario['id_colegio'],
-            'id_sede' => $usuario['id_sede'],
+            'id_colegio' => $tenant['id_colegio'],
+            'id_sede' => $tenant['id_sede'],
             'modulo' => 'responsables',
             'accion' => 'crear',
             'detalle' => 'Creación de responsable ' . $data['nombre_completo'],
@@ -150,14 +152,15 @@ class ResponsableController extends Controller
 
         $id = (int) ($_POST['id_responsable'] ?? 0);
         $usuario = Session::get('user');
-        $idColegio = $_POST['id_colegio'] ?? $usuario['id_colegio'] ?? null;
+        $tenant = Helpers::tenantContext();
+        $idColegio = $_POST['id_colegio'] ?? $tenant['id_colegio'];
         if ($usuario['rol'] !== 'admin_global') {
-            $idColegio = $usuario['id_colegio'];
+            $idColegio = $tenant['id_colegio'];
         }
 
         $data = [
             'id_colegio' => $idColegio,
-            'id_sede' => $_POST['id_sede'] ?? $usuario['id_sede'],
+            'id_sede' => $_POST['id_sede'] ?? $tenant['id_sede'],
             'nombre_completo' => $_POST['nombre_completo'] ?? '',
             'tipo_documento' => $_POST['tipo_documento'] ?? '',
             'numero_documento' => $_POST['numero_documento'] ?? '',
@@ -170,8 +173,8 @@ class ResponsableController extends Controller
         $this->responsables->update($id, $data);
         $this->auditoria->create([
             'id_usuario' => $usuario['id_usuario'],
-            'id_colegio' => $usuario['id_colegio'],
-            'id_sede' => $usuario['id_sede'],
+            'id_colegio' => $tenant['id_colegio'],
+            'id_sede' => $tenant['id_sede'],
             'modulo' => 'responsables',
             'accion' => 'actualizar',
             'detalle' => 'Actualización de responsable ID ' . $id,
@@ -194,11 +197,12 @@ class ResponsableController extends Controller
         }
 
         $usuario = Session::get('user');
+        $tenant = Helpers::tenantContext();
         $this->responsables->delete($id);
         $this->auditoria->create([
             'id_usuario' => $usuario['id_usuario'],
-            'id_colegio' => $usuario['id_colegio'],
-            'id_sede' => $usuario['id_sede'],
+            'id_colegio' => $tenant['id_colegio'],
+            'id_sede' => $tenant['id_sede'],
             'modulo' => 'responsables',
             'accion' => 'eliminar',
             'detalle' => 'Eliminación de responsable ID ' . $id,

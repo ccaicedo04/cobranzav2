@@ -21,6 +21,7 @@ class ColegioController extends Controller
         if (!Session::get('user')) {
             Helpers::redirect('index.php?route=auth/login');
         }
+        $this->requireModule('administracion');
 
         $this->colegios = new ColegioModel();
         $this->auditoria = new AuditoriaModel();

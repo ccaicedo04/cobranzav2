@@ -51,4 +51,31 @@ class Helpers
 
         return hash_equals((string) $stored, (string) $token);
     }
+
+    public static function tenantContext(): array
+    {
+        $user = Session::get('user', []);
+        $context = Session::get('context', []);
+
+        $idColegio = $context['id_colegio'] ?? null;
+        if (!$idColegio && !empty($user['colegios_permitidos'])) {
+            $idColegio = $user['colegios_permitidos'][0];
+        }
+        if (!$idColegio && !empty($user['id_colegio'])) {
+            $idColegio = $user['id_colegio'];
+        }
+
+        $idSede = $context['id_sede'] ?? null;
+        if (!$idSede && !empty($user['sedes_permitidas'])) {
+            $idSede = $user['sedes_permitidas'][0];
+        }
+        if (!$idSede && !empty($user['id_sede'])) {
+            $idSede = $user['id_sede'];
+        }
+
+        return [
+            'id_colegio' => $idColegio ? (int) $idColegio : null,
+            'id_sede' => $idSede ? (int) $idSede : null,
+        ];
+    }
 }

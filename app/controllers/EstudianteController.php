@@ -29,6 +29,7 @@ class EstudianteController extends Controller
         if (!Session::get('user')) {
             Helpers::redirect('index.php?route=auth/login');
         }
+        $this->requireModule('cobranzas');
 
         $this->estudiantes = new EstudianteModel();
         $this->responsables = new ResponsableModel();
@@ -70,13 +71,14 @@ class EstudianteController extends Controller
         }
 
         $usuario = Session::get('user');
-        $idColegio = $_POST['id_colegio'] ?? $usuario['id_colegio'] ?? null;
+        $tenant = Helpers::tenantContext();
+        $idColegio = $_POST['id_colegio'] ?? $tenant['id_colegio'];
         if ($usuario['rol'] !== 'admin_global') {
-            $idColegio = $usuario['id_colegio'];
+            $idColegio = $tenant['id_colegio'];
         }
         $data = [
             'id_colegio' => $idColegio,
-            'id_sede' => $_POST['id_sede'] ?? $usuario['id_sede'],
+            'id_sede' => $_POST['id_sede'] ?? $tenant['id_sede'],
             'id_responsable' => $_POST['id_responsable'] ?? null,
             'codigo_estudiante' => $_POST['codigo_estudiante'] ?? '',
             'nombre_completo' => $_POST['nombre_completo'] ?? '',
@@ -89,8 +91,8 @@ class EstudianteController extends Controller
         $id = $this->estudiantes->create($data);
         $this->auditoria->create([
             'id_usuario' => $usuario['id_usuario'],
-            'id_colegio' => $usuario['id_colegio'],
-            'id_sede' => $usuario['id_sede'],
+            'id_colegio' => $tenant['id_colegio'],
+            'id_sede' => $tenant['id_sede'],
             'modulo' => 'estudiantes',
             'accion' => 'crear',
             'detalle' => 'Creación de estudiante ' . $data['nombre_completo'],
@@ -128,13 +130,14 @@ class EstudianteController extends Controller
 
         $id = (int) ($_POST['id_estudiante'] ?? 0);
         $usuario = Session::get('user');
-        $idColegio = $_POST['id_colegio'] ?? $usuario['id_colegio'] ?? null;
+        $tenant = Helpers::tenantContext();
+        $idColegio = $_POST['id_colegio'] ?? $tenant['id_colegio'];
         if ($usuario['rol'] !== 'admin_global') {
-            $idColegio = $usuario['id_colegio'];
+            $idColegio = $tenant['id_colegio'];
         }
         $data = [
             'id_colegio' => $idColegio,
-            'id_sede' => $_POST['id_sede'] ?? $usuario['id_sede'],
+            'id_sede' => $_POST['id_sede'] ?? $tenant['id_sede'],
             'id_responsable' => $_POST['id_responsable'] ?? null,
             'codigo_estudiante' => $_POST['codigo_estudiante'] ?? '',
             'nombre_completo' => $_POST['nombre_completo'] ?? '',
@@ -146,8 +149,8 @@ class EstudianteController extends Controller
         $this->estudiantes->update($id, $data);
         $this->auditoria->create([
             'id_usuario' => $usuario['id_usuario'],
-            'id_colegio' => $usuario['id_colegio'],
-            'id_sede' => $usuario['id_sede'],
+            'id_colegio' => $tenant['id_colegio'],
+            'id_sede' => $tenant['id_sede'],
             'modulo' => 'estudiantes',
             'accion' => 'actualizar',
             'detalle' => 'Actualización de estudiante ID ' . $id,

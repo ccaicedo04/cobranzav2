@@ -25,6 +25,7 @@ class AcuerdoController extends Controller
         if (!Session::get('user')) {
             Helpers::redirect('index.php?route=auth/login');
         }
+        $this->requireModule('cobranzas');
 
         $this->acuerdos = new AcuerdoModel();
         $this->cuotas = new CuotaAcuerdoModel();
@@ -35,12 +36,18 @@ class AcuerdoController extends Controller
 
     public function index(): void
     {
+        $responsableId = (int) ($_GET['responsable'] ?? 0);
         $acuerdos = $this->acuerdos->all();
+        $responsablesListado = $this->responsables->conContexto();
+        $estudiantesListado = $responsableId > 0
+            ? $this->estudiantes->conContexto(['id_responsable' => $responsableId])
+            : $this->estudiantes->conContexto();
         $this->view('acuerdos/index', [
             'acuerdos' => $acuerdos,
-            'responsables' => $this->responsables->all(),
-            'estudiantes' => $this->estudiantes->all(),
+            'responsables' => $responsablesListado,
+            'estudiantes' => $estudiantesListado,
             'token' => Helpers::csrfToken(),
+            'responsableId' => $responsableId,
         ]);
     }
 
@@ -51,9 +58,10 @@ class AcuerdoController extends Controller
         }
 
         $usuario = Session::get('user');
+        $tenant = Helpers::tenantContext();
         $acuerdoId = $this->acuerdos->create([
-            'id_colegio' => $usuario['id_colegio'],
-            'id_sede' => $usuario['id_sede'],
+            'id_colegio' => $tenant['id_colegio'],
+            'id_sede' => $tenant['id_sede'],
             'id_responsable' => $_POST['id_responsable'] ?? null,
             'id_estudiante' => $_POST['id_estudiante'] ?? null,
             'monto_total' => $_POST['monto_total'] ?? 0,
@@ -67,14 +75,19 @@ class AcuerdoController extends Controller
 
         $this->auditoria->create([
             'id_usuario' => $usuario['id_usuario'],
-            'id_colegio' => $usuario['id_colegio'],
-            'id_sede' => $usuario['id_sede'],
+            'id_colegio' => $tenant['id_colegio'],
+            'id_sede' => $tenant['id_sede'],
             'modulo' => 'acuerdos',
             'accion' => 'crear',
             'detalle' => 'Acuerdo de pago ' . $acuerdoId,
             'ip' => $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1',
             'fecha_registro' => date('Y-m-d H:i:s'),
         ]);
+
+        $responsableVolver = (int) ($_POST['responsable'] ?? 0);
+        if ($responsableVolver > 0) {
+            Helpers::redirect('index.php?route=responsables/detalle&id=' . $responsableVolver);
+        }
 
         Helpers::redirect('index.php?route=acuerdos');
     }

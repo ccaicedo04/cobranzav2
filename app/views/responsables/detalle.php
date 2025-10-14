@@ -16,6 +16,8 @@ include __DIR__ . '/../_partials/header.php';
         <p><strong>Estado:</strong> <?= htmlspecialchars($responsable['estado']) ?></p>
         <div style="margin-top:16px;display:flex;gap:10px;">
             <a class="btn" href="index.php?route=responsables/edit&id=<?= $responsable['id_responsable'] ?>">Editar</a>
+            <a class="btn" href="index.php?route=pagos/create&responsable=<?= $responsable['id_responsable'] ?>">Registrar pago</a>
+            <a class="btn" href="index.php?route=acuerdos&responsable=<?= $responsable['id_responsable'] ?>">Crear acuerdo</a>
             <form method="post" action="index.php?route=responsables/delete" onsubmit="return confirm('¿Deseas eliminar este responsable?');">
                 <input type="hidden" name="id" value="<?= $responsable['id_responsable'] ?>">
                 <input type="hidden" name="_token" value="<?= htmlspecialchars(Core\Helpers::csrfToken()) ?>">
@@ -34,7 +36,7 @@ include __DIR__ . '/../_partials/header.php';
 <div class="card" style="margin-bottom:20px;">
     <h3>Estudiantes asociados</h3>
     <table class="table">
-        <thead><tr><th>Nombre</th><th>Grado</th><th>Curso</th><th>Estado</th></tr></thead>
+        <thead><tr><th>Nombre</th><th>Grado</th><th>Curso</th><th>Estado</th><th></th></tr></thead>
         <tbody>
             <?php foreach ($estudiantes as $estudiante): ?>
                 <tr>
@@ -42,10 +44,11 @@ include __DIR__ . '/../_partials/header.php';
                     <td><?= htmlspecialchars($estudiante['grado']) ?></td>
                     <td><?= htmlspecialchars($estudiante['curso']) ?></td>
                     <td><?= htmlspecialchars($estudiante['estado']) ?></td>
+                    <td><a class="link" href="index.php?route=estudiantes/detalle&id=<?= $estudiante['id_estudiante'] ?>">Ver detalle</a></td>
                 </tr>
             <?php endforeach; ?>
             <?php if (empty($estudiantes)): ?>
-                <tr><td colspan="4">No hay estudiantes asociados.</td></tr>
+                <tr><td colspan="5">No hay estudiantes asociados.</td></tr>
             <?php endif; ?>
         </tbody>
     </table>
@@ -73,7 +76,7 @@ include __DIR__ . '/../_partials/header.php';
 <div class="card">
     <h3>Pagos registrados</h3>
     <table class="table">
-        <thead><tr><th>Fecha</th><th>Estudiante</th><th>Valor</th><th>Método</th><th>Referencia</th></tr></thead>
+        <thead><tr><th>Fecha</th><th>Estudiante</th><th>Valor</th><th>Método</th><th>Referencia</th><th>Soporte</th></tr></thead>
         <tbody>
             <?php foreach ($pagos as $pago): ?>
                 <tr>
@@ -82,10 +85,17 @@ include __DIR__ . '/../_partials/header.php';
                     <td>$ <?= number_format($pago['valor_total'], 0, ',', '.') ?></td>
                     <td><?= htmlspecialchars($pago['metodo_pago']) ?></td>
                     <td><?= htmlspecialchars($pago['referencia']) ?></td>
+                    <td>
+                        <?php if (!empty($pago['ruta_soporte'])): ?>
+                            <a class="link" href="<?= htmlspecialchars($pago['ruta_soporte']) ?>" target="_blank">Ver</a>
+                        <?php else: ?>
+                            <span class="tag">No adjunto</span>
+                        <?php endif; ?>
+                    </td>
                 </tr>
             <?php endforeach; ?>
             <?php if (empty($pagos)): ?>
-                <tr><td colspan="5">No hay pagos registrados.</td></tr>
+                <tr><td colspan="6">No hay pagos registrados.</td></tr>
             <?php endif; ?>
         </tbody>
     </table>

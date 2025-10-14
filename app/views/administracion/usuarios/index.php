@@ -8,20 +8,44 @@ include __DIR__ . '/../../_partials/header.php';
     <div class="card">
         <h3>Usuarios del sistema</h3>
         <table class="table">
-            <thead><tr><th>Nombre</th><th>Usuario</th><th>Colegio</th><th>Sede</th><th>Rol</th><th>Estado</th></tr></thead>
+            <thead><tr><th>Nombre</th><th>Usuario</th><th>Rol</th><th>Colegios</th><th>Sedes</th><th>Módulos</th><th>Estado</th><th></th></tr></thead>
             <tbody>
                 <?php foreach ($usuarios as $fila): ?>
                     <tr>
                         <td><?= htmlspecialchars($fila['nombre_completo']) ?></td>
                         <td><?= htmlspecialchars($fila['usuario']) ?></td>
-                        <td><?= htmlspecialchars($fila['colegio_nombre'] ?? 'No aplica') ?></td>
-                        <td><?= htmlspecialchars($fila['sede_nombre'] ?? 'No aplica') ?></td>
                         <td><?= htmlspecialchars(strtoupper($fila['rol'])) ?></td>
+                        <td>
+                            <?php if (!empty($fila['permisos_colegios_array'])): ?>
+                                <?= htmlspecialchars(implode(', ', array_map(fn($id) => $mapColegios[$id] ?? ('ID ' . $id), $fila['permisos_colegios_array']))) ?>
+                            <?php elseif (!empty($fila['colegio_nombre'])): ?>
+                                <?= htmlspecialchars($fila['colegio_nombre']) ?>
+                            <?php else: ?>
+                                <span class="tag">No asignado</span>
+                            <?php endif; ?>
+                        </td>
+                        <td>
+                            <?php if (!empty($fila['permisos_sedes_array'])): ?>
+                                <?= htmlspecialchars(implode(', ', array_map(fn($id) => $mapSedes[$id] ?? ('ID ' . $id), $fila['permisos_sedes_array']))) ?>
+                            <?php elseif (!empty($fila['sede_nombre'])): ?>
+                                <?= htmlspecialchars($fila['sede_nombre']) ?>
+                            <?php else: ?>
+                                <span class="tag">No asignada</span>
+                            <?php endif; ?>
+                        </td>
+                        <td>
+                            <?php if (!empty($fila['permisos_modulos_array'])): ?>
+                                <?= htmlspecialchars(implode(', ', array_map('ucfirst', $fila['permisos_modulos_array']))) ?>
+                            <?php else: ?>
+                                <span class="tag">Sin módulos</span>
+                            <?php endif; ?>
+                        </td>
                         <td><?= htmlspecialchars($fila['estado']) ?></td>
+                        <td><a class="btn secondary" href="index.php?route=usuarios/detalle&id=<?= $fila['id_usuario'] ?>">Detalle</a></td>
                     </tr>
                 <?php endforeach; ?>
                 <?php if (empty($usuarios)): ?>
-                    <tr><td colspan="6">No hay usuarios registrados.</td></tr>
+                    <tr><td colspan="8">No hay usuarios registrados.</td></tr>
                 <?php endif; ?>
             </tbody>
         </table>
@@ -45,25 +69,29 @@ include __DIR__ . '/../../_partials/header.php';
                 <option value="agente" selected>Agente</option>
             </select>
             <div id="asignacionColegio" style="margin-top:12px;">
-                <?php if (!empty($colegios)): ?>
-                    <label>Colegio</label>
-                    <select name="id_colegio" id="colegioSelector" onchange="filtrarSedes()">
-                        <option value="">Seleccione</option>
-                        <?php foreach ($colegios as $colegio): ?>
-                            <option value="<?= $colegio['id_colegio'] ?>"><?= htmlspecialchars($colegio['nombre']) ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                <?php else: ?>
-                    <input type="hidden" name="id_colegio" value="<?= htmlspecialchars($usuario['id_colegio'] ?? '') ?>">
-                <?php endif; ?>
-                <label>Sede</label>
-                <select name="id_sede" id="sedeSelector">
-                    <option value="">Seleccione</option>
+                <label>Colegios asignados</label>
+                <select name="permisos_colegios[]" id="colegioSelector" onchange="filtrarSedes()" multiple size="4">
+                    <?php foreach ($colegios as $colegio): ?>
+                        <option value="<?= $colegio['id_colegio'] ?>"><?= htmlspecialchars($colegio['nombre']) ?></option>
+                    <?php endforeach; ?>
+                </select>
+                <label>Sedes asignadas</label>
+                <select name="permisos_sedes[]" id="sedeSelector" multiple size="6">
                     <?php foreach ($sedes as $sede): ?>
                         <option value="<?= $sede['id_sede'] ?>" data-colegio="<?= $sede['id_colegio'] ?>"><?= htmlspecialchars($sede['colegio_nombre'] . ' - ' . $sede['nombre']) ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
+            <fieldset style="margin-top:12px;">
+                <legend>Permisos por módulo</legend>
+                <div class="chips">
+                    <?php foreach ($modulos as $modulo): ?>
+                        <label style="display:block;margin-bottom:6px;">
+                            <input type="checkbox" name="permisos_modulos[]" value="<?= $modulo ?>" checked> <?= ucfirst($modulo) ?>
+                        </label>
+                    <?php endforeach; ?>
+                </div>
+            </fieldset>
             <label style="margin-top:12px;">Estado</label>
             <select name="estado">
                 <option value="activo">Activo</option>
@@ -79,33 +107,22 @@ include __DIR__ . '/../../_partials/header.php';
 function toggleAsignacion() {
     const rol = document.getElementById('rolSelector').value;
     const asignacion = document.getElementById('asignacionColegio');
-    if (rol === 'admin_global') {
-        asignacion.style.display = 'none';
-    } else {
-        asignacion.style.display = 'block';
-    }
+    asignacion.style.display = (rol === 'admin_global') ? 'none' : 'block';
 }
 
 function filtrarSedes() {
     const colegio = document.getElementById('colegioSelector');
     const sedeSelector = document.getElementById('sedeSelector');
-    const colegioId = colegio ? colegio.value : '';
+    if (!colegio || !sedeSelector) return;
+    const seleccionados = [...colegio.selectedOptions].map(opt => opt.value);
     [...sedeSelector.options].forEach(option => {
-        if (!option.value) {
-            option.hidden = false;
-            return;
-        }
+        if (!option.value) return;
         const pertenece = option.dataset.colegio;
-        option.hidden = colegioId && pertenece !== colegioId;
+        option.hidden = seleccionados.length && !seleccionados.includes(pertenece);
     });
-    if (colegioId) {
-        const visible = [...sedeSelector.options].find(option => !option.hidden && option.value);
-        if (visible) {
-            sedeSelector.value = visible.value;
-        }
-    }
 }
 
 toggleAsignacion();
+filtrarSedes();
 </script>
 <?php include __DIR__ . '/../../_partials/footer.php'; ?>

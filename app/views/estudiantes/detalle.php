@@ -10,12 +10,23 @@ include __DIR__ . '/../_partials/header.php';
         <p><strong>Código:</strong> <?= htmlspecialchars($estudiante['codigo_estudiante']) ?></p>
         <p><strong>Colegio:</strong> <?= htmlspecialchars($estudiante['colegio_nombre'] ?? 'No asignado') ?></p>
         <p><strong>Sede:</strong> <?= htmlspecialchars($estudiante['sede_nombre'] ?? 'No asignada') ?></p>
-        <p><strong>Responsable financiero:</strong> <?= htmlspecialchars($estudiante['responsable_nombre'] ?? 'Sin responsable') ?></p>
+        <p><strong>Responsable financiero:</strong>
+            <?php if (!empty($estudiante['id_responsable'])): ?>
+                <a class="link" href="index.php?route=responsables/detalle&id=<?= $estudiante['id_responsable'] ?>">
+                    <?= htmlspecialchars($estudiante['responsable_nombre'] ?? 'Ver responsable') ?>
+                </a>
+            <?php else: ?>
+                <?= htmlspecialchars($estudiante['responsable_nombre'] ?? 'Sin responsable') ?>
+            <?php endif; ?>
+        </p>
         <p><strong>Grado:</strong> <?= htmlspecialchars($estudiante['grado']) ?></p>
         <p><strong>Curso:</strong> <?= htmlspecialchars($estudiante['curso']) ?></p>
         <p><strong>Estado:</strong> <?= htmlspecialchars($estudiante['estado']) ?></p>
         <div style="margin-top:16px;display:flex;gap:10px;">
             <a class="btn" href="index.php?route=estudiantes/edit&id=<?= $estudiante['id_estudiante'] ?>">Editar</a>
+            <?php if (!empty($estudiante['id_responsable'])): ?>
+                <a class="btn" href="index.php?route=responsables/detalle&id=<?= $estudiante['id_responsable'] ?>">Ir al responsable</a>
+            <?php endif; ?>
             <form method="post" action="index.php?route=estudiantes/delete" onsubmit="return confirm('¿Eliminar estudiante?');">
                 <input type="hidden" name="id" value="<?= $estudiante['id_estudiante'] ?>">
                 <input type="hidden" name="_token" value="<?= htmlspecialchars(Core\Helpers::csrfToken()) ?>">

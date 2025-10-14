@@ -17,6 +17,7 @@ class CargaController extends Controller
         if (!Session::get('user')) {
             Helpers::redirect('index.php?route=auth/login');
         }
+        $this->requireModule('cobranzas');
 
         $this->cargas = new CargaMasivaModel();
     }
@@ -36,9 +37,10 @@ class CargaController extends Controller
         }
 
         $usuario = Session::get('user');
+        $tenant = Helpers::tenantContext();
         $this->cargas->create([
-            'id_colegio' => $usuario['id_colegio'],
-            'id_sede' => $usuario['id_sede'],
+            'id_colegio' => $tenant['id_colegio'],
+            'id_sede' => $tenant['id_sede'],
             'tipo_archivo' => 'xlsx',
             'archivo_original' => $_FILES['archivo']['name'] ?? 'carga.xlsx',
             'archivo_procesado' => null,

@@ -21,6 +21,7 @@ class PeriodoController extends Controller
         if (!Session::get('user')) {
             Helpers::redirect('index.php?route=auth/login');
         }
+        $this->requireModule('parametrizacion');
 
         $this->periodos = new PeriodoModel();
         $this->colegios = new ColegioModel();

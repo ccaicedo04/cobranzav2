@@ -8,6 +8,7 @@ use App\Controllers\CargaController;
 use App\Controllers\ColegioController;
 use App\Controllers\ComunicacionController;
 use App\Controllers\ConfiguracionController;
+use App\Controllers\ContextoController;
 use App\Controllers\DashboardController;
 use App\Controllers\DeudaController;
 use App\Controllers\EstudianteController;
@@ -97,6 +98,7 @@ $router->get('/sedes/detalle', [SedeController::class, 'detalle']);
 
 $router->get('/usuarios', [UsuarioController::class, 'index']);
 $router->post('/usuarios/store', [UsuarioController::class, 'store']);
+$router->get('/usuarios/detalle', [UsuarioController::class, 'detalle']);
 
 $router->get('/parametros', [ParametroController::class, 'index']);
 $router->post('/parametros/store', [ParametroController::class, 'store']);
@@ -121,6 +123,7 @@ $router->post('/configuracion/store', [ConfiguracionController::class, 'store'])
 
 $router->get('/perfil', [PerfilController::class, 'index']);
 $router->post('/perfil/actualizar', [PerfilController::class, 'actualizar']);
+$router->post('/contexto/actualizar', [ContextoController::class, 'actualizar']);
 
 try {
     $router->dispatch($method, $route);

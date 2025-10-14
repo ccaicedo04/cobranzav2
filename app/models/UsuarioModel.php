@@ -16,6 +16,9 @@ class UsuarioModel extends BaseModel
         'usuario',
         'password_hash',
         'rol',
+        'permisos_colegios',
+        'permisos_sedes',
+        'permisos_modulos',
         'estado',
     ];
 
@@ -48,6 +51,21 @@ class UsuarioModel extends BaseModel
         }
 
         return null;
+    }
+
+    public function detalle(int $idUsuario): ?array
+    {
+        $sql = 'SELECT u.*, c.nombre AS colegio_nombre, s.nombre AS sede_nombre
+                FROM usuario u
+                LEFT JOIN colegio c ON c.id_colegio = u.id_colegio
+                LEFT JOIN sede s ON s.id_sede = u.id_sede
+                WHERE u.id_usuario = :id LIMIT 1';
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([':id' => $idUsuario]);
+
+        $row = $stmt->fetch();
+
+        return $row ?: null;
     }
 
     public function updatePassword(int $idUsuario, string $password): bool

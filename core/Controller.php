@@ -35,4 +35,17 @@ abstract class Controller
             Helpers::redirect('index.php?route=auth/login');
         }
     }
+
+    protected function requireModule(string $module): void
+    {
+        $user = Session::get('user');
+        if (!$user) {
+            Helpers::redirect('index.php?route=auth/login');
+        }
+
+        $modulos = $user['modulos_permitidos'] ?? [];
+        if (!in_array($module, $modulos, true)) {
+            Helpers::redirect('index.php');
+        }
+    }
 }

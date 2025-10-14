@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\AuditoriaModel;
+use App\Models\ColegioModel;
 use App\Models\SedeModel;
 use App\Models\UsuarioModel;
 use Core\Controller;
@@ -14,6 +15,7 @@ class AuthController extends Controller
     private UsuarioModel $usuarios;
     private AuditoriaModel $auditoria;
     private SedeModel $sedes;
+    private ColegioModel $colegios;
 
     public function __construct()
     {
@@ -21,6 +23,7 @@ class AuthController extends Controller
         $this->usuarios = new UsuarioModel();
         $this->auditoria = new AuditoriaModel();
         $this->sedes = new SedeModel();
+        $this->colegios = new ColegioModel();
     }
 
     public function login(): void
@@ -48,43 +51,72 @@ class AuthController extends Controller
                 return;
             }
 
+            $colegiosPermitidos = $this->decodeJson($user['permisos_colegios'] ?? null);
+            $sedesPermitidas = $this->decodeJson($user['permisos_sedes'] ?? null);
+            $modulosPermitidos = $this->decodeJson($user['permisos_modulos'] ?? null);
+
+            if (!$modulosPermitidos) {
+                $modulosPermitidos = match ($user['rol']) {
+                    'admin_global', 'admin_colegio' => ['cobranzas', 'administracion', 'parametrizacion'],
+                    default => ['cobranzas'],
+                };
+            }
+
+            if (!$colegiosPermitidos && !empty($user['id_colegio'])) {
+                $colegiosPermitidos = [(int) $user['id_colegio']];
+            }
+
+            if (!$sedesPermitidas && !empty($user['id_sede'])) {
+                $sedesPermitidas = [(int) $user['id_sede']];
+            }
+
+            $colegiosAsignados = $this->colegios->porIds($colegiosPermitidos);
+            $sedesAsignadas = $this->sedes->porIds($sedesPermitidas);
+
             $colegioNombre = $user['colegio_nombre'] ?? null;
+            if (!$colegioNombre && $colegiosAsignados) {
+                $colegioNombre = count($colegiosAsignados) === 1
+                    ? $colegiosAsignados[0]['nombre']
+                    : 'Colegios asignados';
+            }
+
             $sedeNombre = $user['sede_nombre'] ?? null;
-            $sedesDisponibles = [];
-
-            if ($user['rol'] === 'admin_global') {
-                $colegioNombre = 'Todos los colegios';
-                $sedeNombre = 'Todas las sedes';
-            } elseif (!empty($user['id_colegio'])) {
-                $sedesDisponibles = $this->sedes->all(['id_colegio' => $user['id_colegio']]);
-                if (empty($user['id_sede']) && $sedesDisponibles) {
-                    $sedeNombre = 'Todas las sedes';
-                }
-            }
-
-            if (empty($colegioNombre) && !empty($user['id_colegio'])) {
-                $colegioNombre = 'Colegio #' . $user['id_colegio'];
-            }
-
-            if (empty($sedeNombre) && !empty($user['id_sede'])) {
-                $sedeNombre = 'Sede #' . $user['id_sede'];
+            if (!$sedeNombre && $sedesAsignadas) {
+                $sedeNombre = count($sedesAsignadas) === 1
+                    ? ($sedesAsignadas[0]['nombre'] ?? 'Sede asignada')
+                    : 'Sedes asignadas';
             }
 
             Session::set('user', [
                 'id_usuario' => $user['id_usuario'],
                 'nombre_completo' => $user['nombre_completo'],
                 'rol' => $user['rol'],
-                'id_colegio' => $user['id_colegio'],
-                'id_sede' => $user['id_sede'],
+                'id_colegio' => $colegiosPermitidos[0] ?? $user['id_colegio'],
+                'id_sede' => $sedesPermitidas[0] ?? $user['id_sede'],
                 'colegio_nombre' => $colegioNombre,
                 'sede_nombre' => $sedeNombre,
-                'sedes_disponibles' => array_map(
-                    fn ($sede) => [
-                        'id_sede' => $sede['id_sede'],
-                        'nombre' => $sede['nombre'],
+                'colegios_permitidos' => $colegiosPermitidos,
+                'sedes_permitidas' => $sedesPermitidas,
+                'modulos_permitidos' => $modulosPermitidos,
+                'colegios_disponibles' => array_map(
+                    static fn (array $colegio): array => [
+                        'id_colegio' => (int) $colegio['id_colegio'],
+                        'nombre' => $colegio['nombre'],
                     ],
-                    $sedesDisponibles
+                    $colegiosAsignados
                 ),
+                'sedes_disponibles' => array_map(
+                    static fn (array $sede): array => [
+                        'id_sede' => (int) $sede['id_sede'],
+                        'nombre' => $sede['nombre'],
+                        'id_colegio' => (int) $sede['id_colegio'],
+                    ],
+                    $sedesAsignadas
+                ),
+            ]);
+            Session::set('context', [
+                'id_colegio' => $colegiosPermitidos[0] ?? null,
+                'id_sede' => $sedesPermitidas[0] ?? null,
             ]);
             Session::regenerate();
 
@@ -106,6 +138,21 @@ class AuthController extends Controller
         $this->view('auth/login', [
             'token' => Helpers::csrfToken(),
         ]);
+    }
+
+    private function decodeJson(?string $json): array
+    {
+        if (empty($json)) {
+            return [];
+        }
+
+        try {
+            $decoded = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
+        } catch (\JsonException $e) {
+            return [];
+        }
+
+        return is_array($decoded) ? array_values($decoded) : [];
     }
 
     public function logout(): void

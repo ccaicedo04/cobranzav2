@@ -14,6 +14,7 @@ class PlantillaController extends Controller
         if (!Session::get('user')) {
             Helpers::redirect('index.php?route=auth/login');
         }
+        $this->requireModule('parametrizacion');
     }
 
     public function index(): void

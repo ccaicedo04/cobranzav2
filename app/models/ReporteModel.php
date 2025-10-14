@@ -18,17 +18,47 @@ class ReporteModel
     private function tenantConditions(): array
     {
         $user = Session::get('user');
+        $context = Session::get('context');
         $where = [];
         $params = [];
 
         if ($user) {
-            if (!empty($user['id_colegio'])) {
-                $where[] = 'd.id_colegio = :id_colegio';
-                $params[':id_colegio'] = $user['id_colegio'];
+            $colegios = [];
+            if (!empty($context['id_colegio'])) {
+                $colegios[] = (int) $context['id_colegio'];
+            } elseif (!empty($user['colegios_permitidos'])) {
+                $colegios = array_map('intval', (array) $user['colegios_permitidos']);
+            } elseif (!empty($user['id_colegio'])) {
+                $colegios[] = (int) $user['id_colegio'];
             }
-            if (!empty($user['id_sede'])) {
-                $where[] = 'd.id_sede = :id_sede';
-                $params[':id_sede'] = $user['id_sede'];
+
+            if ($colegios) {
+                $placeholders = [];
+                foreach ($colegios as $idx => $colegio) {
+                    $placeholder = ':colegio_' . $idx;
+                    $placeholders[] = $placeholder;
+                    $params[$placeholder] = $colegio;
+                }
+                $where[] = 'd.id_colegio IN (' . implode(',', $placeholders) . ')';
+            }
+
+            $sedes = [];
+            if (!empty($context['id_sede'])) {
+                $sedes[] = (int) $context['id_sede'];
+            } elseif (!empty($user['sedes_permitidas'])) {
+                $sedes = array_map('intval', (array) $user['sedes_permitidas']);
+            } elseif (!empty($user['id_sede'])) {
+                $sedes[] = (int) $user['id_sede'];
+            }
+
+            if ($sedes) {
+                $placeholders = [];
+                foreach ($sedes as $idx => $sede) {
+                    $placeholder = ':sede_' . $idx;
+                    $placeholders[] = $placeholder;
+                    $params[$placeholder] = $sede;
+                }
+                $where[] = 'd.id_sede IN (' . implode(',', $placeholders) . ')';
             }
         }
 

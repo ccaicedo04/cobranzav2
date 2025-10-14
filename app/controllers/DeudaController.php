@@ -26,6 +26,7 @@ class DeudaController extends Controller
         if (!Session::get('user')) {
             Helpers::redirect('index.php?route=auth/login');
         }
+        $this->requireModule('cobranzas');
 
         $this->deudas = new DeudaModel();
         $this->estudiantes = new EstudianteModel();
@@ -60,11 +61,12 @@ class DeudaController extends Controller
         }
 
         $usuario = Session::get('user');
+        $tenant = Helpers::tenantContext();
         $idEstudiante = $_POST['id_estudiante'] ?? null;
         $estudiante = $idEstudiante ? $this->estudiantes->find((int) $idEstudiante) : null;
         $data = [
-            'id_colegio' => $estudiante['id_colegio'] ?? $usuario['id_colegio'],
-            'id_sede' => $estudiante['id_sede'] ?? $usuario['id_sede'],
+            'id_colegio' => $estudiante['id_colegio'] ?? $tenant['id_colegio'],
+            'id_sede' => $estudiante['id_sede'] ?? $tenant['id_sede'],
             'id_estudiante' => $idEstudiante,
             'id_concepto' => $_POST['id_concepto'] ?? null,
             'id_periodo' => $_POST['id_periodo'] ?? null,
@@ -80,8 +82,8 @@ class DeudaController extends Controller
         $this->deudas->create($data);
         $this->auditoria->create([
             'id_usuario' => $usuario['id_usuario'],
-            'id_colegio' => $usuario['id_colegio'],
-            'id_sede' => $usuario['id_sede'],
+            'id_colegio' => $tenant['id_colegio'],
+            'id_sede' => $tenant['id_sede'],
             'modulo' => 'deudas',
             'accion' => 'crear',
             'detalle' => 'Registro de deuda para estudiante ' . ($estudiante['nombre_completo'] ?? $data['id_estudiante']),

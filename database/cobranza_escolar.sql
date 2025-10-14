@@ -40,6 +40,9 @@ CREATE TABLE usuario (
     usuario VARCHAR(60) NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     rol ENUM('admin_global','admin_colegio','agente') NOT NULL DEFAULT 'agente',
+    permisos_colegios TEXT NULL,
+    permisos_sedes TEXT NULL,
+    permisos_modulos TEXT NULL,
     estado ENUM('activo','inactivo') DEFAULT 'activo',
     eliminado TINYINT(1) DEFAULT 0,
     creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -253,11 +256,15 @@ INSERT INTO sede (id_colegio, nombre, direccion, telefono, correo) VALUES
 (2, 'Sede Principal', 'Calle 45 #12-15', '6017654321', 'principal@nuestraseñora.edu'),
 (2, 'Sede Campo', 'Km 3 vía occidente', '6017788990', 'campo@nuestraseñora.edu');
 
-INSERT INTO usuario (id_colegio, id_sede, nombre_completo, email, usuario, password_hash, rol) VALUES
-(NULL, NULL, 'Administrador Global', 'admin@demo.com', 'admin', '$2y$12$hHXFsDlS0/2j.nGkQB.i3OuuiKSSoIAdT/uyEyZ3ThjW3Xbkfnvhq', 'admin_global'),
-(1, 1, 'Coordinador San José', 'admin1@sanjose.edu', 'admin1', '$2y$12$hHXFsDlS0/2j.nGkQB.i3OuuiKSSoIAdT/uyEyZ3ThjW3Xbkfnvhq', 'admin_colegio'),
-(2, 3, 'Coordinador Nuestra Señora', 'admin2@nuestraseñora.edu', 'admin2', '$2y$12$hHXFsDlS0/2j.nGkQB.i3OuuiKSSoIAdT/uyEyZ3ThjW3Xbkfnvhq', 'admin_colegio'),
-(1, 2, 'Agente de Cartera', 'agente1@sanjose.edu', 'agente1', '$2y$12$q1rtTLVlzStGU1IZKUC7F.t/M2.na5ZuiOl5J83kjAuylBxIwUekG', 'agente');
+INSERT INTO usuario (id_colegio, id_sede, nombre_completo, email, usuario, password_hash, rol, permisos_colegios, permisos_sedes, permisos_modulos) VALUES
+(NULL, NULL, 'Administrador Global', 'admin@demo.com', 'admin', '$2y$12$hHXFsDlS0/2j.nGkQB.i3OuuiKSSoIAdT/uyEyZ3ThjW3Xbkfnvhq', 'admin_global',
+ '[1,2]', '[1,2,3,4]', '["cobranzas","administracion","parametrizacion"]'),
+(1, 1, 'Coordinador San José', 'admin1@sanjose.edu', 'admin1', '$2y$12$hHXFsDlS0/2j.nGkQB.i3OuuiKSSoIAdT/uyEyZ3ThjW3Xbkfnvhq', 'admin_colegio',
+ '[1]', '[1,2]', '["cobranzas","administracion","parametrizacion"]'),
+(2, 3, 'Coordinador Nuestra Señora', 'admin2@nuestraseñora.edu', 'admin2', '$2y$12$hHXFsDlS0/2j.nGkQB.i3OuuiKSSoIAdT/uyEyZ3ThjW3Xbkfnvhq', 'admin_colegio',
+ '[2]', '[3,4]', '["cobranzas","administracion","parametrizacion"]'),
+(1, 2, 'Agente de Cartera', 'agente1@sanjose.edu', 'agente1', '$2y$12$q1rtTLVlzStGU1IZKUC7F.t/M2.na5ZuiOl5J83kjAuylBxIwUekG', 'agente',
+ '[1]', '[2]', '["cobranzas"]');
 
 INSERT INTO responsable_financiero (id_colegio, id_sede, nombre_completo, tipo_documento, numero_documento, telefono, correo, direccion) VALUES
 (1, 1, 'María Rodríguez', 'CC', '10203040', '3000000000', 'maria@sanjose.edu', 'Cra 12 #23-45'),
@@ -285,10 +292,10 @@ VALUES
 (1, 2, 2, 2, 2, '2025-02-05', 120000, 60000, 'en_acuerdo', '2025-02-28'),
 (2, 3, 3, 3, 3, '2025-01-10', 450000, 0, 'pagado', '2025-01-31');
 
-INSERT INTO registro_pago (id_colegio, id_sede, id_estudiante, fecha_pago, valor_total, metodo_pago, referencia)
+INSERT INTO registro_pago (id_colegio, id_sede, id_estudiante, fecha_pago, valor_total, metodo_pago, referencia, ruta_soporte)
 VALUES
-(1, 2, 2, '2025-02-20', 60000, 'transferencia', 'TRX-9087'),
-(2, 3, 3, '2025-01-20', 450000, 'efectivo', 'CAJA-1123');
+(1, 2, 2, '2025-02-20', 60000, 'transferencia', 'TRX-9087', NULL),
+(2, 3, 3, '2025-01-20', 450000, 'efectivo', 'CAJA-1123', NULL);
 
 INSERT INTO acuerdo_pago (id_colegio, id_sede, id_responsable, id_estudiante, monto_total, cuotas, fecha_inicio, fecha_fin, estado, observaciones)
 VALUES

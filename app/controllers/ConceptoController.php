@@ -21,6 +21,7 @@ class ConceptoController extends Controller
         if (!Session::get('user')) {
             Helpers::redirect('index.php?route=auth/login');
         }
+        $this->requireModule('parametrizacion');
 
         $this->conceptos = new ConceptoModel();
         $this->colegios = new ColegioModel();
