@@ -427,13 +427,17 @@ INSERT INTO periodo (id_colegio, nombre, fecha_inicio, fecha_fin) VALUES
 (1, '2025-02', '2025-02-01', '2025-02-28'),
 (1, '2025-03', '2025-03-01', '2025-03-31'),
 (1, '2025-04', '2025-04-01', '2025-04-30'),
+(1, '2025-05', '2025-05-01', '2025-05-31'),
+(1, '2025-06', '2025-06-01', '2025-06-30'),
 (2, '2024-10', '2024-10-01', '2024-10-31'),
 (2, '2024-11', '2024-11-01', '2024-11-30'),
 (2, '2024-12', '2024-12-01', '2024-12-31'),
 (2, '2025-01', '2025-01-01', '2025-01-31'),
 (2, '2025-02', '2025-02-01', '2025-02-28'),
 (2, '2025-03', '2025-03-01', '2025-03-31'),
-(2, '2025-04', '2025-04-01', '2025-04-30');
+(2, '2025-04', '2025-04-01', '2025-04-30'),
+(2, '2025-05', '2025-05-01', '2025-05-31'),
+(2, '2025-06', '2025-06-01', '2025-06-30');
 
 INSERT INTO deuda (id_colegio, id_sede, id_estudiante, id_periodo, id_concepto, fecha_generacion, valor_inicial, saldo_actual, estado, fecha_vencimiento) VALUES
 (1, 1, 1, 4, 1, '2025-01-05', 350000, 350000, 'pendiente', '2025-01-30'),
@@ -465,7 +469,11 @@ INSERT INTO deuda (id_colegio, id_sede, id_estudiante, id_periodo, id_concepto, 
 (2, 4, 19, 12, 7, '2025-02-05', 140000, 140000, 'pendiente', '2025-02-28'),
 (1, 1, 20, 6, 4, '2025-03-20', 80000, 80000, 'pendiente', '2025-03-31'),
 (1, 1, 5, 3, 2, '2024-12-12', 120000, 0, 'pagado', '2024-12-30'),
-(2, 3, 9, 8, 6, '2024-10-12', 380000, 0, 'pagado', '2024-10-30');
+(2, 3, 9, 8, 6, '2024-10-12', 380000, 0, 'pagado', '2024-10-30'),
+(1, 1, 1, 15, 1, '2025-05-06', 350000, 350000, 'pendiente', '2025-05-30'),
+(1, 2, 2, 16, 2, '2025-06-08', 120000, 120000, 'pendiente', '2025-06-30'),
+(2, 3, 3, 17, 6, '2025-05-09', 380000, 190000, 'en_acuerdo', '2025-05-31'),
+(2, 4, 11, 18, 7, '2025-06-04', 140000, 140000, 'pendiente', '2025-06-28');
 
 INSERT INTO registro_pago (id_colegio, id_sede, id_estudiante, fecha_pago, valor_total, metodo_pago, referencia, ruta_soporte) VALUES
 (1, 1, 1, '2025-02-10', 350000, 'transferencia', 'TRX-1101', NULL),
@@ -486,7 +494,11 @@ INSERT INTO registro_pago (id_colegio, id_sede, id_estudiante, fecha_pago, valor
 (1, 2, 17, '2024-11-18', 95000, 'transferencia', 'TRX-7350', NULL),
 (2, 3, 18, '2024-11-28', 45000, 'efectivo', 'REC-7800', NULL),
 (2, 4, 19, '2025-02-18', 50000, 'transferencia', 'TRX-7900', NULL),
-(1, 1, 20, '2025-03-27', 40000, 'transferencia', 'TRX-8001', NULL);
+(1, 1, 20, '2025-03-27', 40000, 'transferencia', 'TRX-8001', NULL),
+(1, 1, 1, '2025-05-15', 175000, 'transferencia', 'TRX-9100', NULL),
+(1, 2, 2, '2025-06-12', 60000, 'transferencia', 'TRX-9150', NULL),
+(2, 3, 3, '2025-05-21', 200000, 'tarjeta', 'POS-9320', NULL),
+(2, 4, 11, '2025-06-10', 70000, 'transferencia', 'TRX-9400', NULL);
 
 INSERT INTO acuerdo_pago (id_colegio, id_sede, id_responsable, id_estudiante, monto_total, cuotas, fecha_inicio, fecha_fin, estado, observaciones) VALUES
 (1, 2, 2, 2, 180000, 3, '2025-03-01', '2025-05-31', 'activo', 'Acuerdo transporte y actividades'),

@@ -1,4 +1,5 @@
 <?php
+use Core\Helpers;
 use Core\Session;
 
 $user = Session::get('user');
@@ -15,64 +16,62 @@ foreach ($sedesDisponibles as $sedeDisponible) {
     $sedesAgrupadas[$sedeDisponible['id_colegio']][] = $sedeDisponible;
 }
 $modulos = $user['modulos_permitidos'] ?? [];
-$colegioActual = 'Todos mis colegios';
-$sedeActual = 'Todas mis sedes';
-if (!empty($contexto['id_colegio'])) {
-    foreach ($colegiosDisponibles as $colegio) {
-        if ((int) $colegio['id_colegio'] === (int) $contexto['id_colegio']) {
-            $colegioActual = $colegio['nombre'];
-            break;
-        }
-    }
-} elseif (count($colegiosDisponibles) === 1) {
-    $colegioActual = $colegiosDisponibles[0]['nombre'];
+$query = $_GET;
+$routeActual = $query['route'] ?? '';
+if ($routeActual !== '') {
+    unset($query['route']);
 }
-
-if (!empty($contexto['id_sede'])) {
-    foreach ($sedesDisponibles as $sede) {
-        if ((int) $sede['id_sede'] === (int) $contexto['id_sede']) {
-            $sedeActual = $sede['nombre'];
-            break;
-        }
-    }
-} elseif (count($sedesDisponibles) === 1) {
-    $sedeActual = $sedesDisponibles[0]['nombre'];
+$redirectParams = [];
+if ($routeActual !== '') {
+    $redirectParams['route'] = $routeActual;
 }
+if (!empty($query)) {
+    foreach ($query as $clave => $valor) {
+        $redirectParams[$clave] = $valor;
+    }
+}
+$redirectPath = 'index.php';
+if (!empty($redirectParams)) {
+    $redirectPath .= '?' . http_build_query($redirectParams);
+}
+$basePath = rtrim(Helpers::baseUrl(), '/');
 ?>
 <div class="appbar">
     <div class="container">
-        <a href="index.php" style="display:flex;align-items:center;gap:8px;text-decoration:none;color:#fff;">
-            <img src="images/logo-yoyjo.png" alt="Logo" style="height:40px;width:auto"/>
+        <a href="<?= Helpers::baseUrl('index.php') ?>" class="brand-link">
+            <img src="images/logo-yoyjo.png" alt="Logo" />
             <strong>Sistema de Cobranza</strong>
         </a>
-        <form class="tenant" method="post" action="index.php?route=contexto/actualizar" id="formContextoNav">
-            <span class="label">Contexto</span>
+        <form class="tenant" method="post" action="<?= Helpers::baseUrl('index.php?route=contexto/actualizar') ?>" id="formContextoNav" data-base-path="<?= htmlspecialchars($basePath) ?>">
             <input type="hidden" name="_token" value="<?= htmlspecialchars($tokenNav) ?>">
-            <div class="tenant-summary">
-                <span class="tenant-pill" title="Colegio en uso"><?= htmlspecialchars($colegioActual) ?></span>
-                <span class="tenant-pill" title="Sede en uso"><?= htmlspecialchars($sedeActual) ?></span>
+            <input type="hidden" name="redirect" id="contextRedirect" value="<?= htmlspecialchars($redirectPath) ?>">
+            <div class="tenant-field">
+                <span class="tenant-field-label">Colegio</span>
+                <select name="id_colegio" id="navColegio" title="Seleccionar colegio">
+                    <option value="">Todos mis colegios</option>
+                    <?php foreach ($colegiosDisponibles as $colegio): ?>
+                        <option value="<?= $colegio['id_colegio'] ?>" <?= ($contexto['id_colegio'] ?? null) == $colegio['id_colegio'] ? 'selected' : '' ?>><?= htmlspecialchars($colegio['nombre']) ?></option>
+                    <?php endforeach; ?>
+                </select>
             </div>
-            <select name="id_colegio" id="navColegio">
-                <option value="">Todos mis colegios</option>
-                <?php foreach ($colegiosDisponibles as $colegio): ?>
-                    <option value="<?= $colegio['id_colegio'] ?>" <?= ($contexto['id_colegio'] ?? null) == $colegio['id_colegio'] ? 'selected' : '' ?>><?= htmlspecialchars($colegio['nombre']) ?></option>
-                <?php endforeach; ?>
-            </select>
-            <select name="id_sede" id="navSede">
-                <option value="">Todas mis sedes</option>
-                <?php foreach ($colegiosDisponibles as $colegio): ?>
-                    <?php $sedesColegio = $sedesAgrupadas[$colegio['id_colegio']] ?? []; ?>
-                    <?php if ($sedesColegio): ?>
-                        <optgroup label="<?= htmlspecialchars($colegio['nombre']) ?>" data-colegio="<?= $colegio['id_colegio'] ?>">
-                            <?php foreach ($sedesColegio as $sede): ?>
-                                <option value="<?= $sede['id_sede'] ?>" <?= ($contexto['id_sede'] ?? null) == $sede['id_sede'] ? 'selected' : '' ?>>
-                                    <?= htmlspecialchars($sede['nombre']) ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </optgroup>
-                    <?php endif; ?>
-                <?php endforeach; ?>
-            </select>
+            <div class="tenant-field">
+                <span class="tenant-field-label">Sede</span>
+                <select name="id_sede" id="navSede" title="Seleccionar sede">
+                    <option value="">Todas mis sedes</option>
+                    <?php foreach ($colegiosDisponibles as $colegio): ?>
+                        <?php $sedesColegio = $sedesAgrupadas[$colegio['id_colegio']] ?? []; ?>
+                        <?php if ($sedesColegio): ?>
+                            <optgroup label="<?= htmlspecialchars($colegio['nombre']) ?>" data-colegio="<?= $colegio['id_colegio'] ?>">
+                                <?php foreach ($sedesColegio as $sede): ?>
+                                    <option value="<?= $sede['id_sede'] ?>" <?= ($contexto['id_sede'] ?? null) == $sede['id_sede'] ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars($sede['nombre']) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </optgroup>
+                        <?php endif; ?>
+                    <?php endforeach; ?>
+                </select>
+            </div>
         </form>
         <nav class="nav">
             <?php if (in_array('cobranzas', $modulos, true)): ?>

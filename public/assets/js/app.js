@@ -187,10 +187,36 @@
     }
 
     let submitTimeout = null;
+    const redirectInput = form.querySelector('#contextRedirect');
+    const basePath = (form.dataset.basePath || '').replace(/\/$/, '');
+
+    function buildRedirectValue() {
+      try {
+        const url = new URL(window.location.href);
+        let path = url.pathname;
+        if (basePath && path.startsWith(basePath)) {
+          path = path.slice(basePath.length);
+        }
+        path = path.replace(/^\/+/, '');
+        if (!path || path === 'public') {
+          path = 'index.php';
+        }
+        if (!path.includes('index.php')) {
+          path = 'index.php';
+        }
+        const query = url.search;
+        return query ? path + query : path;
+      } catch (error) {
+        return 'index.php';
+      }
+    }
 
     function scheduleSubmit() {
       window.clearTimeout(submitTimeout);
       submitTimeout = window.setTimeout(function () {
+        if (redirectInput) {
+          redirectInput.value = buildRedirectValue();
+        }
         if (typeof form.requestSubmit === 'function') {
           form.requestSubmit();
         } else {

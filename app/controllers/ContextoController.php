@@ -86,6 +86,35 @@ class ContextoController extends Controller
 
         Session::set('contexto_token', bin2hex(random_bytes(16)));
 
-        Helpers::redirect('index.php');
+        $redirect = $this->resolveRedirect($_POST['redirect'] ?? null);
+        Helpers::redirect($redirect);
+    }
+
+    private function resolveRedirect($candidate): string
+    {
+        if (!is_string($candidate) || $candidate === '') {
+            return 'index.php';
+        }
+
+        if (strpos($candidate, '://') !== false) {
+            return 'index.php';
+        }
+
+        $candidate = trim($candidate);
+        if ($candidate === '') {
+            return 'index.php';
+        }
+
+        $candidate = ltrim($candidate, '/');
+        $pos = strpos($candidate, 'index.php');
+        if ($pos !== false) {
+            $candidate = substr($candidate, $pos);
+        }
+
+        if ($candidate === '' || !str_starts_with($candidate, 'index.php')) {
+            return 'index.php';
+        }
+
+        return $candidate;
     }
 }
