@@ -7,9 +7,26 @@ class Helpers
     public static function baseUrl(string $path = ''): string
     {
         $config = require __DIR__ . '/../config/config.php';
-        $base = rtrim($config['app']['base_url'], '/');
+        $base = trim((string) ($config['app']['base_url'] ?? ''));
 
-        return $base . '/' . ltrim($path, '/');
+        if ($base === '') {
+            $scriptName = (string) ($_SERVER['SCRIPT_NAME'] ?? '');
+            if ($scriptName !== '') {
+                $directory = str_replace('\\', '/', rtrim(dirname($scriptName), '/'));
+                if ($directory !== '') {
+                    $base = $directory;
+                }
+            }
+        }
+
+        $base = rtrim($base, '/');
+        $path = ltrim($path, '/');
+
+        if ($base === '') {
+            return $path === '' ? '/' : '/' . $path;
+        }
+
+        return $path === '' ? $base : $base . '/' . $path;
     }
 
     public static function redirect(string $path): void
