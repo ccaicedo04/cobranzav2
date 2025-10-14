@@ -70,7 +70,7 @@ class ReporteModel
                 INNER JOIN responsable_financiero r ON r.id_responsable = e.id_responsable
                 WHERE d.eliminado = 0 AND e.eliminado = 0 AND r.eliminado = 0';
         if ($where) {
-            $sql .= ' AND ' . implode(' AND ', array_map(fn ($w) => str_replace('d.', 'r.', $w), $where));
+            $sql .= ' AND ' . implode(' AND ', $where);
         }
         $sql .= ' GROUP BY r.id_responsable ORDER BY total DESC LIMIT :limit';
         $stmt = $this->db->prepare($sql);

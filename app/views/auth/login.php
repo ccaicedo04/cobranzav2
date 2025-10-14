@@ -14,10 +14,10 @@ include __DIR__ . '/../_partials/header.php';
         <form method="post" action="index.php?route=auth/login">
             <input type="hidden" name="_token" value="<?= htmlspecialchars($token ?? Core\Helpers::csrfToken()) ?>">
             <label>Usuario</label>
-            <input name="usuario" placeholder="admin" required>
+            <input name="usuario" placeholder="Ingresa tu usuario" required>
             <div style="height:10px"></div>
             <label>Contraseña</label>
-            <input type="password" name="password" placeholder="••••••••" required>
+            <input type="password" name="password" placeholder="Ingresa tu contraseña" required>
             <div style="display:flex;justify-content:space-between;align-items:center;margin:12px 0 16px">
                 <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" style="width:auto"> Recordarme</label>
                 <a href="#">¿Olvidaste tu contraseña?</a>

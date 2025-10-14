@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\AuditoriaModel;
+use App\Models\SedeModel;
 use App\Models\UsuarioModel;
 use Core\Controller;
 use Core\Helpers;
@@ -12,12 +13,14 @@ class AuthController extends Controller
 {
     private UsuarioModel $usuarios;
     private AuditoriaModel $auditoria;
+    private SedeModel $sedes;
 
     public function __construct()
     {
         parent::__construct();
         $this->usuarios = new UsuarioModel();
         $this->auditoria = new AuditoriaModel();
+        $this->sedes = new SedeModel();
     }
 
     public function login(): void
@@ -45,12 +48,43 @@ class AuthController extends Controller
                 return;
             }
 
+            $colegioNombre = $user['colegio_nombre'] ?? null;
+            $sedeNombre = $user['sede_nombre'] ?? null;
+            $sedesDisponibles = [];
+
+            if ($user['rol'] === 'admin_global') {
+                $colegioNombre = 'Todos los colegios';
+                $sedeNombre = 'Todas las sedes';
+            } elseif (!empty($user['id_colegio'])) {
+                $sedesDisponibles = $this->sedes->all(['id_colegio' => $user['id_colegio']]);
+                if (empty($user['id_sede']) && $sedesDisponibles) {
+                    $sedeNombre = 'Todas las sedes';
+                }
+            }
+
+            if (empty($colegioNombre) && !empty($user['id_colegio'])) {
+                $colegioNombre = 'Colegio #' . $user['id_colegio'];
+            }
+
+            if (empty($sedeNombre) && !empty($user['id_sede'])) {
+                $sedeNombre = 'Sede #' . $user['id_sede'];
+            }
+
             Session::set('user', [
                 'id_usuario' => $user['id_usuario'],
                 'nombre_completo' => $user['nombre_completo'],
                 'rol' => $user['rol'],
                 'id_colegio' => $user['id_colegio'],
                 'id_sede' => $user['id_sede'],
+                'colegio_nombre' => $colegioNombre,
+                'sede_nombre' => $sedeNombre,
+                'sedes_disponibles' => array_map(
+                    fn ($sede) => [
+                        'id_sede' => $sede['id_sede'],
+                        'nombre' => $sede['nombre'],
+                    ],
+                    $sedesDisponibles
+                ),
             ]);
             Session::regenerate();
 

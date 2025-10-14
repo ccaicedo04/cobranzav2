@@ -21,7 +21,6 @@ use App\Controllers\UsuarioController;
 use Core\Helpers;
 use Core\Router;
 use Core\Session;
-use Throwable;
 
 spl_autoload_register(function (string $class): void {
     $baseDir = dirname(__DIR__) . '/';
@@ -102,7 +101,7 @@ $router->post('/perfil/actualizar', [PerfilController::class, 'actualizar']);
 
 try {
     $router->dispatch($method, $route);
-} catch (Throwable $throwable) {
+} catch (\Throwable $throwable) {
     http_response_code(500);
     if ((require __DIR__ . '/../config/config.php')['app']['debug']) {
         echo '<pre>' . htmlspecialchars($throwable->getMessage()) . '\n' . $throwable->getTraceAsString() . '</pre>';

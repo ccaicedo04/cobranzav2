@@ -11,10 +11,23 @@ $user = Session::get('user');
         <div class="tenant">
             <span class="label">Colegio / Sede</span>
             <select disabled>
-                <option><?= htmlspecialchars($user['id_colegio'] ?? 'Colegio Demo') ?></option>
+                <option><?= htmlspecialchars($user['colegio_nombre'] ?? 'Colegio sin asignar') ?></option>
             </select>
-            <select disabled>
-                <option><?= htmlspecialchars($user['id_sede'] ?? 'Sede Principal') ?></option>
+            <?php
+            $multipleAttr = '';
+            if (!empty($user['sedes_disponibles']) && count($user['sedes_disponibles']) > 1) {
+                $size = min(4, count($user['sedes_disponibles']));
+                $multipleAttr = " multiple size=\"$size\"";
+            }
+            ?>
+            <select disabled<?= $multipleAttr ?>>
+                <?php if (!empty($user['sedes_disponibles'])): ?>
+                    <?php foreach ($user['sedes_disponibles'] as $sede): ?>
+                        <option <?= (($user['id_sede'] ?? null) == $sede['id_sede']) ? 'selected' : '' ?>><?= htmlspecialchars($sede['nombre']) ?></option>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <option><?= htmlspecialchars($user['sede_nombre'] ?? 'Sede sin asignar') ?></option>
+                <?php endif; ?>
             </select>
         </div>
         <nav class="nav">

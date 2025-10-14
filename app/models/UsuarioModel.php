@@ -21,7 +21,11 @@ class UsuarioModel extends BaseModel
 
     public function authenticate(string $username, string $password): ?array
     {
-        $sql = 'SELECT * FROM usuario WHERE usuario = :usuario AND estado = "activo" LIMIT 1';
+        $sql = 'SELECT u.*, c.nombre AS colegio_nombre, s.nombre AS sede_nombre
+                FROM usuario u
+                LEFT JOIN colegio c ON c.id_colegio = u.id_colegio
+                LEFT JOIN sede s ON s.id_sede = u.id_sede
+                WHERE u.usuario = :usuario AND u.estado = "activo" LIMIT 1';
         $stmt = $this->db->prepare($sql);
         $stmt->execute(['usuario' => $username]);
         $user = $stmt->fetch();
