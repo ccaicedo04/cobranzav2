@@ -153,7 +153,7 @@ class EstudianteController extends Controller
             'id_sede' => $tenant['id_sede'],
             'modulo' => 'estudiantes',
             'accion' => 'actualizar',
-            'detalle' => 'Actualización de estudiante ID ' . $id,
+            'detalle' => 'Actualización de estudiante: ' . ($data['nombre_completo'] ?: ('ID ' . $id)),
             'ip' => $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1',
             'fecha_registro' => date('Y-m-d H:i:s'),
         ]);
@@ -169,6 +169,7 @@ class EstudianteController extends Controller
 
         $id = (int) ($_POST['id'] ?? 0);
         $usuario = Session::get('user');
+        $registro = $this->estudiantes->find($id);
         $this->estudiantes->delete($id);
 
         $this->auditoria->create([
@@ -177,7 +178,7 @@ class EstudianteController extends Controller
             'id_sede' => $usuario['id_sede'],
             'modulo' => 'estudiantes',
             'accion' => 'eliminar',
-            'detalle' => 'Eliminación de estudiante ID ' . $id,
+            'detalle' => 'Eliminación de estudiante: ' . ($registro['nombre_completo'] ?? ('ID ' . $id)),
             'ip' => $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1',
             'fecha_registro' => date('Y-m-d H:i:s'),
         ]);

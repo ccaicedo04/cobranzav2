@@ -45,6 +45,12 @@ class ReporteController extends Controller
 
     public function exportExcel(): void
     {
+        if (!class_exists('ZipArchive')) {
+            http_response_code(500);
+            header('Content-Type: text/plain; charset=UTF-8');
+            echo 'La exportación a Excel requiere la extensión ZipArchive habilitada en el servidor.';
+            exit;
+        }
         $tipo = $this->tipoDesdeRequest();
         $filtros = $this->extraerFiltros();
         $config = $this->definicionesReporte()[$tipo];

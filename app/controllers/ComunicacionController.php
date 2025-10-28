@@ -160,8 +160,15 @@ class ComunicacionController extends Controller
                 $detalleEnvio = 'No se encontró configuración SMTP para el colegio seleccionado.';
             } else {
                 try {
+                    $smtpHost = trim((string) ($configCorreo['smtp_host'] ?? ''));
+                    if ($smtpHost === '') {
+                        $smtpHost = 'smtp.gmail.com';
+                    } elseif (preg_match('/\.co$/i', $smtpHost)) {
+                        $smtpHost = preg_replace('/\.co$/i', '.com', $smtpHost);
+                    }
+
                     Mailer::send([
-                        'host' => $configCorreo['smtp_host'],
+                        'host' => $smtpHost,
                         'port' => (int) ($configCorreo['smtp_puerto'] ?? 587),
                         'username' => $configCorreo['smtp_usuario'],
                         'password' => $configCorreo['smtp_password'],
@@ -219,7 +226,12 @@ class ComunicacionController extends Controller
             'id_sede' => $idSede ?: null,
             'modulo' => 'comunicaciones',
             'accion' => 'registrar',
-            'detalle' => sprintf('Gestión %s (%s) para responsable #%d', strtoupper($canal), $estadoEnvio, $idResponsable),
+            'detalle' => sprintf(
+                'Gestión %s (%s) para %s',
+                strtoupper($canal),
+                $estadoEnvio,
+                $responsable['nombre_completo'] ?? ('ID ' . $idResponsable)
+            ),
             'ip' => $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1',
             'fecha_registro' => date('Y-m-d H:i:s'),
         ]);

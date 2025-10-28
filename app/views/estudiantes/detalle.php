@@ -27,10 +27,10 @@ include __DIR__ . '/../_partials/header.php';
             <?php if (!empty($estudiante['id_responsable'])): ?>
                 <a class="btn" href="index.php?route=responsables/detalle&id=<?= $estudiante['id_responsable'] ?>">Ir al responsable</a>
             <?php endif; ?>
-            <form method="post" action="index.php?route=estudiantes/delete" data-confirm="¿Deseas eliminar este estudiante y sus registros?">
+            <form class="inline-form" method="post" action="index.php?route=estudiantes/delete" data-confirm="¿Deseas eliminar este estudiante y sus registros?">
                 <input type="hidden" name="id" value="<?= $estudiante['id_estudiante'] ?>">
                 <input type="hidden" name="_token" value="<?= htmlspecialchars(Core\Helpers::csrfToken()) ?>">
-                <button class="btn secondary" type="submit">Eliminar</button>
+                <button class="btn danger" type="submit">Eliminar</button>
             </form>
         </div>
     </div>

@@ -35,23 +35,45 @@ class Mailer
             ],
         ]);
 
-        $socket = @stream_socket_client(
-            sprintf('tcp://%s:%d', $host, $port),
-            $errno,
-            $errstr,
-            30,
-            STREAM_CLIENT_CONNECT,
-            $context
-        );
+        $candidates = array_values(array_unique(array_filter([
+            $host,
+            preg_match('/\.co$/i', $host) ? preg_replace('/\.co$/i', '.com', $host) : null,
+            'smtp.gmail.com',
+        ], static fn ($value) => is_string($value) && $value !== '')));
+
+        $socket = null;
+        $connectionHost = $host;
+        $lastError = '';
+        $lastCode = 0;
+
+        foreach ($candidates as $candidate) {
+            $resource = @stream_socket_client(
+                sprintf('tcp://%s:%d', $candidate, $port),
+                $errno,
+                $errstr,
+                30,
+                STREAM_CLIENT_CONNECT,
+                $context
+            );
+
+            if ($resource) {
+                $socket = $resource;
+                $connectionHost = $candidate;
+                break;
+            }
+
+            $lastError = $errstr;
+            $lastCode = $errno;
+        }
 
         if (!$socket) {
-            throw new RuntimeException('No fue posible conectar con el servidor SMTP: ' . $errstr, $errno);
+            throw new RuntimeException('No fue posible conectar con el servidor SMTP: ' . $lastError, $lastCode);
         }
 
         stream_set_timeout($socket, 30);
         self::expect($socket, [220]);
 
-        self::command($socket, 'EHLO cobranzas.local');
+        self::command($socket, 'EHLO ' . self::hostGreeting($connectionHost));
         self::command($socket, 'STARTTLS', [220]);
 
         if (!stream_socket_enable_crypto($socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT)) {
@@ -59,7 +81,7 @@ class Mailer
             throw new RuntimeException('No fue posible establecer un canal seguro (STARTTLS).');
         }
 
-        self::command($socket, 'EHLO cobranzas.local');
+        self::command($socket, 'EHLO ' . self::hostGreeting($connectionHost));
         self::command($socket, 'AUTH LOGIN', [334]);
         self::command($socket, base64_encode($username), [334]);
         self::command($socket, base64_encode($password), [235]);
@@ -152,5 +174,16 @@ class Mailer
         }
 
         return '=?UTF-8?B?' . base64_encode($value) . '?=';
+    }
+
+    private static function hostGreeting(string $host): string
+    {
+        if ($host === '') {
+            return 'localhost';
+        }
+
+        $sanitized = preg_replace('/[^A-Za-z0-9.-]/', '', $host) ?: 'localhost';
+
+        return strtolower($sanitized);
     }
 }

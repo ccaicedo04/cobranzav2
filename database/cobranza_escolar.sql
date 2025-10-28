@@ -342,7 +342,7 @@ INSERT INTO usuario_modulo (id_usuario, id_modulo) VALUES
 (3, 1);
 
 INSERT INTO configuracion_colegio (id_colegio, smtp_host, smtp_puerto, smtp_usuario, smtp_password, whatsapp_api_key, whatsapp_endpoint, sms_api_key, sms_endpoint, logo_path, actualizado_por, fecha_actualizacion) VALUES
-(1, 'smtp.gmail.co', '587', 'carlos.quinones@lm-technology.com.co', 'Carlitos 2025*', NULL, NULL, NULL, NULL, 'logos/principado-monaco.png', 1, CURRENT_TIMESTAMP);
+(1, 'smtp.gmail.com', '587', 'carlos.quinones@lm-technology.com.co', 'Carlitos 2025*', NULL, NULL, NULL, NULL, 'logos/principado-monaco.png', 1, CURRENT_TIMESTAMP);
 
 INSERT INTO responsable_financiero (id_colegio, id_sede, nombre_completo, tipo_documento, numero_documento, telefono, correo, direccion, estado, eliminado) VALUES
 (1, 1, 'Villalobos Munoz Fernando', 'CC', '80073011', '+57 308 007 3011', 'villalobos.munoz.fernando@familias-principado.edu.co', 'Cra 12 #145-30, Bogotá', 'activo', 0),

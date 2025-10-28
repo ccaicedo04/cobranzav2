@@ -75,7 +75,7 @@ class PeriodoController extends Controller
             'id_sede' => $usuario['id_sede'],
             'modulo' => 'periodos',
             'accion' => 'crear',
-            'detalle' => 'Período ' . $id,
+            'detalle' => 'Creación de período: ' . ($data['nombre'] ?: ('ID ' . $id)),
             'ip' => $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1',
             'fecha_registro' => date('Y-m-d H:i:s'),
         ]);
@@ -137,7 +137,7 @@ class PeriodoController extends Controller
             'id_sede' => $usuario['id_sede'],
             'modulo' => 'periodos',
             'accion' => 'actualizar',
-            'detalle' => 'Período ' . $id,
+            'detalle' => 'Actualización de período: ' . ($data['nombre'] ?: ('ID ' . $id)),
             'ip' => $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1',
             'fecha_registro' => date('Y-m-d H:i:s'),
         ]);

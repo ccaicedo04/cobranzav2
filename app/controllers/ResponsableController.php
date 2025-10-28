@@ -177,7 +177,7 @@ class ResponsableController extends Controller
             'id_sede' => $tenant['id_sede'],
             'modulo' => 'responsables',
             'accion' => 'actualizar',
-            'detalle' => 'Actualización de responsable ID ' . $id,
+            'detalle' => 'Actualización de responsable: ' . ($data['nombre_completo'] ?: ('ID ' . $id)),
             'ip' => $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1',
             'fecha_registro' => date('Y-m-d H:i:s'),
         ]);
@@ -198,6 +198,7 @@ class ResponsableController extends Controller
 
         $usuario = Session::get('user');
         $tenant = Helpers::tenantContext();
+        $actual = $this->responsables->find($id);
         $this->responsables->delete($id);
         $this->auditoria->create([
             'id_usuario' => $usuario['id_usuario'],
@@ -205,7 +206,7 @@ class ResponsableController extends Controller
             'id_sede' => $tenant['id_sede'],
             'modulo' => 'responsables',
             'accion' => 'eliminar',
-            'detalle' => 'Eliminación de responsable ID ' . $id,
+            'detalle' => 'Eliminación de responsable: ' . ($actual['nombre_completo'] ?? ('ID ' . $id)),
             'ip' => $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1',
             'fecha_registro' => date('Y-m-d H:i:s'),
         ]);

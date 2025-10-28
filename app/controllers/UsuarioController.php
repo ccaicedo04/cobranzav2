@@ -147,7 +147,7 @@ class UsuarioController extends Controller
             'id_sede' => $usuarioSesion['id_sede'],
             'modulo' => 'usuarios',
             'accion' => 'crear',
-            'detalle' => 'Usuario ' . $id,
+            'detalle' => 'Creación de usuario: ' . ($data['nombre_completo'] ?: ($data['usuario'] ?? ('ID ' . $id))),
             'ip' => $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1',
             'fecha_registro' => date('Y-m-d H:i:s'),
         ]);
@@ -266,7 +266,7 @@ class UsuarioController extends Controller
             'id_sede' => $usuarioSesion['id_sede'],
             'modulo' => 'usuarios',
             'accion' => 'actualizar',
-            'detalle' => 'Actualización de usuario ' . $id,
+            'detalle' => 'Actualización de usuario: ' . ($data['nombre_completo'] ?: ($data['usuario'] ?? ('ID ' . $id))),
             'ip' => $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1',
             'fecha_registro' => date('Y-m-d H:i:s'),
         ]);

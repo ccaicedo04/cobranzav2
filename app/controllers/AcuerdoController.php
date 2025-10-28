@@ -59,10 +59,12 @@ class AcuerdoController extends Controller
 
         $usuario = Session::get('user');
         $tenant = Helpers::tenantContext();
+        $responsableId = (int) ($_POST['id_responsable'] ?? 0);
+        $responsable = $responsableId ? $this->responsables->find($responsableId) : null;
         $acuerdoId = $this->acuerdos->create([
             'id_colegio' => $tenant['id_colegio'],
             'id_sede' => $tenant['id_sede'],
-            'id_responsable' => $_POST['id_responsable'] ?? null,
+            'id_responsable' => $responsableId ?: null,
             'id_estudiante' => $_POST['id_estudiante'] ?? null,
             'monto_total' => $_POST['monto_total'] ?? 0,
             'cuotas' => $_POST['cuotas'] ?? 1,
@@ -79,7 +81,7 @@ class AcuerdoController extends Controller
             'id_sede' => $tenant['id_sede'],
             'modulo' => 'acuerdos',
             'accion' => 'crear',
-            'detalle' => 'Acuerdo de pago ' . $acuerdoId,
+            'detalle' => 'Creación de acuerdo para ' . ($responsable['nombre_completo'] ?? ('ID ' . $responsableId)),
             'ip' => $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1',
             'fecha_registro' => date('Y-m-d H:i:s'),
         ]);

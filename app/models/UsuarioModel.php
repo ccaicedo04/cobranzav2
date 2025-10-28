@@ -19,6 +19,8 @@ class UsuarioModel extends BaseModel
         'estado',
     ];
 
+    protected array $tenantColumns = [];
+
     public function listadoConContexto(array $restricciones = []): array
     {
         $where = ['u.eliminado = 0'];
