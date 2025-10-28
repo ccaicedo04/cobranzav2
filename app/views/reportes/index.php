@@ -98,9 +98,9 @@ $formatValue = static function (array $fila, array $columna): string {
 </div>
 <div class="card" style="margin-bottom:18px;">
     <h3>Descargar reportes</h3>
-    <p class="small">Genera reportes en formatos CSV y PDF listos para compartir con la gerencia.</p>
+    <p class="small">Genera reportes en formatos XLSX y PDF listos para compartir con la gerencia.</p>
     <div style="display:flex;gap:12px;flex-wrap:wrap;">
-        <a class="btn" href="index.php?route=reportes/export-excel&amp;<?= htmlspecialchars($queryString) ?>">Exportar CSV</a>
+        <a class="btn" href="index.php?route=reportes/export-excel&amp;<?= htmlspecialchars($queryString) ?>">Exportar Excel (XLSX)</a>
         <a class="btn secondary" href="index.php?route=reportes/export-pdf&amp;<?= htmlspecialchars($queryString) ?>">Exportar PDF</a>
     </div>
 </div>

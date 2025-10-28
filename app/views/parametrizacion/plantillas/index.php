@@ -1,73 +1,94 @@
 <?php
-$title = 'Plantillas oficiales';
-$pageTitle = 'Formatos y ayudas';
+$title = 'Plantillas de comunicación';
+$pageTitle = 'Plantillas de comunicación';
 $breadcrumbs = 'Parametrización / Plantillas';
 include __DIR__ . '/../../_partials/header.php';
 
-$plantillas = [
-    [
-        'nombre' => 'Carga masiva de estudiantes y deudas',
-        'descripcion' => 'Formato estandarizado para cargar estudiantes, responsables y obligaciones en un solo paso.',
-        'actualizacion' => 'Abril 2025',
-        'ruta' => \Core\Helpers::baseUrl('plantillas/plantilla_carga_masiva.php'),
-    ],
-    [
-        'nombre' => 'Manual de estructura CSV',
-        'descripcion' => 'Guía rápida para transformar reportes propios a la estructura oficial del sistema.',
-        'actualizacion' => 'Marzo 2025',
-        'ruta' => null,
-    ],
-    [
-        'nombre' => 'Checklist de alistamiento',
-        'descripcion' => 'Lista de verificación previa a cada cargue masivo con responsables, fechas y validaciones.',
-        'actualizacion' => 'Marzo 2025',
-        'ruta' => null,
-    ],
-];
+$formatCanal = static function (string $canal): string {
+    return match ($canal) {
+        'email' => 'Correo electrónico',
+        'whatsapp' => 'WhatsApp',
+        'sms' => 'SMS',
+        'llamada' => 'Llamada telefónica',
+        default => ucfirst($canal),
+    };
+};
+
 ?>
-<div class="card" style="margin-bottom:18px;">
-    <h3>Descargas disponibles</h3>
-    <p class="small">Mantén tus cargues consistentes con la estructura oficial y versiona tus procesos internos.</p>
+<div class="card" style="margin-bottom:18px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;">
+    <div>
+        <h3 style="margin:0;">Catálogo de plantillas</h3>
+        <p class="small" style="margin:4px 0 0;max-width:520px;">Define mensajes consistentes para tus campañas de cobranza y reutilízalos desde el módulo de comunicaciones. Cada plantilla puede parametrizar variables que el sistema sustituirá automáticamente.</p>
+    </div>
+    <a class="btn" href="index.php?route=plantillas/create">Nueva plantilla</a>
+</div>
+<div class="card">
     <table class="table">
         <thead>
-            <tr><th>Formato</th><th>Descripción</th><th>Última actualización</th><th></th></tr>
+            <tr>
+                <th>Nombre</th>
+                <th>Canal</th>
+                <th>Estado</th>
+                <th>Variables disponibles</th>
+                <th style="width:140px;"></th>
+            </tr>
         </thead>
         <tbody>
             <?php foreach ($plantillas as $plantilla): ?>
                 <tr>
-                    <td><?= htmlspecialchars($plantilla['nombre']) ?></td>
-                    <td><?= htmlspecialchars($plantilla['descripcion']) ?></td>
-                    <td><?= htmlspecialchars($plantilla['actualizacion']) ?></td>
                     <td>
-                        <?php if ($plantilla['ruta']): ?>
-                            <a class="btn sm" href="<?= $plantilla['ruta'] ?>">Descargar</a>
+                        <strong><?= htmlspecialchars($plantilla['nombre']) ?></strong>
+                        <div class="small" style="color:#4b5563;max-width:320px;"><?= htmlspecialchars($plantilla['descripcion'] ?? '') ?></div>
+                    </td>
+                    <td><?= htmlspecialchars($formatCanal($plantilla['canal'])) ?></td>
+                    <td>
+                        <?php if (($plantilla['estado'] ?? '') === 'activo'): ?>
+                            <span class="tag success">Activa</span>
                         <?php else: ?>
-                            <span class="tag">Disponible bajo solicitud</span>
+                            <span class="tag">Inactiva</span>
                         <?php endif; ?>
+                    </td>
+                    <td>
+                        <?php
+                        $variables = array_filter(array_map('trim', explode(',', (string) ($plantilla['variables'] ?? ''))));
+                        if (!$variables): ?>
+                            <span class="tag">Sin variables</span>
+                        <?php else: ?>
+                            <div style="display:flex;flex-wrap:wrap;gap:4px;">
+                                <?php foreach ($variables as $variable): ?>
+                                    <span class="chip">{{<?= htmlspecialchars($variable) ?>}}</span>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php endif; ?>
+                    </td>
+                    <td style="text-align:right;">
+                        <div style="display:flex;gap:8px;justify-content:flex-end;">
+                            <a class="btn ghost sm" href="index.php?route=plantillas/edit&id=<?= (int) $plantilla['id_plantilla'] ?>">Editar</a>
+                            <?php if (($plantilla['estado'] ?? '') === 'activo'): ?>
+                                <form method="post" action="index.php?route=plantillas/delete" data-confirm="¿Deseas desactivar esta plantilla?" style="margin:0;">
+                                    <input type="hidden" name="_token" value="<?= htmlspecialchars($token) ?>">
+                                    <input type="hidden" name="id" value="<?= (int) $plantilla['id_plantilla'] ?>">
+                                    <button class="btn secondary sm" type="submit">Desactivar</button>
+                                </form>
+                            <?php endif; ?>
+                        </div>
+                        <details style="margin-top:10px;">
+                            <summary class="small" style="cursor:pointer;color:#1d4ed8;">Ver contenido</summary>
+                            <div class="preview" style="margin-top:10px;padding:12px;border:1px solid #d1d5db;border-radius:12px;background:#f8fafc;max-height:260px;overflow:auto;">
+                                <?php if ($plantilla['canal'] === 'email'): ?>
+                                    <?= $plantilla['cuerpo_html'] ?? '' ?>
+                                <?php else: ?>
+                                    <pre style="white-space:pre-wrap;font-family:'Inter',sans-serif;line-height:1.5;margin:0;"><?= htmlspecialchars($plantilla['cuerpo_html'] ?? '') ?></pre>
+                                <?php endif; ?>
+                            </div>
+                        </details>
                     </td>
                 </tr>
             <?php endforeach; ?>
+            <?php if (empty($plantillas)): ?>
+                <tr><td colspan="5">Aún no has configurado plantillas personalizadas.</td></tr>
+            <?php endif; ?>
         </tbody>
     </table>
-</div>
-<div class="grid grid-2">
-    <div class="card">
-        <h3>Buenas prácticas para cargues</h3>
-        <ul class="small" style="margin:0;padding-left:18px;line-height:1.7;">
-            <li>Valida que los códigos de estudiante sean únicos y coincidan con el responsable financiero asignado.</li>
-            <li>Incluye fechas en formato ISO (AAAA-MM-DD) para evitar rechazos por regionalización.</li>
-            <li>Antes de un cargue masivo, genera un respaldo en <strong>Reportes &gt; Cartera</strong> para comparar saldos.</li>
-            <li>Registra en auditoría quién ejecuta cada importación para mantener trazabilidad completa.</li>
-        </ul>
-    </div>
-    <div class="card">
-        <h3>Solicitar nuevos formatos</h3>
-        <p class="small">¿Necesitas adaptar un formato a la realidad de tu colegio o integrar otros sistemas?</p>
-        <p class="small">Envía tu requerimiento desde el módulo de <strong>Comunicaciones</strong> utilizando el asunto “Plantillas” o escribe a <a href="mailto:soporte@cobranza.edu">soporte@cobranza.edu</a>. Nuestro equipo entregará la personalización en un máximo de 48 horas hábiles.</p>
-        <div style="margin-top:12px;display:flex;gap:10px;">
-            <a class="btn" href="index.php?route=comunicaciones">Registrar solicitud</a>
-            <a class="btn secondary" href="index.php?route=carga-masiva">Ir a cargue masivo</a>
-        </div>
-    </div>
 </div>
 <?php include __DIR__ . '/../../_partials/footer.php'; ?>

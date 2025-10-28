@@ -39,4 +39,9 @@ class EstudianteModel extends BaseModel
 
         return $stmt->fetchAll();
     }
+
+    public function porResponsable(int $idResponsable): array
+    {
+        return $this->all(['id_responsable' => $idResponsable], ['order' => 'nombre_completo']);
+    }
 }
