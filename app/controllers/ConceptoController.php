@@ -76,7 +76,7 @@ class ConceptoController extends Controller
             'id_sede' => $usuario['id_sede'],
             'modulo' => 'conceptos',
             'accion' => 'crear',
-            'detalle' => 'Concepto ' . $id,
+            'detalle' => 'Creación de concepto: ' . ($data['nombre'] ?: ('ID ' . $id)),
             'ip' => $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1',
             'fecha_registro' => date('Y-m-d H:i:s'),
         ]);
@@ -139,7 +139,7 @@ class ConceptoController extends Controller
             'id_sede' => $usuario['id_sede'],
             'modulo' => 'conceptos',
             'accion' => 'actualizar',
-            'detalle' => 'Concepto ' . $id,
+            'detalle' => 'Actualización de concepto: ' . ($data['nombre'] ?: ('ID ' . $id)),
             'ip' => $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1',
             'fecha_registro' => date('Y-m-d H:i:s'),
         ]);

@@ -21,4 +21,11 @@ class ConfiguracionModel extends BaseModel
         'actualizado_por',
         'fecha_actualizacion',
     ];
+
+    public function porColegio(int $idColegio): ?array
+    {
+        $registros = $this->all(['id_colegio' => $idColegio], ['order' => 'id_configuracion DESC']);
+
+        return $registros[0] ?? null;
+    }
 }

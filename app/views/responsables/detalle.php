@@ -18,10 +18,11 @@ include __DIR__ . '/../_partials/header.php';
             <a class="btn" href="index.php?route=responsables/edit&id=<?= $responsable['id_responsable'] ?>">Editar</a>
             <a class="btn" href="index.php?route=pagos/create&responsable=<?= $responsable['id_responsable'] ?>">Registrar pago</a>
             <a class="btn" href="index.php?route=acuerdos&responsable=<?= $responsable['id_responsable'] ?>">Crear acuerdo</a>
-            <form method="post" action="index.php?route=responsables/delete" data-confirm="¿Deseas eliminar este responsable y su historial?">
+            <a class="btn secondary" href="index.php?route=comunicaciones&responsable=<?= $responsable['id_responsable'] ?>">Gestión</a>
+            <form class="inline-form" method="post" action="index.php?route=responsables/delete" data-confirm="¿Deseas eliminar este responsable y su historial?">
                 <input type="hidden" name="id" value="<?= $responsable['id_responsable'] ?>">
                 <input type="hidden" name="_token" value="<?= htmlspecialchars(Core\Helpers::csrfToken()) ?>">
-                <button class="btn secondary" type="submit">Eliminar</button>
+                <button class="btn danger" type="submit">Eliminar</button>
             </form>
         </div>
     </div>

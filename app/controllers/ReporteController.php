@@ -7,6 +7,8 @@ use Core\Controller;
 use Core\Helpers;
 use Core\Session;
 use Core\SimplePdf;
+use Core\SimpleXlsx;
+use Throwable;
 
 class ReporteController extends Controller
 {
@@ -47,21 +49,25 @@ class ReporteController extends Controller
         $filtros = $this->extraerFiltros();
         $config = $this->definicionesReporte()[$tipo];
         $datos = $this->obtenerDatosPorTipo($tipo, $filtros);
-
-        header('Content-Type: text/csv; charset=utf-8');
-        header('Content-Disposition: attachment; filename="reporte_' . $tipo . '.csv"');
-        $output = fopen('php://output', 'w');
-        fputcsv($output, array_column($config['columnas'], 'etiqueta'));
+        $headers = array_column($config['columnas'], 'etiqueta');
+        $widths = array_map(static fn ($columna) => $columna['ancho'] ?? null, $config['columnas']);
+        $rows = [];
         foreach ($datos as $fila) {
             $row = [];
             foreach ($config['columnas'] as $columna) {
-                $valor = $this->formatearValor($fila[$columna['campo']] ?? '', $columna);
-                $row[] = $valor;
+                $row[] = $this->formatearValor($fila[$columna['campo']] ?? '', $columna);
             }
-            fputcsv($output, $row);
+            $rows[] = $row;
         }
-        fclose($output);
-        exit;
+
+        try {
+            SimpleXlsx::download('reporte_' . $tipo . '.xlsx', $headers, $rows, ['widths' => $widths]);
+        } catch (Throwable $throwable) {
+            http_response_code(500);
+            header('Content-Type: text/plain; charset=utf-8');
+            echo 'No fue posible generar el archivo XLSX: ' . $throwable->getMessage();
+            exit;
+        }
     }
 
     public function exportPdf(): void

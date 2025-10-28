@@ -24,7 +24,10 @@ class PerfilController extends Controller
     public function index(): void
     {
         $usuario = Session::get('user');
-        $detalle = $this->usuarios->find($usuario['id_usuario']);
+        $detalle = $this->usuarios->detalle((int) ($usuario['id_usuario'] ?? 0));
+        if (!$detalle && isset($usuario['id_usuario'])) {
+            $detalle = $this->usuarios->find((int) $usuario['id_usuario']);
+        }
         $this->view('perfil/index', [
             'usuario' => $detalle,
             'token' => Helpers::csrfToken(),

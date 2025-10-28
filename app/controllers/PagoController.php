@@ -58,10 +58,12 @@ class PagoController extends Controller
 
         $usuario = Session::get('user');
         $tenant = Helpers::tenantContext();
+        $estudianteId = (int) ($_POST['id_estudiante'] ?? 0);
+        $estudiante = $estudianteId ? $this->estudiantes->find($estudianteId) : null;
         $data = [
             'id_colegio' => $tenant['id_colegio'],
             'id_sede' => $tenant['id_sede'],
-            'id_estudiante' => $_POST['id_estudiante'] ?? null,
+            'id_estudiante' => $estudianteId ?: null,
             'fecha_pago' => $_POST['fecha_pago'] ?? date('Y-m-d'),
             'valor_total' => $_POST['valor_total'] ?? 0,
             'metodo_pago' => $_POST['metodo_pago'] ?? 'efectivo',
@@ -85,7 +87,7 @@ class PagoController extends Controller
             'id_sede' => $usuario['id_sede'],
             'modulo' => 'pagos',
             'accion' => 'registrar',
-            'detalle' => 'Pago registrado ID ' . $idPago . ' para estudiante ' . $data['id_estudiante'],
+            'detalle' => 'Pago registrado #' . $idPago . ' para ' . ($estudiante['nombre_completo'] ?? ('Estudiante ID ' . $estudianteId)),
             'ip' => $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1',
             'fecha_registro' => date('Y-m-d H:i:s'),
         ]);

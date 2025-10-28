@@ -6,11 +6,12 @@ include __DIR__ . '/../../_partials/header.php';
 ?>
 <div class="card">
     <h3>Información institucional</h3>
-    <p><strong>NIT:</strong> <?= htmlspecialchars($colegio['nit']) ?></p>
-    <p><strong>Dirección:</strong> <?= htmlspecialchars($colegio['direccion'] ?: 'Sin registrar') ?></p>
-    <p><strong>Teléfono:</strong> <?= htmlspecialchars($colegio['telefono'] ?: 'Sin registrar') ?></p>
-    <p><strong>Correo:</strong> <?= htmlspecialchars($colegio['correo'] ?: 'Sin registrar') ?></p>
-    <p><strong>Estado:</strong> <span class="badge" style="background:<?= $colegio['estado'] === 'activo' ? '#dcfce7' : '#fee2e2' ?>;color:<?= $colegio['estado'] === 'activo' ? '#166534' : '#991b1b' ?>;"><?= strtoupper($colegio['estado']) ?></span></p>
+    <p><strong>NIT:</strong> <?= htmlspecialchars($colegio['nit'] ?? 'Sin registrar') ?></p>
+    <p><strong>Dirección:</strong> <?= htmlspecialchars(($colegio['direccion'] ?? '') ?: 'Sin registrar') ?></p>
+    <p><strong>Teléfono:</strong> <?= htmlspecialchars(($colegio['telefono'] ?? '') ?: 'Sin registrar') ?></p>
+    <p><strong>Correo:</strong> <?= htmlspecialchars(($colegio['correo'] ?? '') ?: 'Sin registrar') ?></p>
+    <?php $estadoColegio = strtolower($colegio['estado'] ?? 'activo'); ?>
+    <p><strong>Estado:</strong> <span class="badge" style="background:<?= $estadoColegio === 'activo' ? '#dcfce7' : '#fee2e2' ?>;color:<?= $estadoColegio === 'activo' ? '#166534' : '#991b1b' ?>;"><?= strtoupper($estadoColegio) ?></span></p>
     <div class="actions" style="display:flex;gap:10px;margin-top:12px;">
         <a class="btn" href="index.php?route=colegios/edit&id=<?= $colegio['id_colegio'] ?>">Editar</a>
         <a class="btn secondary" href="index.php?route=colegios">Volver</a>

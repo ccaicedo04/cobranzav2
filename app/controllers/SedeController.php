@@ -82,7 +82,7 @@ class SedeController extends Controller
             'id_sede' => $usuario['id_sede'],
             'modulo' => 'sedes',
             'accion' => 'crear',
-            'detalle' => 'Sede ' . $id,
+            'detalle' => 'Creación de sede: ' . ($data['nombre'] ?: ('ID ' . $id)),
             'ip' => $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1',
             'fecha_registro' => date('Y-m-d H:i:s'),
         ]);
@@ -93,10 +93,7 @@ class SedeController extends Controller
     public function edit(): void
     {
         $id = (int) ($_GET['id'] ?? 0);
-        $sede = $this->sedes->find($id);
-        if (!$sede) {
-            Helpers::redirect('index.php?route=sedes');
-        }
+        $sede = $this->sedeAccesible($id);
 
         $usuario = Session::get('user');
         $colegios = [];
@@ -123,6 +120,8 @@ class SedeController extends Controller
             Helpers::redirect('index.php?route=sedes');
         }
 
+        $sede = $this->sedeAccesible($id);
+
         $usuario = Session::get('user');
         $idColegio = (int) ($_POST['id_colegio'] ?? 0);
         if ($usuario['rol'] !== 'admin_global') {
@@ -145,7 +144,7 @@ class SedeController extends Controller
             'id_sede' => $usuario['id_sede'],
             'modulo' => 'sedes',
             'accion' => 'actualizar',
-            'detalle' => 'Actualización sede ' . $id,
+            'detalle' => 'Actualización de sede: ' . ($data['nombre'] ?: ($sede['nombre'] ?? ('ID ' . $id))),
             'ip' => $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1',
             'fecha_registro' => date('Y-m-d H:i:s'),
         ]);
@@ -156,12 +155,11 @@ class SedeController extends Controller
     public function detalle(): void
     {
         $id = (int) ($_GET['id'] ?? 0);
+        $sede = $this->sedeAccesible($id);
         $detalle = $this->sedes->conColegio(['id_sede' => $id]);
-        if (!$detalle) {
-            Helpers::redirect('index.php?route=sedes');
+        if ($detalle) {
+            $sede = $detalle[0];
         }
-
-        $sede = $detalle[0];
         $responsables = (new ResponsableModel())->all(['id_sede' => $id]);
         $estudiantes = (new EstudianteModel())->all(['id_sede' => $id]);
 
@@ -170,5 +168,38 @@ class SedeController extends Controller
             'responsables' => $responsables,
             'estudiantes' => $estudiantes,
         ]);
+    }
+    private function sedeAccesible(int $id): array
+    {
+        if ($id <= 0) {
+            Helpers::redirect('index.php?route=sedes');
+        }
+
+        $sede = $this->sedes->find($id);
+        if (!$sede) {
+            Helpers::redirect('index.php?route=sedes');
+        }
+
+        $usuario = Session::get('user');
+        if ($usuario['rol'] === 'admin_global') {
+            return $sede;
+        }
+
+        if (
+            $usuario['rol'] === 'admin_colegio'
+            && (int) ($usuario['id_colegio'] ?? 0) === (int) ($sede['id_colegio'] ?? 0)
+        ) {
+            return $sede;
+        }
+
+        if (
+            $usuario['rol'] === 'agente'
+            && in_array((int) $sede['id_sede'], (array) ($usuario['sedes_permitidas'] ?? []), true)
+        ) {
+            return $sede;
+        }
+
+        Helpers::redirect('index.php?route=sedes');
+        return $sede;
     }
 }

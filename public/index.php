@@ -116,6 +116,11 @@ $router->get('/periodos/edit', [PeriodoController::class, 'edit']);
 $router->post('/periodos/update', [PeriodoController::class, 'update']);
 
 $router->get('/plantillas', [PlantillaController::class, 'index']);
+$router->get('/plantillas/create', [PlantillaController::class, 'create']);
+$router->get('/plantillas/edit', [PlantillaController::class, 'edit']);
+$router->post('/plantillas/store', [PlantillaController::class, 'store']);
+$router->post('/plantillas/update', [PlantillaController::class, 'update']);
+$router->post('/plantillas/delete', [PlantillaController::class, 'delete']);
 
 $router->get('/auditoria', [AuditoriaController::class, 'index']);
 

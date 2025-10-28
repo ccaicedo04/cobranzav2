@@ -63,7 +63,7 @@ class ColegioController extends Controller
             'id_sede' => $usuario['id_sede'],
             'modulo' => 'colegios',
             'accion' => 'crear',
-            'detalle' => 'Colegio ' . $id,
+            'detalle' => 'Creación de colegio: ' . ($data['nombre'] ?: ('ID ' . $id)),
             'ip' => $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1',
             'fecha_registro' => date('Y-m-d H:i:s'),
         ]);
@@ -73,12 +73,8 @@ class ColegioController extends Controller
 
     public function edit(): void
     {
-        $this->requireRole('admin_global');
         $id = (int) ($_GET['id'] ?? 0);
-        $colegio = $this->colegios->find($id);
-        if (!$colegio) {
-            Helpers::redirect('index.php?route=colegios');
-        }
+        $colegio = $this->colegioAccesible($id);
 
         $this->view('administracion/colegios/form', [
             'colegio' => $colegio,
@@ -88,7 +84,6 @@ class ColegioController extends Controller
 
     public function update(): void
     {
-        $this->requireRole('admin_global');
         if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !Helpers::validateCsrf($_POST['_token'] ?? '')) {
             Helpers::redirect('index.php?route=colegios');
         }
@@ -97,6 +92,8 @@ class ColegioController extends Controller
         if (!$id) {
             Helpers::redirect('index.php?route=colegios');
         }
+
+        $colegio = $this->colegioAccesible($id);
 
         $data = [
             'nombre' => $_POST['nombre'] ?? '',
@@ -115,7 +112,7 @@ class ColegioController extends Controller
             'id_sede' => $usuario['id_sede'],
             'modulo' => 'colegios',
             'accion' => 'actualizar',
-            'detalle' => 'Colegio ' . $id,
+            'detalle' => 'Actualización de colegio: ' . ($data['nombre'] ?: ($colegio['nombre'] ?? ('ID ' . $id))),
             'ip' => $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1',
             'fecha_registro' => date('Y-m-d H:i:s'),
         ]);
@@ -125,12 +122,8 @@ class ColegioController extends Controller
 
     public function detalle(): void
     {
-        $this->requireRole('admin_global');
         $id = (int) ($_GET['id'] ?? 0);
-        $colegio = $this->colegios->find($id);
-        if (!$colegio) {
-            Helpers::redirect('index.php?route=colegios');
-        }
+        $colegio = $this->colegioAccesible($id);
 
         $sedes = $this->sedes->conColegio(['id_colegio' => $id]);
 
@@ -138,5 +131,29 @@ class ColegioController extends Controller
             'colegio' => $colegio,
             'sedes' => $sedes,
         ]);
+    }
+
+    private function colegioAccesible(int $id): array
+    {
+        if ($id <= 0) {
+            Helpers::redirect('index.php?route=colegios');
+        }
+
+        $colegio = $this->colegios->find($id);
+        if (!$colegio) {
+            Helpers::redirect('index.php?route=colegios');
+        }
+
+        $usuario = Session::get('user');
+        if ($usuario['rol'] === 'admin_global') {
+            return $colegio;
+        }
+
+        if ($usuario['rol'] === 'admin_colegio' && (int) ($usuario['id_colegio'] ?? 0) === $id) {
+            return $colegio;
+        }
+
+        Helpers::redirect('index.php?route=colegios');
+        return $colegio;
     }
 }

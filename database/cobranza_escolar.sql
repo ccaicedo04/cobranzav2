@@ -212,6 +212,7 @@ CREATE TABLE comunicacion (
     id_sede INT NOT NULL,
     id_responsable INT NOT NULL,
     id_estudiante INT NULL,
+    id_plantilla INT NULL,
     tipo VARCHAR(60) NULL,
     canal VARCHAR(60) NOT NULL,
     asunto VARCHAR(150) NULL,
@@ -219,7 +220,27 @@ CREATE TABLE comunicacion (
     resultado VARCHAR(255) NULL,
     fecha_envio DATETIME NOT NULL,
     usuario_registro INT NOT NULL,
+    estado_envio ENUM('pendiente','enviado','error','registrado') DEFAULT 'pendiente',
+    detalle_envio VARCHAR(255) NULL,
     eliminado TINYINT(1) DEFAULT 0,
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabla plantilla_comunicacion
+CREATE TABLE plantilla_comunicacion (
+    id_plantilla INT AUTO_INCREMENT PRIMARY KEY,
+    id_colegio INT NOT NULL,
+    nombre VARCHAR(150) NOT NULL,
+    canal ENUM('email','whatsapp','sms','llamada') NOT NULL DEFAULT 'email',
+    descripcion VARCHAR(255) NULL,
+    asunto_default VARCHAR(180) NULL,
+    cuerpo_html MEDIUMTEXT NOT NULL,
+    variables TEXT NULL,
+    estado ENUM('activo','inactivo') DEFAULT 'activo',
+    eliminado TINYINT(1) DEFAULT 0,
+    creado_por INT NULL,
+    actualizado_por INT NULL,
+    fecha_actualizacion DATETIME NULL,
     creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -282,65 +303,34 @@ CREATE TABLE parametros_sistema (
 );
 
 -- Datos demo
-INSERT INTO colegio (nombre, nit, direccion, telefono, correo) VALUES
-('Colegio San José', '900123456', 'Cra 10 #20-30', '6011234567', 'contacto@sanjose.edu'),
-('Colegio Nuestra Señora', '900987654', 'Calle 45 #12-15', '6017654321', 'info@nuestraseñora.edu');
+INSERT INTO colegio (nombre, nit, direccion, telefono, correo, logo, estado, eliminado) VALUES
+('Colegio Bilingüe Campestre Principado de Mónaco', '901999888-1', 'Km 4 vía Cota-Chía', '6011234567', 'contacto@principadomonaco.edu.co', 'logos/principado-monaco.png', 'activo', 0);
 
-INSERT INTO sede (id_colegio, nombre, direccion, telefono, correo) VALUES
-(1, 'Sede Centro', 'Cra 10 #20-30', '6011234567', 'centro@sanjose.edu'),
-(1, 'Sede Norte', 'Av 26 #15-45', '6012223344', 'norte@sanjose.edu'),
-(2, 'Sede Principal', 'Calle 45 #12-15', '6017654321', 'principal@nuestraseñora.edu'),
-(2, 'Sede Campo', 'Km 3 vía occidente', '6017788990', 'campo@nuestraseñora.edu');
+INSERT INTO sede (id_colegio, nombre, direccion, telefono, correo, estado, eliminado) VALUES
+(1, 'Bogotá', 'Cra 12 #145-30, Bogotá', '6015102020', 'bogota@principadomonaco.edu.co', 'activo', 0),
+(1, 'Cota', 'Km 4 vía Cota-Chía, Cota', '6015103030', 'cota@principadomonaco.edu.co', 'activo', 0);
 
 INSERT INTO usuario (id_colegio, id_sede, nombre_completo, email, usuario, password_hash, rol, estado) VALUES
-(NULL, NULL, 'Administrador Global', 'admin@demo.com', 'admin', '$2y$12$hHXFsDlS0/2j.nGkQB.i3OuuiKSSoIAdT/uyEyZ3ThjW3Xbkfnvhq', 'admin_global', 'activo'),
-(1, NULL, 'Directora General San José', 'directora@sanjose.edu', 'admin_sj', '$2y$12$hHXFsDlS0/2j.nGkQB.i3OuuiKSSoIAdT/uyEyZ3ThjW3Xbkfnvhq', 'admin_colegio', 'activo'),
-(2, NULL, 'Director General Nuestra Señora', 'director@nuestraseñora.edu', 'admin_ns', '$2y$12$hHXFsDlS0/2j.nGkQB.i3OuuiKSSoIAdT/uyEyZ3ThjW3Xbkfnvhq', 'admin_colegio', 'activo'),
-(1, 1, 'Coordinador Académico Centro', 'coordinador.centro@sanjose.edu', 'coord_centro', '$2y$12$hHXFsDlS0/2j.nGkQB.i3OuuiKSSoIAdT/uyEyZ3ThjW3Xbkfnvhq', 'admin_colegio', 'activo'),
-(1, 2, 'Coordinadora Sede Norte', 'coordinadora.norte@sanjose.edu', 'coord_norte', '$2y$12$hHXFsDlS0/2j.nGkQB.i3OuuiKSSoIAdT/uyEyZ3ThjW3Xbkfnvhq', 'admin_colegio', 'activo'),
-(2, 3, 'Coordinadora Sede Principal', 'coordinadora.principal@nuestraseñora.edu', 'coord_principal', '$2y$12$hHXFsDlS0/2j.nGkQB.i3OuuiKSSoIAdT/uyEyZ3ThjW3Xbkfnvhq', 'admin_colegio', 'activo'),
-(2, 4, 'Coordinador Sede Campo', 'coordinador.campo@nuestraseñora.edu', 'coord_campo', '$2y$12$hHXFsDlS0/2j.nGkQB.i3OuuiKSSoIAdT/uyEyZ3ThjW3Xbkfnvhq', 'admin_colegio', 'activo'),
-(1, 1, 'Agente Centro 1', 'agente.centro1@sanjose.edu', 'agente_centro1', '$2y$12$q1rtTLVlzStGU1IZKUC7F.t/M2.na5ZuiOl5J83kjAuylBxIwUekG', 'agente', 'activo'),
-(1, 2, 'Agente Norte 1', 'agente.norte1@sanjose.edu', 'agente_norte1', '$2y$12$q1rtTLVlzStGU1IZKUC7F.t/M2.na5ZuiOl5J83kjAuylBxIwUekG', 'agente', 'activo'),
-(2, 3, 'Agente Principal 1', 'agente.principal1@nuestraseñora.edu', 'agente_principal1', '$2y$12$q1rtTLVlzStGU1IZKUC7F.t/M2.na5ZuiOl5J83kjAuylBxIwUekG', 'agente', 'activo'),
-(2, 4, 'Agente Campo 1', 'agente.campo1@nuestraseñora.edu', 'agente_campo1', '$2y$12$q1rtTLVlzStGU1IZKUC7F.t/M2.na5ZuiOl5J83kjAuylBxIwUekG', 'agente', 'inactivo');
+(NULL, NULL, 'Administrador General', 'admin@principadomonaco.edu.co', 'admin', '$2y$12$q3Qs/YGCbyzw5WV0RAd32OsQ5BNJLn1ycE0Hn9Fswe9W5VV3B.URW', 'admin_global', 'activo'),
+(1, NULL, 'Coordinadora Financiera', 'financiera@principadomonaco.edu.co', 'admin_colegio', '$2y$12$q3Qs/YGCbyzw5WV0RAd32OsQ5BNJLn1ycE0Hn9Fswe9W5VV3B.URW', 'admin_colegio', 'activo'),
+(1, 1, 'Agente Cartera Bogotá', 'cartera.bogota@principadomonaco.edu.co', 'agente_bogota', '$2y$12$q3Qs/YGCbyzw5WV0RAd32OsQ5BNJLn1ycE0Hn9Fswe9W5VV3B.URW', 'agente', 'activo');
 
 INSERT INTO modulo_sistema (codigo, nombre, descripcion) VALUES
-('cobranzas', 'Cobranzas', 'Gestión integral de cartera, pagos, acuerdos y comunicaciones'),
-('administracion', 'Administración', 'Parametrización institucional y gestión de maestros'),
-('parametrizacion', 'Parametrización', 'Configuración avanzada de parámetros y catálogos');
+('cobranzas', 'Gestión de cobranzas', 'Seguimiento integral de cartera y comunicaciones'),
+('administracion', 'Administración institucional', 'Gestión de sedes, usuarios y catálogos'),
+('parametrizacion', 'Parametrización avanzada', 'Configuraciones, plantillas y parámetros del sistema');
 
 INSERT INTO usuario_colegio (id_usuario, id_colegio) VALUES
 (1, 1),
-(1, 2),
 (2, 1),
-(3, 2),
-(4, 1),
-(5, 1),
-(6, 2),
-(7, 2),
-(8, 1),
-(9, 1),
-(10, 2),
-(11, 2);
+(3, 1);
 
 INSERT INTO usuario_sede (id_usuario, id_sede) VALUES
 (1, 1),
 (1, 2),
-(1, 3),
-(1, 4),
 (2, 1),
 (2, 2),
-(3, 3),
-(3, 4),
-(4, 1),
-(5, 2),
-(6, 3),
-(7, 4),
-(8, 1),
-(9, 2),
-(10, 3),
-(11, 4);
+(3, 1);
 
 INSERT INTO usuario_modulo (id_usuario, id_modulo) VALUES
 (1, 1),
@@ -349,199 +339,170 @@ INSERT INTO usuario_modulo (id_usuario, id_modulo) VALUES
 (2, 1),
 (2, 2),
 (2, 3),
-(3, 1),
-(3, 2),
-(3, 3),
-(4, 1),
-(4, 2),
-(5, 1),
-(5, 2),
-(6, 1),
-(6, 2),
-(7, 1),
-(7, 2),
-(8, 1),
-(9, 1),
-(10, 1),
-(11, 1);
+(3, 1);
 
-INSERT INTO responsable_financiero (id_colegio, id_sede, nombre_completo, tipo_documento, numero_documento, telefono, correo, direccion) VALUES
-(1, 1, 'María Rodríguez', 'CC', '10203040', '3000000000', 'maria@sanjose.edu', 'Cra 12 #23-45'),
-(1, 2, 'Juan García', 'CC', '11223344', '3000000001', 'juan@sanjose.edu', 'Av 45 #12-09'),
-(2, 3, 'Ana López', 'CC', '55667788', '3100000002', 'ana@nuestraseñora.edu', 'Calle 50 #20-10'),
-(1, 1, 'Claudia Méndez', 'CC', '100200300', '3000000003', 'claudia@sanjose.edu', 'Cra 23 #45-67'),
-(1, 1, 'Luis Pardo', 'CC', '10987654', '3000000004', 'luis@sanjose.edu', 'Calle 90 #12-34'),
-(1, 2, 'Marcela Gaitán', 'CC', '10111213', '3000000005', 'marcela@sanjose.edu', 'Av 68 #45-12'),
-(1, 2, 'Pedro Rivas', 'CC', '10111415', '3000000006', 'pedro@sanjose.edu', 'Cra 33 #55-10'),
-(2, 3, 'Julia Herrera', 'CC', '76543210', '3000000007', 'julia@nuestraseñora.edu', 'Calle 65 #10-15'),
-(2, 3, 'Diego Campos', 'CC', '88990011', '3000000008', 'diego@nuestraseñora.edu', 'Carrera 7 #54-21'),
-(2, 4, 'Patricia León', 'CC', '99001122', '3000000009', 'patricia@nuestraseñora.edu', 'Km 3 vía occidente'),
-(2, 4, 'Andrés Molina', 'CC', '11002233', '3000000010', 'andres@nuestraseñora.edu', 'Vereda La Esperanza'),
-(1, 1, 'Elena Suárez', 'CC', '12003456', '3000000011', 'elena@sanjose.edu', 'Calle 13 #50-20'),
-(1, 2, 'Rafael Jiménez', 'CC', '13004567', '3000000012', 'rafael@sanjose.edu', 'Av 19 #120-45'),
-(2, 3, 'Camila Torres', 'CC', '14005678', '3000000013', 'camila@nuestraseñora.edu', 'Calle 70 #30-12'),
-(2, 4, 'Hernán Valdez', 'CC', '15006789', '3000000014', 'hernan@nuestraseñora.edu', 'Finca Las Palmas'),
-(1, 1, 'Isabel Romero', 'CC', '16007890', '3000000015', 'isabel@sanjose.edu', 'Cra 18 #45-23'),
-(1, 2, 'Mauricio Peña', 'CC', '17008901', '3000000016', 'mauricio@sanjose.edu', 'Diag 92 #32-11'),
-(2, 3, 'Paula Nieto', 'CC', '18009012', '3000000017', 'paula@nuestraseñora.edu', 'Carrera 14 #56-40'),
-(2, 4, 'Jorge Cárdenas', 'CC', '19010123', '3000000018', 'jorge@nuestraseñora.edu', 'Vereda La Primavera'),
-(1, 1, 'Nancy Fajardo', 'CC', '20011234', '3000000019', 'nancy@sanjose.edu', 'Calle 26 #18-55');
+INSERT INTO configuracion_colegio (id_colegio, smtp_host, smtp_puerto, smtp_usuario, smtp_password, whatsapp_api_key, whatsapp_endpoint, sms_api_key, sms_endpoint, logo_path, actualizado_por, fecha_actualizacion) VALUES
+(1, 'smtp.gmail.com', '587', 'carlos.quinones@lm-technology.com.co', 'Carlitos 2025*', NULL, NULL, NULL, NULL, 'logos/principado-monaco.png', 1, CURRENT_TIMESTAMP);
 
-INSERT INTO estudiante (id_colegio, id_sede, id_responsable, codigo_estudiante, nombre_completo, grado, curso, estado) VALUES
-(1, 1, 1, 'SJ-001', 'Carlos Rodríguez', '5°', '5A', 'activo'),
-(1, 2, 2, 'SJ-045', 'Laura García', '8°', '8B', 'activo'),
-(2, 3, 3, 'NS-020', 'Mateo López', '6°', '6A', 'activo'),
-(1, 1, 4, 'SJ-052', 'Valentina Méndez', '4°', '4A', 'activo'),
-(1, 1, 5, 'SJ-060', 'Miguel Pardo', '9°', '9B', 'activo'),
-(1, 2, 6, 'SJ-071', 'Sara Gaitán', '3°', '3B', 'activo'),
-(1, 2, 7, 'SJ-082', 'Tomás Rivas', '7°', '7A', 'activo'),
-(2, 3, 8, 'NS-031', 'Sofía Herrera', '5°', '5A', 'activo'),
-(2, 3, 9, 'NS-042', 'Samuel Campos', '8°', '8A', 'activo'),
-(2, 4, 10, 'NS-053', 'Lucía León', '2°', '2B', 'activo'),
-(2, 4, 11, 'NS-064', 'Esteban Molina', '10°', '10A', 'activo'),
-(1, 1, 12, 'SJ-093', 'Daniela Suárez', '6°', '6B', 'activo'),
-(1, 2, 13, 'SJ-104', 'Sebastián Jiménez', '11°', '11A', 'activo'),
-(2, 3, 14, 'NS-075', 'Mariana Torres', '7°', '7B', 'activo'),
-(2, 4, 15, 'NS-086', 'Valeria Valdez', '4°', '4B', 'activo'),
-(1, 1, 16, 'SJ-115', 'Andrés Romero', '1°', '1A', 'activo'),
-(1, 2, 17, 'SJ-126', 'Gabriela Peña', '2°', '2A', 'activo'),
-(2, 3, 18, 'NS-097', 'Isabella Nieto', '3°', '3A', 'activo'),
-(2, 4, 19, 'NS-108', 'Carlos Cárdenas', '9°', '9A', 'activo'),
-(1, 1, 20, 'SJ-137', 'Julieta Fajardo', '5°', '5B', 'inactivo');
+INSERT INTO responsable_financiero (id_colegio, id_sede, nombre_completo, tipo_documento, numero_documento, telefono, correo, direccion, estado, eliminado) VALUES
+(1, 1, 'Villalobos Munoz Fernando', 'CC', '80073011', '+57 308 007 3011', 'villalobos.munoz.fernando@familias-principado.edu.co', 'Cra 12 #145-30, Bogotá', 'activo', 0),
+(1, 1, 'Castillo Castro Jozep Evans', 'CC', '79955368', '+57 307 995 5368', 'castillo.castro.jozep.evans@familias-principado.edu.co', 'Cra 12 #145-30, Bogotá', 'activo', 0),
+(1, 1, 'Pineda Pachon Julio Cesar', 'CC', '79335279', '+57 307 933 5279', 'pineda.pachon.julio.cesar@familias-principado.edu.co', 'Cra 12 #145-30, Bogotá', 'activo', 0),
+(1, 1, 'Medina Arevalo Angelica', 'CC', '60288036', '+57 306 028 8036', 'medina.arevalo.angelica@familias-principado.edu.co', 'Cra 12 #145-30, Bogotá', 'activo', 0),
+(1, 1, 'Maneiro Fermin Manuel Valdemar', 'CC', '5709969', '+57 300 570 9969', 'maneiro.fermin.manuel.valdemar@familias-principado.edu.co', 'Cra 12 #145-30, Bogotá', 'activo', 0),
+(1, 1, 'Cobos Arevalo Jenny Juliana', 'CC', '53118047', '+57 305 311 8047', 'cobos.arevalo.jenny.juliana@familias-principado.edu.co', 'Cra 12 #145-30, Bogotá', 'activo', 0),
+(1, 1, 'Lima Gonzalez Carolina', 'CC', '52715742', '+57 305 271 5742', 'lima.gonzalez.carolina@familias-principado.edu.co', 'Cra 12 #145-30, Bogotá', 'activo', 0),
+(1, 1, 'Matiz Perez Adriana Patricia', 'CC', '52493163', '+57 305 249 3163', 'matiz.perez.adriana.patricia@familias-principado.edu.co', 'Cra 12 #145-30, Bogotá', 'activo', 0),
+(1, 1, 'Balcazar Neira Gloria Amanda', 'CC', '41060961', '+57 304 106 0961', 'balcazar.neira.gloria.amanda@familias-principado.edu.co', 'Cra 12 #145-30, Bogotá', 'activo', 0),
+(1, 1, 'Ruiz Jose Hector', 'CC', '17006214', '+57 301 700 6214', 'ruiz.jose.hector@familias-principado.edu.co', 'Cra 12 #145-30, Bogotá', 'activo', 0),
+(1, 1, 'Duarte Hinojosa Naisir', 'CC', '12644133', '+57 301 264 4133', 'duarte.hinojosa.naisir@familias-principado.edu.co', 'Cra 12 #145-30, Bogotá', 'activo', 0),
+(1, 1, 'Toro Aristizabal Navi Yuliana', 'CC', '1128434202', '+57 312 843 4202', 'toro.aristizabal.navi.yuliana@familias-principado.edu.co', 'Cra 12 #145-30, Bogotá', 'activo', 0),
+(1, 2, 'Leon Pinzon Danna Catalina', 'CC', '1121863888', '+57 312 186 3888', 'leon.pinzon.danna.catalina@familias-principado.edu.co', 'Km 4 vía Cota-Chía, Cota', 'activo', 0),
+(1, 2, 'Marulanda Vargas Claudia Rocio', 'CC', '1111198791', '+57 311 119 8791', 'marulanda.vargas.claudia.rocio@familias-principado.edu.co', 'Km 4 vía Cota-Chía, Cota', 'activo', 0),
+(1, 2, 'Franco Berrocal Yonatan David', 'CC', '1067910830', '+57 306 791 0830', 'franco.berrocal.yonatan.david@familias-principado.edu.co', 'Km 4 vía Cota-Chía, Cota', 'activo', 0),
+(1, 2, 'Sanchez Rios Luz Argenis', 'CC', '1033750035', '+57 303 375 0035', 'sanchez.rios.luz.argenis@familias-principado.edu.co', 'Km 4 vía Cota-Chía, Cota', 'activo', 0),
+(1, 2, 'Heredia Enciso Paula Carolina', 'CC', '1032448391', '+57 303 244 8391', 'heredia.enciso.paula.carolina@familias-principado.edu.co', 'Km 4 vía Cota-Chía, Cota', 'activo', 0),
+(1, 2, 'Pineda Pardo Fabio Andres', 'CC', '1022339392', '+57 302 233 9392', 'pineda.pardo.fabio.andres@familias-principado.edu.co', 'Km 4 vía Cota-Chía, Cota', 'activo', 0),
+(1, 2, 'Avendano Maldonado David Andres', 'CC', '1020735931', '+57 302 073 5931', 'avendano.maldonado.david.andres@familias-principado.edu.co', 'Km 4 vía Cota-Chía, Cota', 'activo', 0),
+(1, 2, 'Leon Valencia Kelly Johanna', 'CC', '1015431483', '+57 301 543 1483', 'leon.valencia.kelly.johanna@familias-principado.edu.co', 'Km 4 vía Cota-Chía, Cota', 'activo', 0),
+(1, 2, 'Gomez Julian Felipe', 'CC', '1015408023', '+57 301 540 8023', 'gomez.julian.felipe@familias-principado.edu.co', 'Km 4 vía Cota-Chía, Cota', 'activo', 0),
+(1, 2, 'Cordoba Palacios Ana Dayana', 'CC', '1003968947', '+57 300 396 8947', 'cordoba.palacios.ana.dayana@familias-principado.edu.co', 'Km 4 vía Cota-Chía, Cota', 'activo', 0);
 
-INSERT INTO concepto_deuda (id_colegio, nombre, descripcion, tipo, valor_base) VALUES
-(1, 'Mensualidad', 'Mensualidad año lectivo', 'recurrente', 350000),
-(1, 'Transporte', 'Servicio de ruta escolar', 'servicio', 120000),
-(1, 'Almuerzo Escolar', 'Plan de alimentación', 'servicio', 95000),
-(1, 'Actividades extracurriculares', 'Clubes y talleres', 'servicio', 80000),
-(2, 'Matrícula', 'Matrícula anual', 'único', 450000),
-(2, 'Mensualidad', 'Mensualidad año lectivo', 'recurrente', 380000),
-(2, 'Transporte', 'Servicio de ruta escolar', 'servicio', 140000),
-(2, 'Almuerzo Escolar', 'Plan de alimentación', 'servicio', 90000);
+INSERT INTO estudiante (id_colegio, id_sede, id_responsable, codigo_estudiante, nombre_completo, grado, curso, estado, eliminado) VALUES
+(1, 1, 1, '10176', 'Villalobos Chavista Samuel', 'Grado 1', '1B', 'activo', 0),
+(1, 1, 2, '10130', 'Castillo Figueroa Juana Valeria', 'Grado 5', '5B', 'activo', 0),
+(1, 1, 3, '10119', 'Pineda Blanco Juan Esteban', 'Grado 5', '5A', 'activo', 0),
+(1, 1, 4, '10099', 'Garcia Medina Geronimo', 'Grado 4', '4B', 'activo', 0),
+(1, 1, 5, '10102', 'Maneiro Bolivar Yoneiker Alejandro', 'Grado 4', '4A', 'activo', 0),
+(1, 1, 6, '10179', 'Forero Cobos Antonio', 'Grado 3', '3A', 'activo', 0),
+(1, 1, 7, '10047', 'Millan Lima Matias', 'Grado 2', '2A', 'activo', 0),
+(1, 1, 8, '10214', 'Guevara Matiz Gabriel Ricardo', 'Grado 1', '1A', 'activo', 0),
+(1, 1, 9, '10050', 'Arbelaez Balcazar Johan Mauricio', 'Grado 3', '3B', 'retirado', 0),
+(1, 1, 10, '10195', 'Ruiz Ruiz Daniel Leonardo', 'Grado 4', '4B', 'activo', 0),
+(1, 1, 11, '10215', 'Duarte Arino Maximo', 'Preescolar', 'JD', 'activo', 0),
+(1, 1, 11, '10216', 'Duarte Arino Maximiliano', 'Grado 3', '3A', 'activo', 0),
+(1, 1, 12, '10023', 'Toro Aristizabal Pablo Andres', 'Grado 1', '1A', 'activo', 0),
+(1, 2, 13, '10237', 'Yousef Leon Shaker Salim', 'Preescolar', 'PJ', 'activo', 0),
+(1, 2, 13, '10238', 'Yousef Leon Sami Zahid', 'Grado 5', '5A', 'activo', 0),
+(1, 2, 14, '10086', 'Marulanda Vargas Juanita', 'Grado 4', '4A', 'activo', 0),
+(1, 2, 15, '10211', 'Franco Jimenez Franz', 'Grado 3', '3A', 'activo', 0),
+(1, 2, 16, '10235', 'Zamora Sanchez Luciana', 'Preescolar', 'TR', 'activo', 0),
+(1, 2, 17, '10225', 'Lopez Heredia Johan Stephan', 'Preescolar', 'JD', 'activo', 0),
+(1, 2, 17, '10224', 'Lopez Heredia Gabriel Mathias', 'Grado 2', '2A', 'activo', 0),
+(1, 2, 18, '10120', 'Pineda Ruiz Matias', 'Grado 5', '5B', 'activo', 0),
+(1, 2, 19, '10052', 'Avendano Medrano Jacobo', 'Grado 3', '3A', 'activo', 0),
+(1, 2, 20, '10124', 'Tovar Leon Maria Alejandra', 'Grado 5', '5A', 'activo', 0),
+(1, 2, 21, '10184', 'Gomez Gutierrez Salome', 'Grado 1', '1A', 'activo', 0),
+(1, 2, 22, '10060', 'Gamboa Cordoba Julian Ameobi', 'Grado 3', '3A', 'activo', 0);
 
-INSERT INTO periodo (id_colegio, nombre, fecha_inicio, fecha_fin) VALUES
-(1, '2024-10', '2024-10-01', '2024-10-31'),
-(1, '2024-11', '2024-11-01', '2024-11-30'),
-(1, '2024-12', '2024-12-01', '2024-12-31'),
-(1, '2025-01', '2025-01-01', '2025-01-31'),
-(1, '2025-02', '2025-02-01', '2025-02-28'),
-(1, '2025-03', '2025-03-01', '2025-03-31'),
-(1, '2025-04', '2025-04-01', '2025-04-30'),
-(1, '2025-05', '2025-05-01', '2025-05-31'),
-(1, '2025-06', '2025-06-01', '2025-06-30'),
-(2, '2024-10', '2024-10-01', '2024-10-31'),
-(2, '2024-11', '2024-11-01', '2024-11-30'),
-(2, '2024-12', '2024-12-01', '2024-12-31'),
-(2, '2025-01', '2025-01-01', '2025-01-31'),
-(2, '2025-02', '2025-02-01', '2025-02-28'),
-(2, '2025-03', '2025-03-01', '2025-03-31'),
-(2, '2025-04', '2025-04-01', '2025-04-30'),
-(2, '2025-05', '2025-05-01', '2025-05-31'),
-(2, '2025-06', '2025-06-01', '2025-06-30');
+INSERT INTO concepto_deuda (id_colegio, nombre, descripcion, tipo, valor_base, estado, eliminado) VALUES
+(1, 'Pensión escolar 2025', 'Valor referencial de la pensión anual', 'recurrente', 1250000, 'activo', 0),
+(1, 'Servicios complementarios', 'Alimentación, transporte y actividades', 'servicio', 320000, 'activo', 0);
 
-INSERT INTO deuda (id_colegio, id_sede, id_estudiante, id_periodo, id_concepto, fecha_generacion, valor_inicial, saldo_actual, estado, fecha_vencimiento) VALUES
-(1, 1, 1, 4, 1, '2025-01-05', 350000, 350000, 'pendiente', '2025-01-30'),
-(1, 1, 1, 5, 1, '2025-02-05', 350000, 0, 'pagado', '2025-02-28'),
-(1, 1, 1, 6, 1, '2025-03-05', 350000, 350000, 'pendiente', '2025-03-30'),
-(1, 1, 1, 7, 3, '2025-04-02', 95000, 95000, 'pendiente', '2025-04-25'),
-(1, 2, 2, 4, 1, '2025-01-06', 350000, 0, 'pagado', '2025-01-31'),
-(1, 2, 2, 6, 2, '2025-03-10', 120000, 60000, 'en_acuerdo', '2025-03-31'),
-(1, 2, 2, 7, 4, '2025-04-12', 80000, 80000, 'pendiente', '2025-04-28'),
-(2, 3, 3, 11, 5, '2025-01-10', 450000, 0, 'pagado', '2025-01-31'),
-(2, 3, 3, 12, 7, '2025-02-10', 140000, 0, 'pagado', '2025-02-28'),
-(2, 3, 3, 13, 6, '2025-03-12', 380000, 380000, 'pendiente', '2025-03-31'),
-(1, 1, 4, 6, 1, '2025-03-08', 350000, 175000, 'en_acuerdo', '2025-03-30'),
-(1, 1, 4, 7, 3, '2025-04-08', 95000, 95000, 'pendiente', '2025-04-26'),
-(1, 1, 5, 6, 1, '2025-03-15', 350000, 350000, 'pendiente', '2025-03-31'),
-(1, 2, 6, 3, 2, '2024-12-10', 120000, 120000, 'pendiente', '2024-12-30'),
-(1, 2, 7, 6, 4, '2025-03-05', 80000, 80000, 'pendiente', '2025-03-25'),
-(2, 3, 8, 10, 6, '2024-12-05', 380000, 380000, 'pendiente', '2024-12-29'),
-(2, 3, 9, 13, 6, '2025-03-03', 380000, 190000, 'en_acuerdo', '2025-03-30'),
-(2, 4, 10, 10, 8, '2024-12-15', 90000, 90000, 'pendiente', '2024-12-30'),
-(2, 4, 11, 13, 7, '2025-03-10', 140000, 140000, 'pendiente', '2025-03-30'),
-(1, 1, 12, 6, 1, '2025-03-12', 350000, 0, 'pagado', '2025-03-29'),
-(1, 2, 13, 5, 1, '2025-02-14', 350000, 350000, 'pendiente', '2025-02-28'),
-(2, 3, 14, 12, 7, '2025-02-18', 140000, 70000, 'en_acuerdo', '2025-02-28'),
-(2, 4, 15, 14, 7, '2025-04-05', 140000, 140000, 'pendiente', '2025-04-30'),
-(1, 1, 16, 1, 1, '2024-10-04', 350000, 350000, 'pendiente', '2024-10-30'),
-(1, 2, 17, 2, 3, '2024-11-06', 95000, 0, 'pagado', '2024-11-25'),
-(2, 3, 18, 9, 8, '2024-11-20', 90000, 90000, 'pendiente', '2024-11-30'),
-(2, 4, 19, 12, 7, '2025-02-05', 140000, 140000, 'pendiente', '2025-02-28'),
-(1, 1, 20, 6, 4, '2025-03-20', 80000, 80000, 'pendiente', '2025-03-31'),
-(1, 1, 5, 3, 2, '2024-12-12', 120000, 0, 'pagado', '2024-12-30'),
-(2, 3, 9, 8, 6, '2024-10-12', 380000, 0, 'pagado', '2024-10-30'),
-(1, 1, 1, 15, 1, '2025-05-06', 350000, 350000, 'pendiente', '2025-05-30'),
-(1, 2, 2, 16, 2, '2025-06-08', 120000, 120000, 'pendiente', '2025-06-30'),
-(2, 3, 3, 17, 6, '2025-05-09', 380000, 190000, 'en_acuerdo', '2025-05-31'),
-(2, 4, 11, 18, 7, '2025-06-04', 140000, 140000, 'pendiente', '2025-06-28');
+INSERT INTO periodo (id_colegio, nombre, fecha_inicio, fecha_fin, estado, eliminado) VALUES
+(1, 'Cartera 2025', '2025-01-01', '2025-12-31', 'activo', 0),
+(1, 'Junio 2025', '2025-06-01', '2025-06-30', 'activo', 0);
+
+INSERT INTO deuda (id_colegio, id_sede, id_estudiante, id_periodo, id_concepto, fecha_generacion, valor_inicial, saldo_actual, estado, fecha_vencimiento, notas, eliminado) VALUES
+(1, 1, 1, 1, 1, '2025-06-03', 975125.00, 975125.00, 'pendiente', '2025-07-03', 'Gestion: CONTACTO DIRECTO. Seguimiento: ENVIO DE NOTIFICACION. Compromiso: SI', 0),
+(1, 1, 2, 1, 1, '2025-06-04', 1540250.00, 1540250.00, 'pendiente', '2025-07-04', 'Gestion: ESPERA DE RESPUESTA. Compromiso: SI', 0),
+(1, 1, 3, 1, 1, '2025-06-05', 2224250.00, 2224250.00, 'pendiente', '2025-07-05', 'Gestion: COMPROMISO DE PAGO. Seguimiento: COMPROMISO DE PAGO. Compromiso: SI', 0),
+(1, 1, 4, 1, 1, '2025-06-06', 2379200.00, 2379200.00, 'pendiente', '2025-07-06', 'Gestion: EN SEGUIMIENTO. Seguimiento: ENVIO DE NOTIFICACION. Compromiso: SI', 0),
+(1, 1, 5, 1, 1, '2025-06-07', 985600.00, 985600.00, 'pendiente', '2025-07-07', 'Gestion: ESPERA DE RESPUESTA. Compromiso: SI', 0),
+(1, 1, 6, 1, 1, '2025-06-08', 1179200.00, 1179200.00, 'pendiente', '2025-07-08', 'Gestion: EN SEGUIMIENTO. Seguimiento: ENVIO DE NOTIFICACION. Compromiso: SI', 0),
+(1, 1, 7, 1, 1, '2025-06-09', 2259500.00, 2259500.00, 'pendiente', '2025-07-09', 'Gestion: CONTACTO DIRECTO. Seguimiento: EN SEGUIMIENTO. Compromiso: SI', 0),
+(1, 1, 8, 1, 1, '2025-06-10', 3406560.00, 3406560.00, 'pendiente', '2025-07-10', 'Gestion: EN SEGUIMIENTO. Seguimiento: ENVIO DE NOTIFICACION. Compromiso: SI', 0),
+(1, 1, 9, 1, 1, '2025-06-11', 2131000.00, 2131000.00, 'pendiente', '2025-07-11', 'Gestion: CONTACTO DIRECTO. Seguimiento: RETIRADO DEL COLEGIO. Compromiso: SI', 0),
+(1, 1, 10, 1, 1, '2025-06-12', 1077800.00, 1077800.00, 'pendiente', '2025-07-12', 'Gestion: ESPERA DE RESPUESTA. Compromiso: SI', 0),
+(1, 1, 11, 1, 1, '2025-06-13', 1723000.00, 1723000.00, 'pendiente', '2025-07-13', 'Gestion: ESPERA DE RESPUESTA. Compromiso: SI', 0),
+(1, 1, 12, 1, 1, '2025-06-14', 1723000.00, 1723000.00, 'pendiente', '2025-07-14', 'Gestion: ESPERA DE RESPUESTA. Compromiso: SI', 0),
+(1, 1, 13, 1, 1, '2025-06-15', 953300.00, 953300.00, 'pendiente', '2025-07-15', 'Gestion: ESPERA DE RESPUESTA. Compromiso: SI', 0),
+(1, 2, 14, 1, 1, '2025-06-16', 1006500.00, 1006500.00, 'pendiente', '2025-07-16', 'Gestion: EN SEGUIMIENTO. Seguimiento: ENVIO DE NOTIFICACION. Compromiso: SI', 0),
+(1, 2, 15, 1, 1, '2025-06-17', 946650.00, 946650.00, 'pendiente', '2025-07-17', 'Gestion: EN SEGUIMIENTO. Seguimiento: ENVIO DE NOTIFICACION. Compromiso: SI', 0),
+(1, 2, 16, 1, 1, '2025-06-18', 5462199.00, 5462199.00, 'pendiente', '2025-07-18', 'Gestion: EN SEGUIMIENTO. Seguimiento: ENVIO DE NOTIFICACION. Compromiso: SI', 0),
+(1, 2, 17, 1, 1, '2025-06-19', 1723000.00, 1723000.00, 'pendiente', '2025-07-19', 'Gestion: EN SEGUIMIENTO. Compromiso: SI', 0),
+(1, 2, 18, 1, 1, '2025-06-20', 1321100.00, 1321100.00, 'pendiente', '2025-07-20', 'Gestion: EN SEGUIMIENTO. Seguimiento: ENVIO DE NOTIFICACION. Compromiso: SI', 0),
+(1, 2, 19, 1, 1, '2025-06-21', 1721784.00, 1721784.00, 'pendiente', '2025-07-21', 'Gestion: EN SEGUIMIENTO. Seguimiento: ENVIO DE NOTIFICACION. Compromiso: SI', 0),
+(1, 2, 20, 1, 1, '2025-06-22', 2263160.00, 2263160.00, 'pendiente', '2025-07-22', 'Gestion: EN SEGUIMIENTO. Seguimiento: ENVIO DE NOTIFICACION. Compromiso: SI', 0),
+(1, 2, 21, 1, 1, '2025-06-03', 1280950.00, 1280950.00, 'pendiente', '2025-07-03', 'Gestion: ESPERA DE RESPUESTA. Compromiso: SI', 0),
+(1, 2, 22, 1, 1, '2025-06-04', 1278000.00, 1278000.00, 'pendiente', '2025-07-04', 'Gestion: CONTACTO DIRECTO. Seguimiento: EN SEGUIMIENTO. Compromiso: SI', 0),
+(1, 2, 23, 1, 1, '2025-06-05', 3371983.00, 3371983.00, 'pendiente', '2025-07-05', 'Gestion: ESPERA DE RESPUESTA. Compromiso: SI', 0),
+(1, 2, 24, 1, 1, '2025-06-06', 5107797.00, 5107797.00, 'pendiente', '2025-07-06', 'Gestion: EN SEGUIMIENTO. Seguimiento: ENVIO DE NOTIFICACION. Compromiso: SI', 0),
+(1, 2, 25, 1, 1, '2025-06-07', 4731950.00, 4731950.00, 'pendiente', '2025-07-07', 'Gestion: EN SEGUIMIENTO. Seguimiento: ENVIO DE NOTIFICACION. Compromiso: SI', 0);
 
 INSERT INTO registro_pago (id_colegio, id_sede, id_estudiante, fecha_pago, valor_total, metodo_pago, referencia, ruta_soporte) VALUES
-(1, 1, 1, '2025-02-10', 350000, 'transferencia', 'TRX-1101', NULL),
-(1, 1, 1, '2025-03-18', 175000, 'tarjeta', 'POS-2210', NULL),
-(1, 2, 2, '2025-03-05', 60000, 'transferencia', 'TRX-1300', NULL),
-(1, 2, 2, '2025-04-18', 40000, 'efectivo', 'REC-1420', NULL),
-(2, 3, 3, '2025-01-20', 450000, 'efectivo', 'CAJA-1123', NULL),
-(2, 3, 3, '2025-02-22', 140000, 'transferencia', 'TRX-1502', NULL),
-(2, 3, 9, '2025-03-20', 190000, 'transferencia', 'TRX-3300', NULL),
-(1, 1, 4, '2025-03-18', 175000, 'transferencia', 'TRX-3410', NULL),
-(2, 4, 10, '2024-12-20', 45000, 'efectivo', 'REC-5501', NULL),
-(2, 4, 11, '2025-03-28', 70000, 'transferencia', 'TRX-5520', NULL),
-(1, 1, 12, '2025-03-25', 350000, 'transferencia', 'TRX-5721', NULL),
-(1, 2, 13, '2025-02-20', 150000, 'tarjeta', 'POS-6011', NULL),
-(2, 3, 14, '2025-02-25', 70000, 'transferencia', 'TRX-6502', NULL),
-(2, 4, 15, '2025-04-18', 60000, 'efectivo', 'REC-7010', NULL),
-(1, 1, 16, '2024-10-15', 200000, 'transferencia', 'TRX-7200', NULL),
-(1, 2, 17, '2024-11-18', 95000, 'transferencia', 'TRX-7350', NULL),
-(2, 3, 18, '2024-11-28', 45000, 'efectivo', 'REC-7800', NULL),
-(2, 4, 19, '2025-02-18', 50000, 'transferencia', 'TRX-7900', NULL),
-(1, 1, 20, '2025-03-27', 40000, 'transferencia', 'TRX-8001', NULL),
-(1, 1, 1, '2025-05-15', 175000, 'transferencia', 'TRX-9100', NULL),
-(1, 2, 2, '2025-06-12', 60000, 'transferencia', 'TRX-9150', NULL),
-(2, 3, 3, '2025-05-21', 200000, 'tarjeta', 'POS-9320', NULL),
-(2, 4, 11, '2025-06-10', 70000, 'transferencia', 'TRX-9400', NULL);
+(1, 1, 1, '2025-06-18', 300000.00, 'transferencia', 'PM-20250618-01', 'uploads/soportes/PM-20250618-01.pdf'),
+(1, 1, 6, '2025-06-19', 180000.00, 'transferencia', 'PM-20250619-06', 'uploads/soportes/PM-20250619-06.pdf'),
+(1, 2, 14, '2025-06-21', 220000.00, 'tarjeta', 'PM-20250621-14', 'uploads/soportes/PM-20250621-14.pdf'),
+(1, 2, 18, '2025-05-30', 150000.00, 'transferencia', 'PM-20250530-18', 'uploads/soportes/PM-20250530-18.pdf'),
+(1, 2, 21, '2025-06-15', 210000.00, 'transferencia', 'PM-20250615-21', 'uploads/soportes/PM-20250615-21.pdf'),
+(1, 2, 22, '2025-06-16', 120000.00, 'transferencia', 'PM-20250616-22', 'uploads/soportes/PM-20250616-22.pdf'),
+(1, 2, 24, '2025-06-22', 320000.00, 'transferencia', 'PM-20250622-24', 'uploads/soportes/PM-20250622-24.pdf'),
+(1, 2, 25, '2025-06-23', 250000.00, 'transferencia', 'PM-20250623-25', 'uploads/soportes/PM-20250623-25.pdf');
 
 INSERT INTO acuerdo_pago (id_colegio, id_sede, id_responsable, id_estudiante, monto_total, cuotas, fecha_inicio, fecha_fin, estado, observaciones) VALUES
-(1, 2, 2, 2, 180000, 3, '2025-03-01', '2025-05-31', 'activo', 'Acuerdo transporte y actividades'),
-(1, 1, 4, 4, 350000, 2, '2025-03-05', '2025-04-30', 'activo', 'Plan especial marzo'),
-(2, 3, 9, 9, 190000, 2, '2025-03-15', '2025-05-15', 'activo', 'Recaudo pensión parcial'),
-(1, 1, 16, 16, 350000, 3, '2024-10-10', '2025-01-10', 'cerrado', 'Acuerdo matrícula inicial');
+(1, 1, 2, 2, 540000.00, 3, '2025-07-01', '2025-09-30', 'activo', 'Plan de normalización mensualidad 2025'),
+(1, 2, 13, 15, 460000.00, 2, '2025-07-05', '2025-08-31', 'activo', 'Compromiso transporte y alimentación');
 
 INSERT INTO cuota_acuerdo (id_acuerdo, numero_cuota, fecha_pago, valor_cuota, estado) VALUES
-(1, 1, '2025-03-20', 60000, 'pagada'),
-(1, 2, '2025-04-20', 60000, 'pendiente'),
-(1, 3, '2025-05-20', 60000, 'pendiente'),
-(2, 1, '2025-03-25', 175000, 'pagada'),
-(2, 2, '2025-04-25', 175000, 'pendiente'),
-(3, 1, '2025-03-30', 95000, 'pendiente'),
-(3, 2, '2025-04-30', 95000, 'pendiente'),
-(4, 1, '2024-11-10', 120000, 'pagada'),
-(4, 2, '2024-12-10', 120000, 'pagada'),
-(4, 3, '2025-01-10', 110000, 'pagada');
+(1, 1, '2025-07-15', 180000.00, 'pendiente'),
+(1, 2, '2025-08-15', 180000.00, 'pendiente'),
+(1, 3, '2025-09-15', 180000.00, 'pendiente'),
+(2, 1, '2025-07-20', 230000.00, 'pendiente'),
+(2, 2, '2025-08-20', 230000.00, 'pendiente');
 
-INSERT INTO comunicacion (id_colegio, id_sede, id_responsable, id_estudiante, tipo, canal, asunto, mensaje, resultado, fecha_envio, usuario_registro) VALUES
-(1, 1, 1, 1, 'recordatorio', 'whatsapp', 'Pago pendiente enero', 'Estimado responsable, recuerde el pago de enero.', 'Enviado', '2025-01-20 09:00:00', 2),
-(1, 2, 2, 2, 'acuerdo', 'email', 'Detalle acuerdo transporte', 'Adjuntamos detalle del acuerdo.', 'Aceptado', '2025-02-12 10:30:00', 4),
-(1, 1, 4, 4, 'seguimiento', 'email', 'Estado acuerdo marzo', 'Se comparte plan de pagos actualizado.', 'Enviado', '2025-03-12 08:30:00', 4),
-(1, 2, 2, 2, 'recordatorio', 'llamada', 'Cobro transporte', 'Se realizó llamada de seguimiento.', 'Contestó', '2025-03-05 15:10:00', 8),
-(1, 2, 6, 6, 'recordatorio', 'sms', 'Saldo diciembre', 'Mensaje SMS enviado.', 'Enviado', '2024-12-18 09:05:00', 9),
-(2, 3, 9, 9, 'seguimiento', 'whatsapp', 'Acuerdo pensión marzo', 'Se comparte estado de cuotas.', 'Enviado', '2025-03-22 10:45:00', 10),
-(2, 4, 10, 10, 'recordatorio', 'email', 'Plan alimentación', 'Correo recordatorio enviado.', 'Leído', '2024-12-12 11:20:00', 7),
-(2, 4, 11, 11, 'recordatorio', 'whatsapp', 'Transporte marzo', 'Mensaje de seguimiento.', 'Enviado', '2025-03-18 07:50:00', 7),
-(1, 1, 16, 16, 'bienvenida', 'email', 'Inicio año', 'Bienvenida a la familia Romero.', 'Leído', '2024-10-05 09:00:00', 2),
-(2, 3, 18, 18, 'recordatorio', 'sms', 'Pago noviembre', 'Mensaje automatizado.', 'Entregado', '2024-11-25 12:15:00', 3);
+INSERT INTO comunicacion (id_colegio, id_sede, id_responsable, id_estudiante, id_plantilla, tipo, canal, asunto, mensaje, resultado, fecha_envio, usuario_registro, estado_envio, detalle_envio, eliminado) VALUES
+(1, 1, 1, 1, 1, 'seguimiento', 'email', 'Seguimiento cartera Jun 2025', 'Gestion: CONTACTO DIRECTO. Seguimiento: ENVIO DE NOTIFICACION. Compromiso: SI', 'CONTACTO DIRECTO', '2025-06-03 08:30:00', 3, 'enviado', 'Migrado dataset Principado', 0),
+(1, 1, 2, 2, 1, 'seguimiento', 'email', 'Seguimiento cartera Jun 2025', 'Gestion: ESPERA DE RESPUESTA. Compromiso: SI', 'ESPERA DE RESPUESTA', '2025-06-04 08:30:00', 3, 'enviado', 'Migrado dataset Principado', 0),
+(1, 1, 3, 3, 1, 'seguimiento', 'email', 'Seguimiento cartera Jun 2025', 'Gestion: COMPROMISO DE PAGO. Seguimiento: COMPROMISO DE PAGO. Compromiso: SI', 'COMPROMISO DE PAGO', '2025-06-05 08:30:00', 3, 'enviado', 'Migrado dataset Principado', 0),
+(1, 1, 4, 4, 1, 'seguimiento', 'email', 'Seguimiento cartera Jun 2025', 'Gestion: EN SEGUIMIENTO. Seguimiento: ENVIO DE NOTIFICACION. Compromiso: SI', 'EN SEGUIMIENTO', '2025-06-06 08:30:00', 3, 'enviado', 'Migrado dataset Principado', 0),
+(1, 1, 5, 5, 1, 'seguimiento', 'email', 'Seguimiento cartera Jun 2025', 'Gestion: ESPERA DE RESPUESTA. Compromiso: SI', 'ESPERA DE RESPUESTA', '2025-06-07 08:30:00', 3, 'enviado', 'Migrado dataset Principado', 0),
+(1, 1, 6, 6, 1, 'seguimiento', 'email', 'Seguimiento cartera Jun 2025', 'Gestion: EN SEGUIMIENTO. Seguimiento: ENVIO DE NOTIFICACION. Compromiso: SI', 'EN SEGUIMIENTO', '2025-06-08 08:30:00', 3, 'enviado', 'Migrado dataset Principado', 0),
+(1, 1, 7, 7, 1, 'seguimiento', 'email', 'Seguimiento cartera Jun 2025', 'Gestion: CONTACTO DIRECTO. Seguimiento: EN SEGUIMIENTO. Compromiso: SI', 'CONTACTO DIRECTO', '2025-06-09 08:30:00', 3, 'enviado', 'Migrado dataset Principado', 0),
+(1, 1, 8, 8, 1, 'seguimiento', 'email', 'Seguimiento cartera Jun 2025', 'Gestion: EN SEGUIMIENTO. Seguimiento: ENVIO DE NOTIFICACION. Compromiso: SI', 'EN SEGUIMIENTO', '2025-06-10 08:30:00', 3, 'enviado', 'Migrado dataset Principado', 0),
+(1, 1, 9, 9, 1, 'seguimiento', 'email', 'Seguimiento cartera Jun 2025', 'Gestion: CONTACTO DIRECTO. Seguimiento: RETIRADO DEL COLEGIO. Compromiso: SI', 'CONTACTO DIRECTO', '2025-06-11 08:30:00', 3, 'enviado', 'Migrado dataset Principado', 0),
+(1, 1, 10, 10, 1, 'seguimiento', 'email', 'Seguimiento cartera Jun 2025', 'Gestion: ESPERA DE RESPUESTA. Compromiso: SI', 'ESPERA DE RESPUESTA', '2025-06-12 08:30:00', 3, 'enviado', 'Migrado dataset Principado', 0),
+(1, 1, 11, 11, 1, 'seguimiento', 'email', 'Seguimiento cartera Jun 2025', 'Gestion: ESPERA DE RESPUESTA. Compromiso: SI', 'ESPERA DE RESPUESTA', '2025-06-13 08:30:00', 3, 'enviado', 'Migrado dataset Principado', 0),
+(1, 1, 11, 12, 1, 'seguimiento', 'email', 'Seguimiento cartera Jun 2025', 'Gestion: ESPERA DE RESPUESTA. Compromiso: SI', 'ESPERA DE RESPUESTA', '2025-06-14 08:30:00', 3, 'enviado', 'Migrado dataset Principado', 0),
+(1, 1, 12, 13, 1, 'seguimiento', 'email', 'Seguimiento cartera Jun 2025', 'Gestion: ESPERA DE RESPUESTA. Compromiso: SI', 'ESPERA DE RESPUESTA', '2025-06-15 08:30:00', 3, 'enviado', 'Migrado dataset Principado', 0),
+(1, 2, 13, 14, 1, 'seguimiento', 'email', 'Seguimiento cartera Jun 2025', 'Gestion: EN SEGUIMIENTO. Seguimiento: ENVIO DE NOTIFICACION. Compromiso: SI', 'EN SEGUIMIENTO', '2025-06-16 08:30:00', 3, 'enviado', 'Migrado dataset Principado', 0),
+(1, 2, 13, 15, 1, 'seguimiento', 'email', 'Seguimiento cartera Jun 2025', 'Gestion: EN SEGUIMIENTO. Seguimiento: ENVIO DE NOTIFICACION. Compromiso: SI', 'EN SEGUIMIENTO', '2025-06-17 08:30:00', 3, 'enviado', 'Migrado dataset Principado', 0),
+(1, 2, 14, 16, 1, 'seguimiento', 'email', 'Seguimiento cartera Jun 2025', 'Gestion: EN SEGUIMIENTO. Seguimiento: ENVIO DE NOTIFICACION. Compromiso: SI', 'EN SEGUIMIENTO', '2025-06-18 08:30:00', 3, 'enviado', 'Migrado dataset Principado', 0),
+(1, 2, 15, 17, 1, 'seguimiento', 'email', 'Seguimiento cartera Jun 2025', 'Gestion: EN SEGUIMIENTO. Compromiso: SI', 'EN SEGUIMIENTO', '2025-06-19 08:30:00', 3, 'enviado', 'Migrado dataset Principado', 0),
+(1, 2, 16, 18, 1, 'seguimiento', 'email', 'Seguimiento cartera Jun 2025', 'Gestion: EN SEGUIMIENTO. Seguimiento: ENVIO DE NOTIFICACION. Compromiso: SI', 'EN SEGUIMIENTO', '2025-06-20 08:30:00', 3, 'enviado', 'Migrado dataset Principado', 0),
+(1, 2, 17, 19, 1, 'seguimiento', 'email', 'Seguimiento cartera Jun 2025', 'Gestion: EN SEGUIMIENTO. Seguimiento: ENVIO DE NOTIFICACION. Compromiso: SI', 'EN SEGUIMIENTO', '2025-06-21 08:30:00', 3, 'enviado', 'Migrado dataset Principado', 0),
+(1, 2, 17, 20, 1, 'seguimiento', 'email', 'Seguimiento cartera Jun 2025', 'Gestion: EN SEGUIMIENTO. Seguimiento: ENVIO DE NOTIFICACION. Compromiso: SI', 'EN SEGUIMIENTO', '2025-06-22 08:30:00', 3, 'enviado', 'Migrado dataset Principado', 0),
+(1, 2, 18, 21, 1, 'seguimiento', 'email', 'Seguimiento cartera Jun 2025', 'Gestion: EN SEGUIMIENTO. Compromiso: SI', 'EN SEGUIMIENTO', '2025-06-03 08:30:00', 3, 'enviado', 'Migrado dataset Principado', 0),
+(1, 2, 19, 22, 1, 'seguimiento', 'email', 'Seguimiento cartera Jun 2025', 'Gestion: CONTACTO DIRECTO. Seguimiento: EN SEGUIMIENTO. Compromiso: SI', 'CONTACTO DIRECTO', '2025-06-04 08:30:00', 3, 'enviado', 'Migrado dataset Principado', 0),
+(1, 2, 20, 23, 1, 'seguimiento', 'email', 'Seguimiento cartera Jun 2025', 'Gestion: ESPERA DE RESPUESTA. Compromiso: SI', 'ESPERA DE RESPUESTA', '2025-06-05 08:30:00', 3, 'enviado', 'Migrado dataset Principado', 0),
+(1, 2, 21, 24, 1, 'seguimiento', 'email', 'Seguimiento cartera Jun 2025', 'Gestion: EN SEGUIMIENTO. Seguimiento: ENVIO DE NOTIFICACION. Compromiso: SI', 'EN SEGUIMIENTO', '2025-06-06 08:30:00', 3, 'enviado', 'Migrado dataset Principado', 0),
+(1, 2, 22, 25, 1, 'seguimiento', 'email', 'Seguimiento cartera Jun 2025', 'Gestion: EN SEGUIMIENTO. Seguimiento: ENVIO DE NOTIFICACION. Compromiso: SI', 'EN SEGUIMIENTO', '2025-06-07 08:30:00', 3, 'enviado', 'Migrado dataset Principado', 0);
+
+INSERT INTO plantilla_comunicacion (id_colegio, nombre, canal, descripcion, asunto_default, cuerpo_html, variables, estado, eliminado, creado_por) VALUES
+(1, 'Recordatorio de pago pendiente', 'email', 'Correo formal recordando el saldo pendiente y fecha de vencimiento.', 'Recordatorio de pago — {{estudiante_nombre}}', '<p>Estimado(a) {{responsable_nombre}},</p>
+        <p>De manera atenta le informamos que el saldo pendiente de {{estudiante_nombre}} corresponde a <strong>{{saldo_pendiente}}</strong> con vencimiento el <strong>{{fecha_vencimiento}}</strong>.</p>
+        <p>Le invitamos a realizar el pago oportunamente para mantener los beneficios académicos activos. Puede comunicarse con nosotros al {{telefono_contacto}} para ampliar la información.</p>
+        <p>Atentamente,<br><strong>{{colegio_nombre}}</strong><br>Sede {{sede_nombre}}</p>', 'responsable_nombre,estudiante_nombre,saldo_pendiente,fecha_vencimiento,colegio_nombre,sede_nombre,telefono_contacto', 'activo', 0, 2),
+(1, 'Mensaje corto WhatsApp', 'whatsapp', 'Plantilla corta para contacto inmediato por WhatsApp.', NULL, 'Hola {{responsable_nombre}}, te contactamos de {{colegio_nombre}}. El saldo de {{estudiante_nombre}} es {{saldo_pendiente}} con vencimiento {{fecha_vencimiento}}. ¿Te apoyamos con algún detalle?', 'responsable_nombre,estudiante_nombre,saldo_pendiente,fecha_vencimiento', 'activo', 0, 2),
+(1, 'Seguimiento compromiso de pago', 'email', 'Correo de seguimiento cuando existe un compromiso registrado.', 'Seguimiento compromiso {{estudiante_nombre}}', '<p>Buen día {{responsable_nombre}},</p>
+        <p>Confirmamos el compromiso de pago asociado a {{estudiante_nombre}} con fecha objetivo {{fecha_vencimiento}}. Este mensaje busca acompañar el cumplimiento del acuerdo registrado.</p>
+        <p>Si requieres modificar la fecha o el valor acordado, responde a este correo o comunícate con el área financiera.</p>
+        <p>Equipo de cartera — {{colegio_nombre}} ({{sede_nombre}})</p>', 'responsable_nombre,estudiante_nombre,fecha_vencimiento,colegio_nombre,sede_nombre', 'activo', 0, 2);
 
 INSERT INTO carga_masiva (id_colegio, id_sede, tipo_archivo, archivo_original, archivo_procesado, total_registros, total_errores, resultado, mensaje, usuario_registro, fecha_registro) VALUES
-(1, 1, 'estudiantes', 'cargue_octubre.xlsx', 'cargue_octubre_procesado.xlsx', 120, 3, 'parcial', 'Inconsistencias en columnas opcionales', 2, '2024-10-15 09:30:00'),
-(1, 2, 'deudas', 'cargue_norte_noviembre.xlsx', 'cargue_norte_noviembre.xlsx', 80, 0, 'exitoso', 'Importación completada sin novedades', 5, '2024-11-28 14:10:00'),
-(2, 3, 'pagos', 'recaudos_principal_marzo.xlsx', 'recaudos_principal_marzo.xlsx', 65, 1, 'parcial', 'Se omitieron registros duplicados', 10, '2025-03-21 16:45:00');
+(1, 1, 'deudas', 'cargue_octubre_2024.xlsx', 'cargue_octubre_2024.xlsx', 25, 1, 'exitoso', 'Base inicial octubre integrada', 2, '2024-10-02 08:45:00'),
+(1, 1, 'deudas', 'cargue_noviembre_2024.xlsx', 'cargue_noviembre_2024.xlsx', 25, 0, 'exitoso', 'Actualización mensual noviembre', 2, '2024-11-01 09:05:00'),
+(1, 2, 'deudas', 'cargue_diciembre_2024.xlsx', 'cargue_diciembre_2024.xlsx', 27, 2, 'parcial', 'Se detectaron responsables sin correo', 3, '2024-12-02 08:55:00'),
+(1, 2, 'deudas', 'cargue_enero_2025.xlsx', 'cargue_enero_2025.xlsx', 27, 0, 'exitoso', 'Base enero consolidada', 2, '2025-01-06 08:50:00'),
+(1, 2, 'deudas', 'cargue_junio_2025.xlsx', 'cargue_junio_2025.xlsx', 25, 0, 'exitoso', 'Cartera junio cargada para gestión', 3, '2025-06-01 07:40:00');
 
 INSERT INTO parametros_sistema (clave, valor, descripcion, id_colegio) VALUES
-('color_primario', '#1658a0', 'Color principal de la interfaz', 1),
-('dias_recordatorio', '3', 'Enviar recordatorio 3 días antes del vencimiento', 1),
-('dias_recordatorio', '4', 'Recordatorio para sedes rurales', 2);
+('color_primario', '#0f325d', 'Color institucional principal', 1),
+('color_secundario', '#f5a524', 'Color de énfasis para alertas', 1),
+('dias_recordatorio', '5', 'Días antes del vencimiento para alertar', 1),
+('correo_respuesta', 'recaudos@principadomonaco.edu.co', 'Correo remitente para notificaciones', 1);
 
 INSERT INTO auditoria_usuario (id_usuario, id_colegio, id_sede, modulo, accion, detalle, ip) VALUES
-(1, NULL, NULL, 'autenticacion', 'login', 'Inicio de sesión administrador global', '127.0.0.1'),
-(2, 1, NULL, 'responsables', 'crear', 'Registro de responsable María Rodríguez', '127.0.0.1'),
-(4, 1, 1, 'deudas', 'actualizar', 'Ajuste de saldo para estudiante SJ-052', '127.0.0.1'),
-(10, 2, 3, 'pagos', 'crear', 'Registro de pago parcial Samuel Campos', '127.0.0.1');
+(1, NULL, NULL, 'autenticacion', 'login', 'Inicio de sesión administrador general', '127.0.0.1'),
+(2, 1, NULL, 'configuracion', 'actualizar', 'Actualización credenciales SMTP', '127.0.0.1'),
+(3, 1, 1, 'comunicaciones', 'registrar', 'Envió correo recordatorio cartera', '127.0.0.1');
