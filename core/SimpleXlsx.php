@@ -8,10 +8,6 @@ class SimpleXlsx
 {
     public static function download(string $filename, array $headers, array $rows, array $options = []): void
     {
-        if (!class_exists('ZipArchive')) {
-            throw new RuntimeException('La extensión ZipArchive es requerida para generar XLSX.');
-        }
-
         $headers = array_values($headers);
         $rows = array_map(static fn ($row) => array_values((array) $row), $rows);
         $maxColumns = count($headers);
@@ -24,17 +20,7 @@ class SimpleXlsx
             $headers = ['Reporte'];
         }
 
-        $tempFile = tempnam(sys_get_temp_dir(), 'xlsx');
-        if ($tempFile === false) {
-            throw new RuntimeException('No fue posible crear un archivo temporal para el XLSX.');
-        }
-
-        $zip = new \ZipArchive();
-        $opened = $zip->open($tempFile, \ZipArchive::OVERWRITE | \ZipArchive::CREATE);
-        if ($opened !== true) {
-            @unlink($tempFile);
-            throw new RuntimeException('No fue posible inicializar el contenedor XLSX. Código: ' . $opened);
-        }
+        $zip = new SimpleZip();
 
         $widths = [];
         $optionWidths = $options['widths'] ?? [];
@@ -51,21 +37,16 @@ class SimpleXlsx
         $sheetData = self::buildSheetXml($headers, $rows, $maxColumns, $widths);
         $created = gmdate('Y-m-d\TH:i:s\Z');
 
-        $zip->addFromString('[Content_Types].xml', self::contentTypes());
-        $zip->addFromString('_rels/.rels', self::rels());
-        $zip->addFromString('docProps/app.xml', self::appProps());
-        $zip->addFromString('docProps/core.xml', self::coreProps($created));
-        $zip->addFromString('xl/workbook.xml', self::workbook());
-        $zip->addFromString('xl/_rels/workbook.xml.rels', self::workbookRels());
-        $zip->addFromString('xl/styles.xml', self::styles());
-        $zip->addFromString('xl/worksheets/sheet1.xml', $sheetData);
-        $zip->close();
+        $zip->addFile('[Content_Types].xml', self::contentTypes());
+        $zip->addFile('_rels/.rels', self::rels());
+        $zip->addFile('docProps/app.xml', self::appProps());
+        $zip->addFile('docProps/core.xml', self::coreProps($created));
+        $zip->addFile('xl/workbook.xml', self::workbook());
+        $zip->addFile('xl/_rels/workbook.xml.rels', self::workbookRels());
+        $zip->addFile('xl/styles.xml', self::styles());
+        $zip->addFile('xl/worksheets/sheet1.xml', $sheetData);
 
-        $binary = file_get_contents($tempFile);
-        @unlink($tempFile);
-        if ($binary === false) {
-            throw new RuntimeException('No fue posible leer el archivo XLSX generado.');
-        }
+        $binary = $zip->toString();
 
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Content-Disposition: attachment; filename="' . $filename . '"');

@@ -144,7 +144,12 @@ class Mailer
         }
 
         if (!in_array($code, $expected, true)) {
-            throw new RuntimeException('Error SMTP (' . $code . '): ' . implode(' | ', $response));
+            $message = 'Error SMTP (' . $code . '): ' . implode(' | ', $response);
+            if ($code === 535) {
+                $message .= '. Verifica el usuario y la contraseña o genera una contraseña de aplicación si tu proveedor es Gmail.';
+            }
+
+            throw new RuntimeException($message);
         }
 
         return $response;

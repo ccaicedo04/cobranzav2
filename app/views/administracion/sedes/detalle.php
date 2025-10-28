@@ -7,13 +7,14 @@ include __DIR__ . '/../../_partials/header.php';
 <div class="grid" style="grid-template-columns:1.2fr 1fr;">
     <div class="card">
         <h3>Resumen institucional</h3>
-        <p><strong>Colegio:</strong> <?= htmlspecialchars($sede['colegio_nombre']) ?></p>
-        <p><strong>NIT:</strong> <?= htmlspecialchars($sede['colegio_nit']) ?></p>
-        <p><strong>Dirección:</strong> <?= htmlspecialchars($sede['direccion'] ?: 'Sin registrar') ?></p>
-        <p><strong>Teléfono:</strong> <?= htmlspecialchars($sede['telefono'] ?: 'Sin registrar') ?></p>
-        <p><strong>Correo:</strong> <?= htmlspecialchars($sede['correo'] ?: 'Sin registrar') ?></p>
-        <p><strong>Estado:</strong> <span class="badge" style="background:<?= $sede['estado'] === 'activo' ? '#dcfce7' : '#fee2e2' ?>;color:<?= $sede['estado'] === 'activo' ? '#166534' : '#991b1b' ?>;">
-            <?= strtoupper($sede['estado']) ?></span></p>
+        <p><strong>Colegio:</strong> <?= htmlspecialchars($sede['colegio_nombre'] ?? 'Sin registrar') ?></p>
+        <p><strong>NIT:</strong> <?= htmlspecialchars($sede['colegio_nit'] ?? 'Sin registrar') ?></p>
+        <p><strong>Dirección:</strong> <?= htmlspecialchars(($sede['direccion'] ?? '') ?: 'Sin registrar') ?></p>
+        <p><strong>Teléfono:</strong> <?= htmlspecialchars(($sede['telefono'] ?? '') ?: 'Sin registrar') ?></p>
+        <p><strong>Correo:</strong> <?= htmlspecialchars(($sede['correo'] ?? '') ?: 'Sin registrar') ?></p>
+        <?php $estadoSede = strtolower($sede['estado'] ?? 'activo'); ?>
+        <p><strong>Estado:</strong> <span class="badge" style="background:<?= $estadoSede === 'activo' ? '#dcfce7' : '#fee2e2' ?>;color:<?= $estadoSede === 'activo' ? '#166534' : '#991b1b' ?>;">
+            <?= strtoupper($estadoSede) ?></span></p>
         <div class="actions" style="margin-top:16px;display:flex;gap:12px;">
             <a class="btn" href="index.php?route=sedes/edit&id=<?= $sede['id_sede'] ?>">Editar sede</a>
             <a class="btn secondary" href="index.php?route=sedes">Volver al listado</a>

@@ -1,12 +1,9 @@
 <?php
 declare(strict_types=1);
 
-if (!class_exists('ZipArchive')) {
-    http_response_code(500);
-    header('Content-Type: text/plain; charset=UTF-8');
-    echo 'La extensión ZipArchive es requerida para generar la plantilla de carga masiva. Habilítala en tu instalación de PHP.';
-    exit;
-}
+use Core\SimpleZip;
+
+require_once __DIR__ . '/../../core/SimpleZip.php';
 
 $sheetCargaHeaders = [
     'Año cartera',
@@ -58,49 +55,23 @@ $sheets = [
     ['name' => 'Referencias', 'headers' => $sheetReferenciaHeaders, 'rows' => $sheetReferenciaRows],
 ];
 
-$zip = new ZipArchive();
-$tempFile = tempnam(sys_get_temp_dir(), 'plantilla_carga');
-
-if ($tempFile === false) {
-    http_response_code(500);
-    header('Content-Type: text/plain; charset=UTF-8');
-    echo 'No fue posible generar la plantilla de carga masiva.';
-    exit;
-}
-
-$opened = $zip->open($tempFile, ZipArchive::CREATE | ZipArchive::OVERWRITE);
-if ($opened !== true) {
-    @unlink($tempFile);
-    http_response_code(500);
-    header('Content-Type: text/plain; charset=UTF-8');
-    echo 'No fue posible inicializar el archivo XLSX (código ' . $opened . ').';
-    exit;
-}
+$zip = new SimpleZip();
 
 $created = gmdate('Y-m-d\TH:i:s\Z');
-$zip->addFromString('[Content_Types].xml', contentTypes(count($sheets)));
-$zip->addFromString('_rels/.rels', rels());
-$zip->addFromString('docProps/app.xml', appProps(array_column($sheets, 'name')));
-$zip->addFromString('docProps/core.xml', coreProps($created));
-$zip->addFromString('xl/workbook.xml', workbook($sheets));
-$zip->addFromString('xl/_rels/workbook.xml.rels', workbookRels(count($sheets)));
-$zip->addFromString('xl/styles.xml', styles());
+$zip->addFile('[Content_Types].xml', contentTypes(count($sheets)));
+$zip->addFile('_rels/.rels', rels());
+$zip->addFile('docProps/app.xml', appProps(array_column($sheets, 'name')));
+$zip->addFile('docProps/core.xml', coreProps($created));
+$zip->addFile('xl/workbook.xml', workbook($sheets));
+$zip->addFile('xl/_rels/workbook.xml.rels', workbookRels(count($sheets)));
+$zip->addFile('xl/styles.xml', styles());
 
 foreach ($sheets as $index => $sheet) {
     $sheetXml = buildSheetXml($sheet['headers'], $sheet['rows'], $index === 0);
-    $zip->addFromString('xl/worksheets/sheet' . ($index + 1) . '.xml', $sheetXml);
+    $zip->addFile('xl/worksheets/sheet' . ($index + 1) . '.xml', $sheetXml);
 }
 
-$zip->close();
-$binary = file_get_contents($tempFile);
-@unlink($tempFile);
-
-if ($binary === false) {
-    http_response_code(500);
-    header('Content-Type: text/plain; charset=UTF-8');
-    echo 'No fue posible generar la plantilla de carga masiva.';
-    exit;
-}
+$binary = $zip->toString();
 
 $filename = 'plantilla_carga_masiva.xlsx';
 header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
