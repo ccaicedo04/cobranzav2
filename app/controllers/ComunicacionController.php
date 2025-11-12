@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Models\AuditoriaModel;
 use App\Models\ColegioModel;
 use App\Models\ComunicacionModel;
+use App\Models\ComunicacionAdjuntoModel;
 use App\Models\ConfiguracionModel;
 use App\Models\DeudaModel;
 use App\Models\EstudianteModel;
@@ -16,6 +17,7 @@ use Core\Helpers;
 use Core\Mailer;
 use Core\Session;
 use RuntimeException;
+use App\Services\TwilioService;
 
 class ComunicacionController extends Controller
 {
@@ -28,6 +30,8 @@ class ComunicacionController extends Controller
     private DeudaModel $deudas;
     private SedeModel $sedes;
     private ColegioModel $colegios;
+    private ComunicacionAdjuntoModel $adjuntos;
+    private TwilioService $twilio;
 
     public function __construct()
     {
@@ -46,12 +50,14 @@ class ComunicacionController extends Controller
         $this->deudas = new DeudaModel();
         $this->sedes = new SedeModel();
         $this->colegios = new ColegioModel();
+        $this->adjuntos = new ComunicacionAdjuntoModel();
+        $this->twilio = new TwilioService();
     }
 
     public function index(): void
     {
         $selectedResponsable = (int) ($_GET['responsable'] ?? 0);
-        $selectedCanal = $_GET['canal'] ?? 'email';
+        $selectedCanal = $_GET['canal'] ?? 'whatsapp';
         $selectedPlantilla = (int) ($_GET['plantilla'] ?? 0);
 
         $responsables = $this->responsables->conContexto();
@@ -64,19 +70,38 @@ class ComunicacionController extends Controller
         }
 
         $dataset = $this->armarDatasetComunicaciones($responsables, $estudiantes);
+        $conversation = $selectedResponsable ? $this->construirConversacion($selectedResponsable, $selectedCanal) : [];
+        $notifications = $this->construirNotificaciones($responsables);
+
+        $dataPayload = [
+            'responsables' => $dataset['responsables'],
+            'sedes' => $dataset['sedes'],
+            'colegio' => $dataset['colegio'],
+            'plantillas' => $plantillas,
+            'conversation' => $conversation,
+            'notifications' => $notifications,
+            'selected' => [
+                'responsable' => $selectedResponsable,
+                'canal' => $selectedCanal,
+                'plantilla' => $selectedPlantilla,
+            ],
+        ];
 
         $this->view('comunicaciones/index', [
             'comunicaciones' => $comunicaciones,
             'responsables' => $responsables,
             'estudiantes' => $estudiantes,
             'plantillas' => $plantillas,
-            'dataset' => $dataset,
+            'dataset' => $dataPayload,
+            'conversation' => $conversation,
+            'notifications' => $notifications,
             'selectedResponsable' => $selectedResponsable,
             'selectedCanal' => $selectedCanal,
             'selectedPlantilla' => $selectedPlantilla,
             'status' => $_GET['status'] ?? null,
             'statusMessage' => $_GET['message'] ?? null,
             'token' => Helpers::csrfToken(),
+            'twilioConfigured' => $this->twilio->configured(),
         ]);
     }
 
@@ -136,24 +161,37 @@ class ComunicacionController extends Controller
 
         $placeholders = $this->construirPlaceholders($responsableDataset, $estudianteSeleccionado, $colegioInfo, $sedeInfo);
         $mensajeRenderizado = $this->renderTemplate($mensaje, $placeholders);
-        if ($asunto === '' && $plantilla && !empty($plantilla['asunto_default'])) {
-            $asunto = $this->renderTemplate((string) $plantilla['asunto_default'], $placeholders);
+
+        $asuntoBase = $asunto;
+        if ($asuntoBase === '' && $plantilla && !empty($plantilla['asunto_default'])) {
+            $asuntoBase = (string) $plantilla['asunto_default'];
+        }
+        if ($asuntoBase !== '') {
+            $asuntoRenderizado = $this->renderTemplate($asuntoBase, $placeholders);
+            if ($asuntoRenderizado !== '') {
+                $asunto = $asuntoRenderizado;
+            } else {
+                $asunto = $asuntoBase;
+            }
         }
 
         $idColegio = (int) ($tenant['id_colegio'] ?? $responsable['id_colegio'] ?? 0);
         $idSede = (int) ($tenant['id_sede'] ?? $responsable['id_sede'] ?? 0);
 
-        $mensajeHtml = $mensajeRenderizado;
-        $mensajePlano = strip_tags($mensajeRenderizado);
-        if ($canal === 'email') {
-            $mensajeHtml = $this->construirEmailProfesional($colegioInfo, $sedeInfo, $mensajeRenderizado);
-            $mensajePlano = strip_tags($mensajeRenderizado);
+        $mensajePlano = trim(strip_tags(str_replace(['<br>', '<br/>', '<br />'], "\n", $mensajeRenderizado)));
+        if ($mensajePlano === '') {
+            $mensajePlano = trim($mensajeRenderizado);
         }
 
-        $estadoEnvio = $canal === 'email' ? 'pendiente' : 'registrado';
-        $detalleEnvio = $canal === 'email' ? 'Programado para envío inmediato' : 'Gestionado manualmente en canal ' . strtoupper($canal);
+        $mensajeHtml = $canal === 'email' ? $mensajeRenderizado : $mensajePlano;
+
+        $estadoEnvio = 'registrado';
+        $detalleEnvio = 'Gestión registrada en canal ' . strtoupper($canal);
 
         if ($canal === 'email') {
+            $mensajeHtml = $this->construirEmailProfesional($colegioInfo, $sedeInfo, $mensajeRenderizado);
+            $estadoEnvio = 'pendiente';
+            $detalleEnvio = 'Programado para envío inmediato';
             $configCorreo = $idColegio ? $this->configuracion->porColegio($idColegio) : null;
             if (!$configCorreo) {
                 $estadoEnvio = 'error';
@@ -194,9 +232,42 @@ class ComunicacionController extends Controller
                     }
                 }
             }
+        } elseif (in_array($canal, ['whatsapp', 'sms'], true)) {
+            if ($resultado === '') {
+                $resultado = 'Mensaje enviado vía ' . ucfirst($canal);
+            }
+
+            try {
+                if (!$this->twilio->configured()) {
+                    throw new RuntimeException('Configura las credenciales de Twilio para utilizar Twilio en este canal.');
+                }
+
+                $telefonoDestino = trim((string) ($responsable['telefono'] ?? ''));
+                if ($telefonoDestino === '') {
+                    throw new RuntimeException('El responsable no tiene un número telefónico registrado.');
+                }
+
+                $twilioRespuesta = $canal === 'whatsapp'
+                    ? $this->twilio->sendWhatsApp($telefonoDestino, $mensajePlano)
+                    : $this->twilio->sendSms($telefonoDestino, $mensajePlano);
+
+                $estadoEnvio = 'enviado';
+                $detalleEnvio = 'Mensaje enviado por Twilio';
+                if (!empty($twilioRespuesta['sid'])) {
+                    $detalleEnvio .= ' (SID ' . $twilioRespuesta['sid'] . ')';
+                }
+            } catch (RuntimeException $exception) {
+                $estadoEnvio = 'error';
+                $detalleEnvio = $exception->getMessage();
+                if ($resultado === '') {
+                    $resultado = 'Error al enviar ' . $canal;
+                }
+            }
         } else {
             if ($resultado === '') {
-                $resultado = 'Gestión registrada en canal ' . strtoupper($canal);
+                $resultado = $canal === 'llamada'
+                    ? 'Registro de llamada manual'
+                    : 'Gestión registrada en canal ' . strtoupper($canal);
             }
         }
 
@@ -218,7 +289,9 @@ class ComunicacionController extends Controller
             'eliminado' => 0,
         ];
 
-        $this->comunicaciones->create($data);
+        $idComunicacion = $this->comunicaciones->create($data);
+
+        $this->guardarAdjuntosCargados($idComunicacion);
 
         $this->auditoria->create([
             'id_usuario' => $usuario['id_usuario'],
@@ -241,9 +314,226 @@ class ComunicacionController extends Controller
         $redirect = 'index.php?route=comunicaciones&status=' . rawurlencode($status)
             . '&message=' . rawurlencode($message)
             . '&responsable=' . $idResponsable
-            . '&canal=' . rawurlencode($canal);
+            . '&canal=' . rawurlencode($canal)
+            . '&plantilla=' . $idPlantilla;
 
         Helpers::redirect($redirect);
+    }
+
+    public function conversation(): void
+    {
+        if (!Session::get('user')) {
+            http_response_code(401);
+            header('Content-Type: application/json');
+            echo json_encode(['error' => 'Sesión inválida']);
+            return;
+        }
+
+        $responsableId = (int) ($_GET['responsable'] ?? 0);
+        $canal = $_GET['canal'] ?? 'whatsapp';
+        if (!in_array($canal, ['email', 'whatsapp', 'sms', 'llamada'], true)) {
+            $canal = 'whatsapp';
+        }
+
+        $conversation = $responsableId ? $this->construirConversacion($responsableId, $canal) : [];
+        $notifications = $this->construirNotificaciones();
+
+        header('Content-Type: application/json');
+        echo json_encode([
+            'conversation' => $conversation,
+            'notifications' => $notifications,
+            'selected' => [
+                'responsable' => $responsableId,
+                'canal' => $canal,
+            ],
+        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    }
+
+    private function guardarAdjuntosCargados(int $idComunicacion): void
+    {
+        if (empty($_FILES['adjuntos']) || !is_array($_FILES['adjuntos']['name'])) {
+            return;
+        }
+
+        $names = $_FILES['adjuntos']['name'];
+        $tmpNames = $_FILES['adjuntos']['tmp_name'];
+        $errors = $_FILES['adjuntos']['error'];
+        $sizes = $_FILES['adjuntos']['size'];
+        $types = $_FILES['adjuntos']['type'];
+
+        $basePath = dirname(__DIR__, 2) . '/uploads/comunicaciones/' . $idComunicacion;
+        if (!is_dir($basePath)) {
+            mkdir($basePath, 0775, true);
+        }
+
+        foreach ($names as $index => $originalName) {
+            $error = $errors[$index] ?? UPLOAD_ERR_NO_FILE;
+            $tmp = $tmpNames[$index] ?? '';
+            if ($error !== UPLOAD_ERR_OK || !is_uploaded_file($tmp)) {
+                continue;
+            }
+
+            $safeName = $this->sanitizarNombreArchivo((string) $originalName, $index);
+            $extension = '';
+            $baseName = $safeName;
+            if (str_contains($safeName, '.')) {
+                $extension = '.' . strtolower(pathinfo($safeName, PATHINFO_EXTENSION));
+                $baseName = substr($safeName, 0, -(strlen($extension)));
+            }
+
+            $candidate = $safeName;
+            $absolute = $basePath . '/' . $candidate;
+            $counter = 1;
+            while (file_exists($absolute)) {
+                $candidate = $baseName . '-' . $counter . $extension;
+                $absolute = $basePath . '/' . $candidate;
+                $counter++;
+            }
+
+            if (!move_uploaded_file($tmp, $absolute)) {
+                continue;
+            }
+
+            $relative = 'uploads/comunicaciones/' . $idComunicacion . '/' . $candidate;
+            $mime = $types[$index] ?? mime_content_type($absolute) ?: 'application/octet-stream';
+
+            $this->adjuntos->create([
+                'id_comunicacion' => $idComunicacion,
+                'nombre' => $candidate,
+                'ruta' => $relative,
+                'tipo' => $mime,
+                'tamano' => $sizes[$index] ?? null,
+                'metadata' => json_encode(['original' => $originalName], JSON_UNESCAPED_UNICODE),
+            ]);
+        }
+    }
+
+    private function sanitizarNombreArchivo(string $nombre, int $index = 0): string
+    {
+        $nombre = trim($nombre);
+        $nombre = preg_replace('/[^a-zA-Z0-9\._-]/', '_', $nombre);
+        $nombre = trim($nombre, '_');
+        if ($nombre === '') {
+            $nombre = 'adjunto_' . date('YmdHis') . '_' . $index;
+        }
+
+        $extension = '';
+        if (str_contains($nombre, '.')) {
+            $extension = '.' . strtolower(pathinfo($nombre, PATHINFO_EXTENSION));
+            $base = substr($nombre, 0, -(strlen($extension)));
+            $nombre = $base !== '' ? $base : 'adjunto_' . date('YmdHis') . '_' . $index;
+        }
+
+        return $nombre . $extension;
+    }
+
+    private function construirConversacion(int $responsableId, string $canal): array
+    {
+        if ($responsableId <= 0) {
+            return [];
+        }
+
+        $canalFiltro = $canal;
+        if (!in_array($canalFiltro, ['email', 'whatsapp', 'sms', 'llamada'], true)) {
+            $canalFiltro = 'whatsapp';
+        }
+
+        $registros = $this->comunicaciones->porResponsable($responsableId, $canalFiltro);
+        if (!$registros) {
+            return [];
+        }
+
+        $ids = array_map(static fn ($registro) => (int) ($registro['id_comunicacion'] ?? 0), $registros);
+        $adjuntos = $this->adjuntos->porComunicaciones($ids);
+        $agrupados = [];
+        foreach ($adjuntos as $adjunto) {
+            $id = (int) ($adjunto['id_comunicacion'] ?? 0);
+            if (!$id) {
+                continue;
+            }
+            if (!isset($agrupados[$id])) {
+                $agrupados[$id] = [];
+            }
+            $agrupados[$id][] = [
+                'id' => (int) ($adjunto['id_adjunto'] ?? 0),
+                'nombre' => $adjunto['nombre'] ?? '',
+                'url' => Helpers::baseUrl((string) ($adjunto['ruta'] ?? '')),
+                'tipo' => $adjunto['tipo'] ?? '',
+                'tamano' => (int) ($adjunto['tamano'] ?? 0),
+            ];
+        }
+
+        $resultado = [];
+        foreach ($registros as $registro) {
+            $fecha = (string) ($registro['fecha_envio'] ?? '');
+            $texto = trim(strip_tags(str_replace(['<br>', '<br/>', '<br />'], "\n", (string) ($registro['mensaje'] ?? ''))));
+            if ($texto === '') {
+                $texto = '[Sin contenido]';
+            }
+
+            $resultado[] = [
+                'id' => (int) ($registro['id_comunicacion'] ?? 0),
+                'id_responsable' => (int) ($registro['id_responsable'] ?? 0),
+                'canal' => (string) ($registro['canal'] ?? ''),
+                'tipo' => (string) ($registro['tipo'] ?? ''),
+                'estado' => (string) ($registro['estado_envio'] ?? ''),
+                'resultado' => (string) ($registro['resultado'] ?? ''),
+                'detalle' => (string) ($registro['detalle_envio'] ?? ''),
+                'fecha' => $fecha,
+                'fecha_formateada' => $fecha && strtotime($fecha) ? date('d/m/Y H:i', strtotime($fecha)) : '',
+                'texto' => $texto,
+                'adjuntos' => $agrupados[(int) ($registro['id_comunicacion'] ?? 0)] ?? [],
+                'origen' => ($registro['tipo'] ?? '') === 'inbound' ? 'responsable' : 'agente',
+            ];
+        }
+
+        return $resultado;
+    }
+
+    private function construirNotificaciones(array $responsables = []): array
+    {
+        $entrantes = $this->comunicaciones->ultimasEntrantes(10);
+        if (!$entrantes) {
+            return [];
+        }
+
+        $map = [];
+        foreach ($responsables as $responsable) {
+            $map[(int) $responsable['id_responsable']] = $responsable['nombre_completo'] ?? '';
+        }
+
+        if (!$map) {
+            $ids = array_unique(array_map(static fn ($item) => (int) ($item['id_responsable'] ?? 0), $entrantes));
+            if ($ids) {
+                $lista = $this->responsables->conContexto(['id_responsable' => $ids]);
+                foreach ($lista as $registro) {
+                    $map[(int) $registro['id_responsable']] = $registro['nombre_completo'] ?? '';
+                }
+            }
+        }
+
+        $notificaciones = [];
+        foreach ($entrantes as $item) {
+            $texto = trim(strip_tags(str_replace(['<br>', '<br/>', '<br />'], " ", (string) ($item['mensaje'] ?? ''))));
+            if ($texto === '') {
+                $texto = '[Sin contenido]';
+            }
+            $texto = mb_substr($texto, 0, 120);
+
+            $fecha = (string) ($item['fecha_envio'] ?? '');
+
+            $notificaciones[] = [
+                'id' => (int) ($item['id_comunicacion'] ?? 0),
+                'id_responsable' => (int) ($item['id_responsable'] ?? 0),
+                'responsable' => $map[(int) ($item['id_responsable'] ?? 0)] ?? null,
+                'canal' => (string) ($item['canal'] ?? ''),
+                'fecha' => $fecha,
+                'fecha_formateada' => $fecha && strtotime($fecha) ? date('d/m H:i', strtotime($fecha)) : '',
+                'mensaje' => $texto,
+            ];
+        }
+
+        return $notificaciones;
     }
 
     private function armarDatasetComunicaciones(array $responsables, array $estudiantes): array

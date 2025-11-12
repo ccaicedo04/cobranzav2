@@ -226,6 +226,18 @@ CREATE TABLE comunicacion (
     creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE comunicacion_adjunto (
+    id_adjunto INT AUTO_INCREMENT PRIMARY KEY,
+    id_comunicacion INT NOT NULL,
+    nombre VARCHAR(255) NOT NULL,
+    ruta VARCHAR(255) NOT NULL,
+    tipo VARCHAR(150) NULL,
+    tamano BIGINT NULL,
+    metadata TEXT NULL,
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_comunicacion) REFERENCES comunicacion(id_comunicacion)
+);
+
 -- Tabla plantilla_comunicacion
 CREATE TABLE plantilla_comunicacion (
     id_plantilla INT AUTO_INCREMENT PRIMARY KEY,
@@ -489,6 +501,11 @@ INSERT INTO plantilla_comunicacion (id_colegio, nombre, canal, descripcion, asun
         <p>Si requieres modificar la fecha o el valor acordado, responde a este correo o comunícate con el área financiera.</p>
         <p>Equipo de cartera — {{colegio_nombre}} ({{sede_nombre}})</p>', 'responsable_nombre,estudiante_nombre,fecha_vencimiento,colegio_nombre,sede_nombre', 'activo', 0, 2);
 
+
+INSERT INTO plantilla_comunicacion (id_colegio, nombre, canal, descripcion, asunto_default, cuerpo_html, variables, estado, eliminado, creado_por) VALUES
+(1, 'WhatsApp seguimiento compromiso', 'whatsapp', 'Mensaje cordial para confirmar compromisos previos.', NULL, 'Hola {{responsable_nombre}}, esperamos que estés bien. Te recordamos el compromiso de pago para {{estudiante_nombre}} con fecha {{fecha_vencimiento}}. Si necesitas apoyo contáctanos al {{telefono_contacto}}.', 'responsable_nombre,estudiante_nombre,fecha_vencimiento,telefono_contacto', 'activo', 0, 2),
+(1, 'SMS alerta vencimiento', 'sms', 'Texto corto para vencimientos inmediatos.', NULL, '{{responsable_nombre}}: saldo {{saldo_pendiente}} de {{estudiante_nombre}} vence {{fecha_vencimiento}}. Escríbenos al {{telefono_contacto}}.', 'responsable_nombre,saldo_pendiente,estudiante_nombre,fecha_vencimiento,telefono_contacto', 'activo', 0, 2),
+(1, 'Guion llamada verificación', 'llamada', 'Guion orientador para registrar llamadas manuales.', NULL, 'Presentación: Buenos días/tardes {{responsable_nombre}}, te habla el área de cartera de {{colegio_nombre}}.\nObjetivo: confirmar el estado del pago de {{estudiante_nombre}} con saldo {{saldo_pendiente}}.\nAcciones: registra compromisos, dudas y fecha estimada de pago.\nCierre: agradece su tiempo y recuerda nuestros canales de atención {{telefono_contacto}}.', 'responsable_nombre,colegio_nombre,estudiante_nombre,saldo_pendiente,telefono_contacto', 'activo', 0, 2);
 INSERT INTO carga_masiva (id_colegio, id_sede, tipo_archivo, archivo_original, archivo_procesado, total_registros, total_errores, resultado, mensaje, usuario_registro, fecha_registro) VALUES
 (1, 1, 'deudas', 'cargue_octubre_2024.xlsx', 'cargue_octubre_2024.xlsx', 25, 1, 'exitoso', 'Base inicial octubre integrada', 2, '2024-10-02 08:45:00'),
 (1, 1, 'deudas', 'cargue_noviembre_2024.xlsx', 'cargue_noviembre_2024.xlsx', 25, 0, 'exitoso', 'Actualización mensual noviembre', 2, '2024-11-01 09:05:00'),

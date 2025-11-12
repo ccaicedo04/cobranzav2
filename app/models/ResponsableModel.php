@@ -39,4 +39,30 @@ class ResponsableModel extends BaseModel
 
         return $stmt->fetchAll();
     }
+
+    public function buscarPorTelefono(string $telefono): ?array
+    {
+        $telefono = preg_replace('/\D+/', '', $telefono);
+        if ($telefono === '') {
+            return null;
+        }
+
+        $variantes = [$telefono];
+        if (strlen($telefono) === 10 && $telefono[0] === '3') {
+            $variantes[] = '57' . $telefono;
+        }
+        if (strlen($telefono) > 2 && str_starts_with($telefono, '57')) {
+            $variantes[] = substr($telefono, 2);
+        }
+
+        $placeholders = implode(',', array_fill(0, count($variantes), '?'));
+        $sql = 'SELECT * FROM ' . $this->table . ' WHERE eliminado = 0 AND REPLACE(REPLACE(REPLACE(telefono, " ", ""), "-", ""), "+", "") IN (' . $placeholders . ') LIMIT 1';
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($variantes);
+
+        $resultado = $stmt->fetch();
+
+        return $resultado ?: null;
+    }
 }
