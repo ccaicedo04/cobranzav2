@@ -89,7 +89,7 @@
 .quick-actions-card .toolbar .btn{flex:1;justify-content:center}
 
 .templates-card{display:flex;flex-direction:column;gap:14px}
-.templates-card .template-list{display:grid;gap:10px}
+.templates-card .template-list{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
 .template-item{padding:12px;border:1px solid var(--border);border-radius:14px;background:#f9fafb}
 .template-item header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:13px;font-weight:600}
 .template-item p{margin:0;color:#475569;font-size:13px;line-height:1.5}

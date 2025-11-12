@@ -117,6 +117,8 @@ $BASE_URL = ($pos !== false) ? substr($script, 0, $pos + 8) : '/';
                   <button class="template-chip" type="button" data-message="Hola {{responsable}}, esperamos que te encuentres bien. Te recordamos que el saldo del periodo {{periodo}} es de {{valor}}. ¿Podemos ayudarte con un enlace de pago?">Recordatorio</button>
                   <button class="template-chip" type="button" data-message="Hola {{responsable}}, confirmamos la recepción del soporte y en las próximas 24 horas verás reflejado el pago. ¡Gracias por tu pronta respuesta!">Confirmación</button>
                   <button class="template-chip" type="button" data-message="Buen día {{responsable}}. Te comparto el estado de cuenta actualizado de {{estudiante}}. Si deseas pactar un acuerdo, avísanos para acompañarte en el proceso.">Estado de cuenta</button>
+                  <button class="template-chip" type="button" data-message="Hola {{responsable}}, registramos tu promesa de pago por {{valor}} para el {{fecha_limite}}. Si necesitas ajustar la fecha o valor, escríbenos por este medio.">Promesa de pago</button>
+                  <button class="template-chip" type="button" data-message="Hola {{responsable}}, hacemos seguimiento al acuerdo pactado para {{estudiante}}. ¿Confirmas si mantenemos el plan vigente o prefieres una alternativa?">Seguimiento acuerdo</button>
                 </div>
               </div>
               <div class="composer-sidebar">
@@ -242,6 +244,16 @@ $BASE_URL = ($pos !== false) ? substr($script, 0, $pos + 8) : '/';
             <header>Llamada de seguimiento <button class="template-chip" type="button" data-message="Hola {{responsable}}, intentamos comunicarnos contigo para hablar del estado de cuenta de {{estudiante}}. ¿Nos confirmas cuándo podemos llamarte?">Usar</button></header>
             <p>Hola {{responsable}}, intentamos comunicarnos contigo para hablar del estado de cuenta de {{estudiante}}. ¿Nos confirmas cuándo podemos llamarte?</p>
             <footer>WhatsApp y SMS • Actualizado 12 Jul 2025</footer>
+          </div>
+          <div class="template-item">
+            <header>Promesa de pago <button class="template-chip" type="button" data-message="Hola {{responsable}}, dejamos registrada la promesa de pago por {{valor}} para el {{fecha_limite}}. Te acompañaremos con recordatorios para que el proceso sea sencillo.">Usar</button></header>
+            <p>Hola {{responsable}}, dejamos registrada la promesa de pago por {{valor}} para el {{fecha_limite}}. Te acompañaremos con recordatorios para que el proceso sea sencillo.</p>
+            <footer>WhatsApp y Email • Actualizado 05 Ago 2025</footer>
+          </div>
+          <div class="template-item">
+            <header>Escalamiento interno <button class="template-chip" type="button" data-message="Hola {{responsable}}, escalamos tu caso con el área académica para validar beneficios para {{estudiante}}. Te estaremos informando las alternativas disponibles.">Usar</button></header>
+            <p>Hola {{responsable}}, escalamos tu caso con el área académica para validar beneficios para {{estudiante}}. Te estaremos informando las alternativas disponibles.</p>
+            <footer>Email • Actualizado 03 Ago 2025</footer>
           </div>
         </div>
       </div>
