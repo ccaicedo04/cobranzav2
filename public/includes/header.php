@@ -1,7 +1,11 @@
-<?php // header.php (logo, tenant, menus compactos) ?>
+<?php
+$script = $_SERVER['SCRIPT_NAME'] ?? '';
+$pos = strpos($script, '/public/');
+$BASE_URL = ($pos !== false) ? substr($script, 0, $pos + 8) : '/';
+?>
 <div class="appbar">
   <div class="container">
-    <img src="images/logo-yoyjo.png" href="#" data-route="screens/dashboard.php" alt="Logo" style="height:40px;width:auto"/>
+    <img src="<?php echo $BASE_URL; ?>images/logo-yoyjo.png" href="#" data-route="screens/dashboard.php" alt="Logo" style="height:40px;width:auto"/>
     <div class="tenant">
       <span class="label" style="margin-right:4px">Colegio / Sede</span>
       <select><option>Colegio Central</option><option>Colegio Demo</option></select>
