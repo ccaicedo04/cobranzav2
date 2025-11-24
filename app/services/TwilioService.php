@@ -72,22 +72,26 @@ class TwilioService
         $mediaUrls = array_values(array_filter($mediaUrls, static fn ($value) => is_string($value) && $value !== ''));
 
         if ($this->client) {
-            $options = [
-                'from' => $this->formatFrom('whatsapp'),
-                'body' => $body,
-            ];
+            try {
+                $options = [
+                    'from' => $this->formatFrom('whatsapp'),
+                    'body' => $body,
+                ];
 
-            if ($mediaUrls) {
-                $options['mediaUrl'] = $mediaUrls;
+                if ($mediaUrls) {
+                    $options['mediaUrl'] = $mediaUrls;
+                }
+
+                if ($this->statusCallback) {
+                    $options['statusCallback'] = $this->statusCallback;
+                }
+
+                $message = $this->client->messages->create($this->formatDestination($to, 'whatsapp'), $options);
+
+                return method_exists($message, 'toArray') ? $message->toArray() : ['sid' => $message->sid ?? null];
+            } catch (\Throwable $e) {
+                throw new RuntimeException($this->formatSdkError($e));
             }
-
-            if ($this->statusCallback) {
-                $options['statusCallback'] = $this->statusCallback;
-            }
-
-            $message = $this->client->messages->create($this->formatDestination($to, 'whatsapp'), $options);
-
-            return method_exists($message, 'toArray') ? $message->toArray() : ['sid' => $message->sid ?? null];
         }
 
         return $this->sendViaHttp('whatsapp', $to, $body, $mediaUrls);
@@ -98,18 +102,22 @@ class TwilioService
         $this->ensureClient();
 
         if ($this->client) {
-            $options = [
-                'from' => $this->formatFrom('sms'),
-                'body' => $body,
-            ];
+            try {
+                $options = [
+                    'from' => $this->formatFrom('sms'),
+                    'body' => $body,
+                ];
 
-            if ($this->statusCallback) {
-                $options['statusCallback'] = $this->statusCallback;
+                if ($this->statusCallback) {
+                    $options['statusCallback'] = $this->statusCallback;
+                }
+
+                $message = $this->client->messages->create($this->formatDestination($to, 'sms'), $options);
+
+                return method_exists($message, 'toArray') ? $message->toArray() : ['sid' => $message->sid ?? null];
+            } catch (\Throwable $e) {
+                throw new RuntimeException($this->formatSdkError($e));
             }
-
-            $message = $this->client->messages->create($this->formatDestination($to, 'sms'), $options);
-
-            return method_exists($message, 'toArray') ? $message->toArray() : ['sid' => $message->sid ?? null];
         }
 
         return $this->sendViaHttp('sms', $to, $body);
@@ -277,6 +285,64 @@ class TwilioService
         return in_array($allowUrlFopen, ['1', 'on', 'true'], true);
     }
 
+    private function formatHttpError($status, $body): string
+    {
+        $status = (int) $status;
+        $message = 'Twilio rechazó el envío del mensaje.';
+
+        if ($status > 0) {
+            $message .= ' Código: ' . $status;
+        }
+
+        $detail = $this->extractErrorMessageFromBody($body);
+        if ($detail !== null) {
+            $message .= ' Detalle: ' . $detail;
+        }
+
+        return $message;
+    }
+
+    private function extractErrorMessageFromBody($body)
+    {
+        if (!is_string($body) || $body === '') {
+            return null;
+        }
+
+        $decoded = json_decode($body, true);
+        if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+            foreach (['message', 'error_message', 'detail'] as $key) {
+                if (isset($decoded[$key]) && is_string($decoded[$key]) && trim($decoded[$key]) !== '') {
+                    return trim($decoded[$key]);
+                }
+            }
+        }
+
+        $plain = trim(strip_tags($body));
+        return $plain !== '' ? $plain : null;
+    }
+
+    private function formatSdkError(\Throwable $e): string
+    {
+        $status = null;
+
+        if (method_exists($e, 'getStatusCode')) {
+            $status = (int) $e->getStatusCode();
+        } elseif ($e->getCode()) {
+            $status = (int) $e->getCode();
+        }
+
+        $message = trim((string) $e->getMessage());
+        if ($message === '') {
+            $message = 'Twilio rechazó el envío del mensaje.';
+        }
+
+        if ($status !== null && $status > 0) {
+            $message .= ' Código: ' . $status;
+        }
+
+        return $message;
+    }
+
     private function sendViaHttp(string $channel, string $to, string $body, array $mediaUrls = []): array
     {
         $endpoint = sprintf('https://api.twilio.com/2010-04-01/Accounts/%s/Messages.json', rawurlencode($this->accountSid));
@@ -298,7 +364,7 @@ class TwilioService
         $response = $this->httpRequest('POST', $endpoint, $payload);
 
         if ($response['status'] >= 400) {
-            throw new RuntimeException('Twilio rechazó el envío del mensaje. Código: ' . $response['status']);
+            throw new RuntimeException($this->formatHttpError($response['status'], $response['body']));
         }
 
         $bodyResponse = $response['body'];
