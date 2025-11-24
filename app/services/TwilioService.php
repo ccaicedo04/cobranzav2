@@ -250,6 +250,7 @@ class TwilioService
         $candidates = [
             $root . '/vendor/autoload.php',
             $root . '/vendor/twilio/sdk/src/Twilio/autoload.php',
+            $root . '/app/libraries/twilio/src/Twilio/autoload.php',
         ];
 
         foreach ($candidates as $file) {

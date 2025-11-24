@@ -23,6 +23,7 @@ use App\Controllers\UsuarioController;
 use App\Controllers\ConceptoController;
 use App\Controllers\PlantillaController;
 use App\Controllers\TwilioWebhookController;
+use Core\Autoload;
 use Core\Helpers;
 use Core\Router;
 use Core\Session;
@@ -32,14 +33,8 @@ if (file_exists($vendorAutoload)) {
     require_once $vendorAutoload;
 }
 
-spl_autoload_register(function (string $class): void {
-    $baseDir = dirname(__DIR__) . '/';
-    $class = ltrim($class, '\\');
-    $file = $baseDir . str_replace('\\', '/', $class) . '.php';
-    if (file_exists($file)) {
-        require_once $file;
-    }
-});
+require_once dirname(__DIR__) . '/core/Autoload.php';
+Autoload::register();
 
 Session::start();
 $route = $_GET['route'] ?? '/';
