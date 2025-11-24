@@ -545,7 +545,11 @@ class ComunicacionController extends Controller
             if ($texto === '') {
                 $texto = '[Sin contenido]';
             }
-            $texto = mb_substr($texto, 0, 120);
+            if (function_exists('mb_substr')) {
+                $texto = mb_substr($texto, 0, 120);
+            } else {
+                $texto = substr($texto, 0, 120);
+            }
 
             $fecha = (string) ($item['fecha_envio'] ?? '');
 

@@ -241,7 +241,16 @@ class SimplePdf
     private static function fitText(string $text, float $width): string
     {
         $maxChars = max(1, (int) floor($width / 5.5));
-        return mb_strimwidth($text, 0, $maxChars, '…', 'UTF-8');
+        if (function_exists('mb_strimwidth')) {
+            return mb_strimwidth($text, 0, $maxChars, '…', 'UTF-8');
+        }
+
+        $truncated = substr($text, 0, $maxChars);
+        if (strlen($text) > strlen($truncated)) {
+            $truncated = substr($truncated, 0, max(0, $maxChars - 1)) . '…';
+        }
+
+        return $truncated;
     }
 
     private static function escape(string $text): string
