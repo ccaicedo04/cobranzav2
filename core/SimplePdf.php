@@ -39,18 +39,25 @@ class SimplePdf
         }
 
         $pdf = self::renderTable($document);
-        if ($pdf === '') {
+        if ($pdf === '' || strncmp($pdf, '%PDF', 4) !== 0) {
             $pdf = self::fallbackPdf('No se pudo construir el PDF con los datos suministrados.');
         }
 
         header('Content-Type: application/pdf');
         header(($inline ? 'Content-Disposition: inline; filename="' : 'Content-Disposition: attachment; filename="') . $filename . '"');
+        header('Content-Length: ' . strlen($pdf));
         echo $pdf;
         exit;
     }
 
     private static function renderTable(array $document): string
     {
+        if (empty($document['columns'])) {
+            $document['columns'] = [
+                ['campo' => 'contenido', 'etiqueta' => 'Contenido', 'ancho' => 100],
+            ];
+        }
+
         $pageWidth = 595.0;
         $pageHeight = 842.0;
         $left = 50.0;

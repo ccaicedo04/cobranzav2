@@ -99,6 +99,10 @@ class UsuarioController extends Controller
         }
 
         $usuarioSesion = Session::get('user');
+        $contexto = $this->contextoSelecciones();
+        $hayColegios = !empty($contexto['colegios']);
+        $haySedes = !empty($contexto['sedes']);
+
         $rol = $_POST['rol'] ?? 'agente';
         $rol = $this->normalizarRolSegunSesion($rol, $usuarioSesion);
         $permisosColegio = array_values(array_unique(array_filter(array_map('intval', $_POST['permisos_colegios'] ?? []))));
@@ -109,11 +113,11 @@ class UsuarioController extends Controller
         $permisosSede = $this->limitarSedesPorSesion($permisosSede, $usuarioSesion, $permisosColegio, $rol);
         $permisosModulo = $this->limitarModulosPorSesion($permisosModulo, $usuarioSesion, $rol);
 
-        if ($rol === 'agente' && empty($permisosSede)) {
+        if ($rol === 'agente' && empty($permisosSede) && $haySedes) {
             Helpers::redirect('index.php?route=usuarios');
         }
 
-        if ($rol === 'admin_colegio' && empty($permisosColegio)) {
+        if ($rol === 'admin_colegio' && empty($permisosColegio) && $hayColegios) {
             Helpers::redirect('index.php?route=usuarios');
         }
 

@@ -4,7 +4,8 @@ $pageTitle = 'Usuarios';
 $breadcrumbs = 'Administración / Usuarios';
 $rolesDisponibles = $rolesDisponibles ?? ['agente' => 'Agente'];
 $modulosPorDefecto = $modulosPorDefecto ?? [];
-$formDisabled = empty($colegios) || empty($sedes);
+$formDisabled = false;
+$mostrarAdvertenciaContexto = empty($colegios) || empty($sedes);
 include __DIR__ . '/../../_partials/header.php';
 ?>
 <div class="grid" style="grid-template-columns:2fr 1fr;">
@@ -57,7 +58,7 @@ include __DIR__ . '/../../_partials/header.php';
     </div>
     <div class="card">
         <h3>Crear usuario</h3>
-        <?php if ($formDisabled): ?>
+        <?php if ($mostrarAdvertenciaContexto): ?>
             <div class="alert error" style="margin-bottom:14px;">
                 ⚠️ Para completar el formulario, primero configura al menos un colegio, una sede y los módulos en Parametrización.
             </div>
