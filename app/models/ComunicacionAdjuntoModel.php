@@ -4,10 +4,14 @@ namespace App\Models;
 
 class ComunicacionAdjuntoModel extends BaseModel
 {
-    protected string $table = 'comunicacion_adjunto';
-    protected string $primaryKey = 'id_adjunto';
-    protected bool $softDelete = false;
-    protected array $fillable = [
+    /** @var string */
+    protected $table = 'comunicacion_adjunto';
+    /** @var string */
+    protected $primaryKey = 'id_adjunto';
+    /** @var bool */
+    protected $softDelete = false;
+    /** @var array */
+    protected $fillable = [
         'id_comunicacion',
         'nombre',
         'ruta',

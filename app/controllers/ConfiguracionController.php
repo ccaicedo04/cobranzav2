@@ -9,7 +9,8 @@ use Core\Session;
 
 class ConfiguracionController extends Controller
 {
-    private ConfiguracionModel $configuracion;
+    /** @var ConfiguracionModel */
+    private $configuracion;
 
     public function __construct()
     {

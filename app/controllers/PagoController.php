@@ -11,9 +11,12 @@ use Core\Session;
 
 class PagoController extends Controller
 {
-    private PagoModel $pagos;
-    private EstudianteModel $estudiantes;
-    private AuditoriaModel $auditoria;
+    /** @var PagoModel */
+    private $pagos;
+    /** @var EstudianteModel */
+    private $estudiantes;
+    /** @var AuditoriaModel */
+    private $auditoria;
 
     public function __construct()
     {

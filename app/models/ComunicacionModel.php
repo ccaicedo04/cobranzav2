@@ -4,9 +4,12 @@ namespace App\Models;
 
 class ComunicacionModel extends BaseModel
 {
-    protected string $table = 'comunicacion';
-    protected string $primaryKey = 'id_comunicacion';
-    protected array $fillable = [
+    /** @var string */
+    protected $table = 'comunicacion';
+    /** @var string */
+    protected $primaryKey = 'id_comunicacion';
+    /** @var array */
+    protected $fillable = [
         'id_colegio',
         'id_sede',
         'id_responsable',

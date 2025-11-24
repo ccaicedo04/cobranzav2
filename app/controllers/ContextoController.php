@@ -10,8 +10,10 @@ use Core\Session;
 
 class ContextoController extends Controller
 {
-    private ColegioModel $colegios;
-    private SedeModel $sedes;
+    /** @var ColegioModel */
+    private $colegios;
+    /** @var SedeModel */
+    private $sedes;
 
     public function __construct()
     {

@@ -6,9 +6,12 @@ use PDO;
 
 class UsuarioModel extends BaseModel
 {
-    protected string $table = 'usuario';
-    protected string $primaryKey = 'id_usuario';
-    protected array $fillable = [
+    /** @var string */
+    protected $table = 'usuario';
+    /** @var string */
+    protected $primaryKey = 'id_usuario';
+    /** @var array */
+    protected $fillable = [
         'id_colegio',
         'id_sede',
         'nombre_completo',
@@ -19,7 +22,8 @@ class UsuarioModel extends BaseModel
         'estado',
     ];
 
-    protected array $tenantColumns = [];
+    /** @var array */
+    protected $tenantColumns = [];
 
     public function listadoConContexto(array $restricciones = []): array
     {

@@ -13,9 +13,12 @@ use Core\Session;
 
 class SedeController extends Controller
 {
-    private SedeModel $sedes;
-    private AuditoriaModel $auditoria;
-    private ColegioModel $colegios;
+    /** @var SedeModel */
+    private $sedes;
+    /** @var AuditoriaModel */
+    private $auditoria;
+    /** @var ColegioModel */
+    private $colegios;
 
     public function __construct()
     {

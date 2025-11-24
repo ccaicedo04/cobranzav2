@@ -4,9 +4,12 @@ namespace App\Models;
 
 class EstudianteModel extends BaseModel
 {
-    protected string $table = 'estudiante';
-    protected string $primaryKey = 'id_estudiante';
-    protected array $fillable = [
+    /** @var string */
+    protected $table = 'estudiante';
+    /** @var string */
+    protected $primaryKey = 'id_estudiante';
+    /** @var array */
+    protected $fillable = [
         'id_colegio',
         'id_sede',
         'id_responsable',

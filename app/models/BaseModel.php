@@ -8,14 +8,22 @@ use PDO;
 
 abstract class BaseModel
 {
-    protected PDO $db;
-    protected string $table;
-    protected string $primaryKey = 'id';
-    protected bool $softDelete = true;
-    protected ?string $softDeleteColumn = 'eliminado';
-    protected array $fillable = [];
-    protected array $tenantColumns = ['id_colegio', 'id_sede'];
-    protected static array $tableColumnsCache = [];
+    /** @var PDO */
+    protected $db;
+    /** @var string */
+    protected $table;
+    /** @var string */
+    protected $primaryKey = 'id';
+    /** @var bool */
+    protected $softDelete = true;
+    /** @var ?string */
+    protected $softDeleteColumn = 'eliminado';
+    /** @var array */
+    protected $fillable = [];
+    /** @var array */
+    protected $tenantColumns = ['id_colegio', 'id_sede'];
+    /** @var array */
+    protected static $tableColumnsCache = [];
 
     public function __construct()
     {

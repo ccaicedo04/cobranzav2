@@ -15,13 +15,20 @@ use Core\Session;
 
 class EstudianteController extends Controller
 {
-    private EstudianteModel $estudiantes;
-    private ResponsableModel $responsables;
-    private PeriodoModel $periodos;
-    private AuditoriaModel $auditoria;
-    private SedeModel $sedes;
-    private DeudaModel $deudas;
-    private PagoModel $pagos;
+    /** @var EstudianteModel */
+    private $estudiantes;
+    /** @var ResponsableModel */
+    private $responsables;
+    /** @var PeriodoModel */
+    private $periodos;
+    /** @var AuditoriaModel */
+    private $auditoria;
+    /** @var SedeModel */
+    private $sedes;
+    /** @var DeudaModel */
+    private $deudas;
+    /** @var PagoModel */
+    private $pagos;
 
     public function __construct()
     {

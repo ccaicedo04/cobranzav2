@@ -9,7 +9,8 @@ use Core\Session;
 
 class AuditoriaController extends Controller
 {
-    private AuditoriaModel $auditoria;
+    /** @var AuditoriaModel */
+    private $auditoria;
 
     public function __construct()
     {

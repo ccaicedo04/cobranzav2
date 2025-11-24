@@ -13,11 +13,16 @@ use Core\Session;
 
 class AcuerdoController extends Controller
 {
-    private AcuerdoModel $acuerdos;
-    private CuotaAcuerdoModel $cuotas;
-    private ResponsableModel $responsables;
-    private EstudianteModel $estudiantes;
-    private AuditoriaModel $auditoria;
+    /** @var AcuerdoModel */
+    private $acuerdos;
+    /** @var CuotaAcuerdoModel */
+    private $cuotas;
+    /** @var ResponsableModel */
+    private $responsables;
+    /** @var EstudianteModel */
+    private $estudiantes;
+    /** @var AuditoriaModel */
+    private $auditoria;
 
     public function __construct()
     {

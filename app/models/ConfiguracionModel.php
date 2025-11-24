@@ -4,10 +4,14 @@ namespace App\Models;
 
 class ConfiguracionModel extends BaseModel
 {
-    protected string $table = 'configuracion_colegio';
-    protected string $primaryKey = 'id_configuracion';
-    protected bool $softDelete = false;
-    protected array $fillable = [
+    /** @var string */
+    protected $table = 'configuracion_colegio';
+    /** @var string */
+    protected $primaryKey = 'id_configuracion';
+    /** @var bool */
+    protected $softDelete = false;
+    /** @var array */
+    protected $fillable = [
         'id_colegio',
         'smtp_host',
         'smtp_puerto',

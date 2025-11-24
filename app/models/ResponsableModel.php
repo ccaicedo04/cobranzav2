@@ -4,9 +4,12 @@ namespace App\Models;
 
 class ResponsableModel extends BaseModel
 {
-    protected string $table = 'responsable_financiero';
-    protected string $primaryKey = 'id_responsable';
-    protected array $fillable = [
+    /** @var string */
+    protected $table = 'responsable_financiero';
+    /** @var string */
+    protected $primaryKey = 'id_responsable';
+    /** @var array */
+    protected $fillable = [
         'id_colegio',
         'id_sede',
         'nombre_completo',

@@ -11,9 +11,12 @@ use Core\Session;
 
 class ColegioController extends Controller
 {
-    private ColegioModel $colegios;
-    private AuditoriaModel $auditoria;
-    private SedeModel $sedes;
+    /** @var ColegioModel */
+    private $colegios;
+    /** @var AuditoriaModel */
+    private $auditoria;
+    /** @var SedeModel */
+    private $sedes;
 
     public function __construct()
     {

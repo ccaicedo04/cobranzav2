@@ -8,12 +8,18 @@ class TwilioService
 {
     private const CLIENT_CLASS = '\\Twilio\\Rest\\Client';
 
-    private string $accountSid;
-    private string $authToken;
-    private ?string $whatsAppFrom;
-    private ?string $smsFrom;
-    private string $defaultCountryCode;
-    private ?string $statusCallback;
+    /** @var string */
+    private $accountSid;
+    /** @var string */
+    private $authToken;
+    /** @var ?string */
+    private $whatsAppFrom;
+    /** @var ?string */
+    private $smsFrom;
+    /** @var string */
+    private $defaultCountryCode;
+    /** @var ?string */
+    private $statusCallback;
     /** @var object|null */
     private $client = null;
 

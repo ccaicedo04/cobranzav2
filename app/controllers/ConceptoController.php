@@ -11,9 +11,12 @@ use Core\Session;
 
 class ConceptoController extends Controller
 {
-    private ConceptoModel $conceptos;
-    private ColegioModel $colegios;
-    private AuditoriaModel $auditoria;
+    /** @var ConceptoModel */
+    private $conceptos;
+    /** @var ColegioModel */
+    private $colegios;
+    /** @var AuditoriaModel */
+    private $auditoria;
 
     public function __construct()
     {

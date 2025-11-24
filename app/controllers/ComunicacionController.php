@@ -21,18 +21,30 @@ use App\Services\TwilioService;
 
 class ComunicacionController extends Controller
 {
-    private ComunicacionModel $comunicaciones;
-    private ResponsableModel $responsables;
-    private EstudianteModel $estudiantes;
-    private AuditoriaModel $auditoria;
-    private PlantillaModel $plantillas;
-    private ConfiguracionModel $configuracion;
-    private DeudaModel $deudas;
-    private SedeModel $sedes;
-    private ColegioModel $colegios;
-    private ComunicacionAdjuntoModel $adjuntos;
-    private TwilioService $twilio;
-    private array $twilioConfig = [];
+    /** @var ComunicacionModel */
+    private $comunicaciones;
+    /** @var ResponsableModel */
+    private $responsables;
+    /** @var EstudianteModel */
+    private $estudiantes;
+    /** @var AuditoriaModel */
+    private $auditoria;
+    /** @var PlantillaModel */
+    private $plantillas;
+    /** @var ConfiguracionModel */
+    private $configuracion;
+    /** @var DeudaModel */
+    private $deudas;
+    /** @var SedeModel */
+    private $sedes;
+    /** @var ColegioModel */
+    private $colegios;
+    /** @var ComunicacionAdjuntoModel */
+    private $adjuntos;
+    /** @var TwilioService */
+    private $twilio;
+    /** @var array */
+    private $twilioConfig = [];
 
     public function __construct()
     {

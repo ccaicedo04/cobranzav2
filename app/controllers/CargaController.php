@@ -11,9 +11,12 @@ use Core\Session;
 
 class CargaController extends Controller
 {
-    private CargaMasivaModel $cargas;
-    private ReporteModel $reportes;
-    private ComunicacionModel $comunicaciones;
+    /** @var CargaMasivaModel */
+    private $cargas;
+    /** @var ReporteModel */
+    private $reportes;
+    /** @var ComunicacionModel */
+    private $comunicaciones;
 
     public function __construct()
     {

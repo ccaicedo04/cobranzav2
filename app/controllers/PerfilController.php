@@ -9,7 +9,8 @@ use Core\Session;
 
 class PerfilController extends Controller
 {
-    private UsuarioModel $usuarios;
+    /** @var UsuarioModel */
+    private $usuarios;
 
     public function __construct()
     {

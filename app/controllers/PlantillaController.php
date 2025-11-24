@@ -9,7 +9,8 @@ use Core\Session;
 
 class PlantillaController extends Controller
 {
-    private PlantillaModel $plantillas;
+    /** @var PlantillaModel */
+    private $plantillas;
 
     public function __construct()
     {

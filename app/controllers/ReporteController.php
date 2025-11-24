@@ -12,7 +12,8 @@ use Throwable;
 
 class ReporteController extends Controller
 {
-    private ReporteModel $reportes;
+    /** @var ReporteModel */
+    private $reportes;
 
     public function __construct()
     {

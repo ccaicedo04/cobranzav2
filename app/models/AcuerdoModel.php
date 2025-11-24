@@ -4,9 +4,12 @@ namespace App\Models;
 
 class AcuerdoModel extends BaseModel
 {
-    protected string $table = 'acuerdo_pago';
-    protected string $primaryKey = 'id_acuerdo';
-    protected array $fillable = [
+    /** @var string */
+    protected $table = 'acuerdo_pago';
+    /** @var string */
+    protected $primaryKey = 'id_acuerdo';
+    /** @var array */
+    protected $fillable = [
         'id_colegio',
         'id_sede',
         'id_responsable',

@@ -4,9 +4,12 @@ namespace App\Models;
 
 class PlantillaModel extends BaseModel
 {
-    protected string $table = 'plantilla_comunicacion';
-    protected string $primaryKey = 'id_plantilla';
-    protected array $fillable = [
+    /** @var string */
+    protected $table = 'plantilla_comunicacion';
+    /** @var string */
+    protected $primaryKey = 'id_plantilla';
+    /** @var array */
+    protected $fillable = [
         'id_colegio',
         'nombre',
         'canal',

@@ -9,7 +9,8 @@ use Core\Session;
 
 class ParametroController extends Controller
 {
-    private ParametroModel $parametros;
+    /** @var ParametroModel */
+    private $parametros;
 
     public function __construct()
     {

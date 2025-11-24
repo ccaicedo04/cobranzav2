@@ -16,14 +16,22 @@ use Core\Session;
 
 class ResponsableController extends Controller
 {
-    private ResponsableModel $responsables;
-    private EstudianteModel $estudiantes;
-    private DeudaModel $deudas;
-    private PagoModel $pagos;
-    private ComunicacionModel $comunicaciones;
-    private SedeModel $sedes;
-    private ColegioModel $colegios;
-    private AuditoriaModel $auditoria;
+    /** @var ResponsableModel */
+    private $responsables;
+    /** @var EstudianteModel */
+    private $estudiantes;
+    /** @var DeudaModel */
+    private $deudas;
+    /** @var PagoModel */
+    private $pagos;
+    /** @var ComunicacionModel */
+    private $comunicaciones;
+    /** @var SedeModel */
+    private $sedes;
+    /** @var ColegioModel */
+    private $colegios;
+    /** @var AuditoriaModel */
+    private $auditoria;
 
     public function __construct()
     {

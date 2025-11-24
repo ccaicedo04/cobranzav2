@@ -11,10 +11,14 @@ use Core\Controller;
 
 class TwilioWebhookController extends Controller
 {
-    private ComunicacionModel $comunicaciones;
-    private ResponsableModel $responsables;
-    private ComunicacionAdjuntoModel $adjuntos;
-    private ConfiguracionModel $configuracion;
+    /** @var ComunicacionModel */
+    private $comunicaciones;
+    /** @var ResponsableModel */
+    private $responsables;
+    /** @var ComunicacionAdjuntoModel */
+    private $adjuntos;
+    /** @var ConfiguracionModel */
+    private $configuracion;
 
     public function __construct()
     {

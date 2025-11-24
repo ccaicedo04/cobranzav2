@@ -9,7 +9,8 @@ use Core\Session;
 
 class DashboardController extends Controller
 {
-    private ReporteModel $reportes;
+    /** @var ReporteModel */
+    private $reportes;
 
     public function __construct()
     {

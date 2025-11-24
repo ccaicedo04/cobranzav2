@@ -11,9 +11,12 @@ use Core\Session;
 
 class PeriodoController extends Controller
 {
-    private PeriodoModel $periodos;
-    private ColegioModel $colegios;
-    private AuditoriaModel $auditoria;
+    /** @var PeriodoModel */
+    private $periodos;
+    /** @var ColegioModel */
+    private $colegios;
+    /** @var AuditoriaModel */
+    private $auditoria;
 
     public function __construct()
     {

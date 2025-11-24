@@ -13,11 +13,16 @@ use Core\Session;
 
 class UsuarioController extends Controller
 {
-    private UsuarioModel $usuarios;
-    private SedeModel $sedes;
-    private AuditoriaModel $auditoria;
-    private ColegioModel $colegios;
-    private ModuloModel $modulos;
+    /** @var UsuarioModel */
+    private $usuarios;
+    /** @var SedeModel */
+    private $sedes;
+    /** @var AuditoriaModel */
+    private $auditoria;
+    /** @var ColegioModel */
+    private $colegios;
+    /** @var ModuloModel */
+    private $modulos;
 
     public function __construct()
     {

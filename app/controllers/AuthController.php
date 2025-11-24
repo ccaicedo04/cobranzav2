@@ -12,10 +12,14 @@ use Core\Session;
 
 class AuthController extends Controller
 {
-    private UsuarioModel $usuarios;
-    private AuditoriaModel $auditoria;
-    private SedeModel $sedes;
-    private ColegioModel $colegios;
+    /** @var UsuarioModel */
+    private $usuarios;
+    /** @var AuditoriaModel */
+    private $auditoria;
+    /** @var SedeModel */
+    private $sedes;
+    /** @var ColegioModel */
+    private $colegios;
 
     public function __construct()
     {

@@ -14,11 +14,16 @@ use Core\Session;
 
 class DeudaController extends Controller
 {
-    private DeudaModel $deudas;
-    private EstudianteModel $estudiantes;
-    private ConceptoModel $conceptos;
-    private PeriodoModel $periodos;
-    private AuditoriaModel $auditoria;
+    /** @var DeudaModel */
+    private $deudas;
+    /** @var EstudianteModel */
+    private $estudiantes;
+    /** @var ConceptoModel */
+    private $conceptos;
+    /** @var PeriodoModel */
+    private $periodos;
+    /** @var AuditoriaModel */
+    private $auditoria;
 
     public function __construct()
     {
