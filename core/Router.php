@@ -7,26 +7,43 @@ use Exception;
 
 class Router
 {
-    private array $routes = [];
+    /** @var array */
+    private $routes = [];
 
-    public function get(string $route, array|Closure $action): void
+    /**
+     * @param array|Closure $action
+     * @return void
+     */
+    public function get(string $route, $action)
     {
         $this->addRoute('GET', $route, $action);
     }
 
-    public function post(string $route, array|Closure $action): void
+    /**
+     * @param array|Closure $action
+     * @return void
+     */
+    public function post(string $route, $action)
     {
         $this->addRoute('POST', $route, $action);
     }
 
-    public function match(array $methods, string $route, array|Closure $action): void
+    /**
+     * @param array|Closure $action
+     * @return void
+     */
+    public function match(array $methods, string $route, $action)
     {
         foreach ($methods as $method) {
             $this->addRoute($method, $route, $action);
         }
     }
 
-    private function addRoute(string $method, string $route, array|Closure $action): void
+    /**
+     * @param array|Closure $action
+     * @return void
+     */
+    private function addRoute(string $method, string $route, $action)
     {
         $this->routes[$method][$route] = $action;
     }

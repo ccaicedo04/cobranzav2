@@ -15,13 +15,20 @@ use Core\Session;
 
 class EstudianteController extends Controller
 {
-    private EstudianteModel $estudiantes;
-    private ResponsableModel $responsables;
-    private PeriodoModel $periodos;
-    private AuditoriaModel $auditoria;
-    private SedeModel $sedes;
-    private DeudaModel $deudas;
-    private PagoModel $pagos;
+    /** @var EstudianteModel */
+    private $estudiantes;
+    /** @var ResponsableModel */
+    private $responsables;
+    /** @var PeriodoModel */
+    private $periodos;
+    /** @var AuditoriaModel */
+    private $auditoria;
+    /** @var SedeModel */
+    private $sedes;
+    /** @var DeudaModel */
+    private $deudas;
+    /** @var PagoModel */
+    private $pagos;
 
     public function __construct()
     {
@@ -40,7 +47,7 @@ class EstudianteController extends Controller
         $this->pagos = new PagoModel();
     }
 
-    public function index(): void
+    public function index()
     {
         $filtros = [
             'estado' => $_GET['estado'] ?? null,
@@ -53,7 +60,7 @@ class EstudianteController extends Controller
         ]);
     }
 
-    public function create(): void
+    public function create()
     {
         $responsables = $this->responsables->conContexto();
         $sedes = $this->sedesDisponibles();
@@ -64,7 +71,7 @@ class EstudianteController extends Controller
         ]);
     }
 
-    public function store(): void
+    public function store()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !Helpers::validateCsrf($_POST['_token'] ?? '')) {
             Helpers::redirect('index.php?route=estudiantes');
@@ -103,7 +110,7 @@ class EstudianteController extends Controller
         Helpers::redirect('index.php?route=estudiantes/detalle&id=' . $id);
     }
 
-    public function edit(): void
+    public function edit()
     {
         $id = (int) ($_GET['id'] ?? 0);
         $datos = $this->estudiantes->conContexto(['id_estudiante' => $id]);
@@ -122,7 +129,7 @@ class EstudianteController extends Controller
         ]);
     }
 
-    public function update(): void
+    public function update()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !Helpers::validateCsrf($_POST['_token'] ?? '')) {
             Helpers::redirect('index.php?route=estudiantes');
@@ -161,7 +168,7 @@ class EstudianteController extends Controller
         Helpers::redirect('index.php?route=estudiantes/detalle&id=' . $id);
     }
 
-    public function delete(): void
+    public function delete()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !Helpers::validateCsrf($_POST['_token'] ?? '')) {
             Helpers::redirect('index.php?route=estudiantes');
@@ -186,7 +193,7 @@ class EstudianteController extends Controller
         Helpers::redirect('index.php?route=estudiantes');
     }
 
-    public function detalle(): void
+    public function detalle()
     {
         $id = (int) ($_GET['id'] ?? 0);
         $datos = $this->estudiantes->conContexto(['id_estudiante' => $id]);

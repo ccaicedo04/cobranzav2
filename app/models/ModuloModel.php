@@ -4,10 +4,14 @@ namespace App\Models;
 
 class ModuloModel extends BaseModel
 {
-    protected string $table = 'modulo_sistema';
-    protected string $primaryKey = 'id_modulo';
-    protected bool $softDelete = false;
-    protected array $fillable = [
+    /** @var string */
+    protected $table = 'modulo_sistema';
+    /** @var string */
+    protected $primaryKey = 'id_modulo';
+    /** @var bool */
+    protected $softDelete = false;
+    /** @var array */
+    protected $fillable = [
         'codigo',
         'nombre',
         'descripcion',

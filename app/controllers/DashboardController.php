@@ -9,7 +9,8 @@ use Core\Session;
 
 class DashboardController extends Controller
 {
-    private ReporteModel $reportes;
+    /** @var ReporteModel */
+    private $reportes;
 
     public function __construct()
     {
@@ -20,7 +21,7 @@ class DashboardController extends Controller
         $this->reportes = new ReporteModel();
     }
 
-    public function index(): void
+    public function index()
     {
         $kpis = [
             'carteraPendiente' => $this->reportes->carteraPendiente(),

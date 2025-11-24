@@ -13,11 +13,16 @@ use Core\Session;
 
 class AcuerdoController extends Controller
 {
-    private AcuerdoModel $acuerdos;
-    private CuotaAcuerdoModel $cuotas;
-    private ResponsableModel $responsables;
-    private EstudianteModel $estudiantes;
-    private AuditoriaModel $auditoria;
+    /** @var AcuerdoModel */
+    private $acuerdos;
+    /** @var CuotaAcuerdoModel */
+    private $cuotas;
+    /** @var ResponsableModel */
+    private $responsables;
+    /** @var EstudianteModel */
+    private $estudiantes;
+    /** @var AuditoriaModel */
+    private $auditoria;
 
     public function __construct()
     {
@@ -34,7 +39,7 @@ class AcuerdoController extends Controller
         $this->auditoria = new AuditoriaModel();
     }
 
-    public function index(): void
+    public function index()
     {
         $responsableId = (int) ($_GET['responsable'] ?? 0);
         $acuerdos = $this->acuerdos->all();
@@ -51,7 +56,7 @@ class AcuerdoController extends Controller
         ]);
     }
 
-    public function store(): void
+    public function store()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !Helpers::validateCsrf($_POST['_token'] ?? '')) {
             Helpers::redirect('index.php?route=acuerdos');
