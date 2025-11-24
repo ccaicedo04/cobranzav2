@@ -4,7 +4,7 @@ $pageTitle = 'Usuarios';
 $breadcrumbs = 'Administración / Usuarios';
 $rolesDisponibles = $rolesDisponibles ?? ['agente' => 'Agente'];
 $modulosPorDefecto = $modulosPorDefecto ?? [];
-$formDisabled = empty($colegios) || empty($sedes) || empty($modulos);
+$formDisabled = empty($colegios) || empty($sedes);
 include __DIR__ . '/../../_partials/header.php';
 ?>
 <div class="grid" style="grid-template-columns:2fr 1fr;">
@@ -116,7 +116,8 @@ include __DIR__ . '/../../_partials/header.php';
                             </label>
                         <?php endforeach; ?>
                     <?php else: ?>
-                        <p class="small" style="margin:0;">No hay módulos configurados aún. Ajusta la parametrización para habilitar opciones.</p>
+                        <input type="hidden" name="permisos_modulos[]" value="cobranzas">
+                        <p class="small" style="margin:0;">No hay módulos configurados aún. Se asignará <strong>Cobranzas</strong> por defecto hasta que actives más opciones en Parametrización.</p>
                     <?php endif; ?>
                 </div>
             </fieldset>

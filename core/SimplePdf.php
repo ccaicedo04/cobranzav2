@@ -30,7 +30,7 @@ class SimplePdf
     /**
      * @return void
      */
-    public static function downloadTable(string $filename, array $document)
+    public static function downloadTable(string $filename, array $document, bool $inline = false)
     {
         if (function_exists('ob_get_level')) {
             while (ob_get_level() > 0) {
@@ -40,18 +40,11 @@ class SimplePdf
 
         $pdf = self::renderTable($document);
         if ($pdf === '') {
-            $pdf = self::renderTable([
-                'title' => 'Reporte',
-                'columns' => [
-                    ['campo' => 'mensaje', 'etiqueta' => 'Mensaje', 'ancho' => 100],
-                ],
-                'rows' => [['No se pudo construir el PDF con los datos suministrados.']],
-                'meta' => ['Generado' => date('Y-m-d H:i:s')],
-            ]);
+            $pdf = self::fallbackPdf('No se pudo construir el PDF con los datos suministrados.');
         }
+
         header('Content-Type: application/pdf');
-        header('Content-Disposition: attachment; filename="' . $filename . '"');
-        header('Content-Length: ' . strlen($pdf));
+        header(($inline ? 'Content-Disposition: inline; filename="' : 'Content-Disposition: attachment; filename="') . $filename . '"');
         echo $pdf;
         exit;
     }
@@ -224,6 +217,35 @@ class SimplePdf
             '<< /Length ' . strlen($stream) . ' >>\nstream\n' . $stream . "endstream",
             '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>',
             '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>',
+        ];
+
+        $buffer = "%PDF-1.4\n";
+        $offsets = [];
+        foreach ($objects as $index => $object) {
+            $offsets[$index + 1] = strlen($buffer);
+            $buffer .= ($index + 1) . " 0 obj\n" . $object . "\nendobj\n";
+        }
+        $xrefPos = strlen($buffer);
+        $buffer .= 'xref\n0 ' . (count($objects) + 1) . "\n";
+        $buffer .= "0000000000 65535 f \n";
+        foreach ($offsets as $offset) {
+            $buffer .= sprintf("%010d 00000 n \n", $offset);
+        }
+        $buffer .= 'trailer << /Size ' . (count($objects) + 1) . ' /Root 1 0 R >>\n';
+        $buffer .= 'startxref\n' . $xrefPos . "\n%%EOF";
+
+        return $buffer;
+    }
+
+    private static function fallbackPdf(string $mensaje): string
+    {
+        $contenido = 'BT /F1 12 Tf 50 800 Td (' . self::escape($mensaje) . ') Tj ET';
+        $objects = [
+            '<< /Type /Catalog /Pages 2 0 R >>',
+            '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
+            '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>',
+            '<< /Length ' . strlen($contenido) . ' >>\nstream\n' . $contenido . "\nendstream",
+            '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>',
         ];
 
         $buffer = "%PDF-1.4\n";

@@ -84,7 +84,8 @@ class ReporteController extends Controller
             $datos = $this->obtenerDatosPorTipo($tipo, $filtros);
 
             $documento = $this->construirDocumentoPdf($config, $datos, $filtros, $tipo);
-            SimplePdf::downloadTable('reporte_' . $tipo . '.pdf', $documento);
+            $inline = isset($_GET['preview']) && $_GET['preview'] === '1';
+            SimplePdf::downloadTable('reporte_' . $tipo . '.pdf', $documento, $inline);
         } catch (Throwable $throwable) {
             if (function_exists('ob_get_level')) {
                 while (ob_get_level() > 0) {
