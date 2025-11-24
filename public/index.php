@@ -27,6 +27,11 @@ use Core\Helpers;
 use Core\Router;
 use Core\Session;
 
+$vendorAutoload = dirname(__DIR__) . '/vendor/autoload.php';
+if (file_exists($vendorAutoload)) {
+    require_once $vendorAutoload;
+}
+
 spl_autoload_register(function (string $class): void {
     $baseDir = dirname(__DIR__) . '/';
     $class = ltrim($class, '\\');

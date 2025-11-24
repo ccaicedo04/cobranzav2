@@ -32,6 +32,7 @@ class ComunicacionController extends Controller
     private ColegioModel $colegios;
     private ComunicacionAdjuntoModel $adjuntos;
     private TwilioService $twilio;
+    private array $twilioConfig = [];
 
     public function __construct()
     {
@@ -51,7 +52,14 @@ class ComunicacionController extends Controller
         $this->sedes = new SedeModel();
         $this->colegios = new ColegioModel();
         $this->adjuntos = new ComunicacionAdjuntoModel();
-        $this->twilio = new TwilioService();
+
+        $usuario = Session::get('user');
+        $idColegio = (int) ($usuario['id_colegio'] ?? 0);
+        if ($idColegio > 0) {
+            $this->twilioConfig = $this->configuracion->obtenerTwilio($idColegio) ?? [];
+        }
+
+        $this->twilio = $this->crearServicioTwilio($this->twilioConfig);
     }
 
     public function index(): void
@@ -101,7 +109,7 @@ class ComunicacionController extends Controller
             'status' => $_GET['status'] ?? null,
             'statusMessage' => $_GET['message'] ?? null,
             'token' => Helpers::csrfToken(),
-            'twilioConfigured' => $this->twilio->configured(),
+            'twilioConfigured' => $this->twilio->ready(),
         ]);
     }
 
@@ -237,9 +245,16 @@ class ComunicacionController extends Controller
                 $resultado = 'Mensaje enviado vía ' . ucfirst($canal);
             }
 
+            $twilioConfig = $this->configuracion->obtenerTwilio($idColegio) ?? $this->twilioConfig;
+            $twilioServicio = $this->crearServicioTwilio($twilioConfig);
+
             try {
-                if (!$this->twilio->configured()) {
+                if (!$twilioServicio->configured()) {
                     throw new RuntimeException('Configura las credenciales de Twilio para utilizar Twilio en este canal.');
+                }
+
+                if (!$twilioServicio->ready()) {
+                    throw new RuntimeException('El SDK oficial de Twilio no está disponible en el servidor. Ejecuta "composer install" para habilitarlo.');
                 }
 
                 $telefonoDestino = trim((string) ($responsable['telefono'] ?? ''));
@@ -248,8 +263,8 @@ class ComunicacionController extends Controller
                 }
 
                 $twilioRespuesta = $canal === 'whatsapp'
-                    ? $this->twilio->sendWhatsApp($telefonoDestino, $mensajePlano)
-                    : $this->twilio->sendSms($telefonoDestino, $mensajePlano);
+                    ? $twilioServicio->sendWhatsApp($telefonoDestino, $mensajePlano)
+                    : $twilioServicio->sendSms($telefonoDestino, $mensajePlano);
 
                 $estadoEnvio = 'enviado';
                 $detalleEnvio = 'Mensaje enviado por Twilio';
@@ -777,5 +792,19 @@ class ComunicacionController extends Controller
             . '<div style="max-width:720px;margin:32px auto;background:#ffffff;border-radius:18px;box-shadow:0 24px 60px rgba(15,47,90,.18);overflow:hidden;">'
             . $encabezado . $cuerpo . $pie
             . '</div></body></html>';
+    }
+
+    private function crearServicioTwilio(?array $config): TwilioService
+    {
+        $config = $config ?? [];
+
+        return new TwilioService(
+            $config['account_sid'] ?? ($config['twilio_account_sid'] ?? null),
+            $config['auth_token'] ?? ($config['twilio_auth_token'] ?? null),
+            $config['whatsapp_from'] ?? ($config['twilio_whatsapp_from'] ?? null),
+            $config['sms_from'] ?? ($config['twilio_sms_from'] ?? null),
+            $config['default_country'] ?? ($config['twilio_default_country'] ?? null),
+            $config['status_callback'] ?? ($config['twilio_status_callback'] ?? null)
+        );
     }
 }

@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Models\ComunicacionAdjuntoModel;
 use App\Models\ComunicacionModel;
+use App\Models\ConfiguracionModel;
 use App\Models\ResponsableModel;
 use App\Services\TwilioService;
 use Core\Controller;
@@ -13,7 +14,7 @@ class TwilioWebhookController extends Controller
     private ComunicacionModel $comunicaciones;
     private ResponsableModel $responsables;
     private ComunicacionAdjuntoModel $adjuntos;
-    private TwilioService $twilio;
+    private ConfiguracionModel $configuracion;
 
     public function __construct()
     {
@@ -21,7 +22,7 @@ class TwilioWebhookController extends Controller
         $this->comunicaciones = new ComunicacionModel();
         $this->responsables = new ResponsableModel();
         $this->adjuntos = new ComunicacionAdjuntoModel();
-        $this->twilio = new TwilioService();
+        $this->configuracion = new ConfiguracionModel();
     }
 
     public function incoming(): void
@@ -79,14 +80,16 @@ class TwilioWebhookController extends Controller
             'eliminado' => 0,
         ]);
 
-        if ($numMedia > 0) {
-            $this->guardarAdjuntos($id, $numMedia);
+        $twilio = $this->crearServicioTwilio((int) ($responsable['id_colegio'] ?? 0));
+
+        if ($numMedia > 0 && $twilio->ready()) {
+            $this->guardarAdjuntos($id, $numMedia, $twilio);
         }
 
         $this->respondXml();
     }
 
-    private function guardarAdjuntos(int $idComunicacion, int $numMedia): void
+    private function guardarAdjuntos(int $idComunicacion, int $numMedia, TwilioService $twilio): void
     {
         $basePath = dirname(__DIR__, 2) . '/uploads/comunicaciones/' . $idComunicacion;
         if (!is_dir($basePath)) {
@@ -106,7 +109,7 @@ class TwilioWebhookController extends Controller
             $absolute = $basePath . '/' . $filename;
 
             try {
-                $descarga = $this->twilio->downloadMedia($mediaUrl);
+                $descarga = $twilio->downloadMedia($mediaUrl);
                 file_put_contents($absolute, $descarga['content']);
                 $this->adjuntos->create([
                     'id_comunicacion' => $idComunicacion,
@@ -176,5 +179,19 @@ class TwilioWebhookController extends Controller
     {
         header('Content-Type: text/xml');
         echo '<?xml version="1.0" encoding="UTF-8"?><Response></Response>';
+    }
+
+    private function crearServicioTwilio(int $idColegio): TwilioService
+    {
+        $config = $idColegio > 0 ? $this->configuracion->obtenerTwilio($idColegio) : null;
+
+        return new TwilioService(
+            $config['account_sid'] ?? null,
+            $config['auth_token'] ?? null,
+            $config['whatsapp_from'] ?? null,
+            $config['sms_from'] ?? null,
+            $config['default_country'] ?? null,
+            $config['status_callback'] ?? null
+        );
     }
 }

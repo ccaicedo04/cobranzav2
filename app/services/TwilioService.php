@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use RuntimeException;
+use Twilio\Rest\Client;
 
 class TwilioService
 {
@@ -11,13 +12,16 @@ class TwilioService
     private ?string $whatsAppFrom;
     private ?string $smsFrom;
     private string $defaultCountryCode;
+    private ?string $statusCallback;
+    private ?Client $client = null;
 
     public function __construct(
         ?string $accountSid = null,
         ?string $authToken = null,
         ?string $whatsAppFrom = null,
         ?string $smsFrom = null,
-        ?string $defaultCountryCode = null
+        ?string $defaultCountryCode = null,
+        ?string $statusCallback = null
     ) {
         $this->accountSid = trim((string) ($accountSid ?? getenv('TWILIO_ACCOUNT_SID') ?: ''));
         $this->authToken = trim((string) ($authToken ?? getenv('TWILIO_AUTH_TOKEN') ?: ''));
@@ -32,6 +36,12 @@ class TwilioService
             $code = '+' . ltrim($code, '+');
         }
         $this->defaultCountryCode = $code;
+        $statusCallback = trim((string) ($statusCallback ?? getenv('TWILIO_STATUS_CALLBACK') ?: ''));
+        $this->statusCallback = $statusCallback !== '' ? $statusCallback : null;
+
+        if ($this->configured() && class_exists(Client::class)) {
+            $this->client = new Client($this->accountSid, $this->authToken);
+        }
     }
 
     public function configured(): bool
@@ -39,64 +49,84 @@ class TwilioService
         return $this->accountSid !== '' && $this->authToken !== '';
     }
 
+    public function ready(): bool
+    {
+        return $this->configured() && class_exists(Client::class);
+    }
+
     public function sendWhatsApp(string $to, string $body, array $mediaUrls = []): array
     {
-        $payload = [
-            'From' => $this->formatFrom('whatsapp'),
-            'To' => $this->formatDestination($to, 'whatsapp'),
-            'Body' => $body,
+        $this->ensureClient();
+
+        $options = [
+            'from' => $this->formatFrom('whatsapp'),
+            'body' => $body,
         ];
 
         if (!empty($mediaUrls)) {
             $mediaUrls = array_values(array_filter($mediaUrls, static fn ($value) => is_string($value) && $value !== ''));
             if ($mediaUrls) {
-                // Twilio admite múltiples MediaUrl repitiendo el parámetro. Utilizamos el primero disponible.
-                $payload['MediaUrl'] = $mediaUrls[0];
+                $options['mediaUrl'] = $mediaUrls;
             }
         }
 
-        return $this->request('POST', '/Messages.json', $payload);
+        if ($this->statusCallback) {
+            $options['statusCallback'] = $this->statusCallback;
+        }
+
+        $message = $this->client->messages->create($this->formatDestination($to, 'whatsapp'), $options);
+
+        return method_exists($message, 'toArray') ? $message->toArray() : ['sid' => $message->sid ?? null];
     }
 
     public function sendSms(string $to, string $body): array
     {
-        $payload = [
-            'From' => $this->formatFrom('sms'),
-            'To' => $this->formatDestination($to, 'sms'),
-            'Body' => $body,
+        $this->ensureClient();
+
+        $options = [
+            'from' => $this->formatFrom('sms'),
+            'body' => $body,
         ];
 
-        return $this->request('POST', '/Messages.json', $payload);
+        if ($this->statusCallback) {
+            $options['statusCallback'] = $this->statusCallback;
+        }
+
+        $message = $this->client->messages->create($this->formatDestination($to, 'sms'), $options);
+
+        return method_exists($message, 'toArray') ? $message->toArray() : ['sid' => $message->sid ?? null];
     }
 
     public function downloadMedia(string $url): array
     {
-        $this->ensureCredentials();
-        $ch = curl_init($url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_USERPWD, $this->accountSid . ':' . $this->authToken);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+        $this->ensureClient();
 
-        $content = curl_exec($ch);
-        if ($content === false) {
-            $error = curl_error($ch);
-            curl_close($ch);
-            throw new RuntimeException('No fue posible descargar el adjunto de Twilio: ' . $error);
+        $response = $this->client->request('GET', $url);
+        $status = method_exists($response, 'getStatusCode') ? $response->getStatusCode() : null;
+        $content = method_exists($response, 'getContent') ? $response->getContent() : null;
+        $headers = method_exists($response, 'getHeaders') ? $response->getHeaders() : [];
+
+        if ($status !== null && $status >= 400) {
+            throw new RuntimeException('Twilio retornó un error al descargar el adjunto. Código: ' . $status);
         }
 
-        $status = curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
-        $type = curl_getinfo($ch, CURLINFO_CONTENT_TYPE) ?: 'application/octet-stream';
-        curl_close($ch);
+        if ($content === null) {
+            throw new RuntimeException('No fue posible descargar el adjunto de Twilio.');
+        }
 
-        if ($status >= 400) {
-            throw new RuntimeException('Twilio retornó un error al descargar el adjunto. Código: ' . $status);
+        $contentType = 'application/octet-stream';
+        if (is_array($headers)) {
+            foreach ($headers as $header => $value) {
+                if (strtolower($header) === 'content-type') {
+                    $contentType = is_array($value) ? (string) ($value[0] ?? $contentType) : (string) $value;
+                    break;
+                }
+            }
         }
 
         return [
             'content' => $content,
-            'content_type' => $type,
+            'content_type' => $contentType,
             'size' => strlen($content),
         ];
     }
@@ -160,52 +190,18 @@ class TwilioService
         return $formatted;
     }
 
-    private function ensureCredentials(): void
+    private function ensureClient(): void
     {
         if (!$this->configured()) {
             throw new RuntimeException('No se han configurado las credenciales de Twilio.');
         }
-    }
 
-    private function request(string $method, string $uri, array $data = []): array
-    {
-        $this->ensureCredentials();
-        $url = 'https://api.twilio.com/2010-04-01/Accounts/' . rawurlencode($this->accountSid) . $uri;
-        if ($method === 'GET' && $data) {
-            $url .= '?' . http_build_query($data, '', '&', PHP_QUERY_RFC3986);
+        if (!class_exists(Client::class)) {
+            throw new RuntimeException('El SDK oficial de Twilio no está disponible. Ejecuta "composer install" para completarlo.');
         }
 
-        $ch = curl_init($url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_USERPWD, $this->accountSid . ':' . $this->authToken);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
-
-        if ($method === 'POST') {
-            curl_setopt($ch, CURLOPT_POST, true);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data, '', '&', PHP_QUERY_RFC3986));
+        if (!$this->client) {
+            $this->client = new Client($this->accountSid, $this->authToken);
         }
-
-        $response = curl_exec($ch);
-        if ($response === false) {
-            $error = curl_error($ch);
-            curl_close($ch);
-            throw new RuntimeException('Error al comunicarse con Twilio: ' . $error);
-        }
-
-        $status = curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
-        curl_close($ch);
-
-        $decoded = json_decode($response, true);
-        if (!is_array($decoded)) {
-            throw new RuntimeException('Respuesta no válida de Twilio.');
-        }
-
-        if ($status >= 400) {
-            $message = $decoded['message'] ?? 'Error desconocido en Twilio.';
-            throw new RuntimeException('Twilio respondió con error: ' . $message);
-        }
-
-        return $decoded;
     }
 }

@@ -297,6 +297,13 @@ CREATE TABLE configuracion_colegio (
     whatsapp_endpoint VARCHAR(255) NULL,
     sms_api_key VARCHAR(255) NULL,
     sms_endpoint VARCHAR(255) NULL,
+    twilio_account_sid VARCHAR(64) NULL,
+    twilio_auth_token VARCHAR(128) NULL,
+    twilio_whatsapp_from VARCHAR(32) NULL,
+    twilio_sms_from VARCHAR(32) NULL,
+    twilio_default_country VARCHAR(8) NULL,
+    twilio_status_callback VARCHAR(255) NULL,
+    twilio_incoming_webhook VARCHAR(255) NULL,
     logo_path VARCHAR(255) NULL,
     actualizado_por INT NULL,
     fecha_actualizacion DATETIME NULL
@@ -353,8 +360,8 @@ INSERT INTO usuario_modulo (id_usuario, id_modulo) VALUES
 (2, 3),
 (3, 1);
 
-INSERT INTO configuracion_colegio (id_colegio, smtp_host, smtp_puerto, smtp_usuario, smtp_password, whatsapp_api_key, whatsapp_endpoint, sms_api_key, sms_endpoint, logo_path, actualizado_por, fecha_actualizacion) VALUES
-(1, 'smtp.gmail.com', '587', 'carlos.quinones@lm-technology.com.co', 'Carlitos 2025*', NULL, NULL, NULL, NULL, 'logos/principado-monaco.png', 1, CURRENT_TIMESTAMP);
+INSERT INTO configuracion_colegio (id_colegio, smtp_host, smtp_puerto, smtp_usuario, smtp_password, whatsapp_api_key, whatsapp_endpoint, sms_api_key, sms_endpoint, twilio_account_sid, twilio_auth_token, twilio_whatsapp_from, twilio_sms_from, twilio_default_country, twilio_status_callback, twilio_incoming_webhook, logo_path, actualizado_por, fecha_actualizacion) VALUES
+(1, 'smtp.gmail.com', '587', 'carlos.quinones@lm-technology.com.co', 'Carlitos 2025*', NULL, NULL, NULL, NULL, 'AC20721067f213f23d24dc2e550556fb52', 'c0994f196c815f16a4eade49778e094c', '+12566374335', '+12566374335', '+57', NULL, 'https://timberwolf-mastiff-9776.twil.io/demo-reply', 'logos/principado-monaco.png', 1, CURRENT_TIMESTAMP);
 
 INSERT INTO responsable_financiero (id_colegio, id_sede, nombre_completo, tipo_documento, numero_documento, telefono, correo, direccion, estado, eliminado) VALUES
 (1, 1, 'Villalobos Munoz Fernando', 'CC', '80073011', '+57 308 007 3011', 'villalobos.munoz.fernando@familias-principado.edu.co', 'Cra 12 #145-30, Bogotá', 'activo', 0),
