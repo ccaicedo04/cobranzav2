@@ -6,21 +6,36 @@ class Autoload
 {
     public static function register()
     {
-        $baseDirs = [
-            dirname(__DIR__) . '/app/',
-            dirname(__DIR__) . '/core/',
-        ];
+        $root = dirname(__DIR__);
 
-        spl_autoload_register(function ($class) use ($baseDirs) {
-            $class = ltrim($class, '\\');
-            $relative = str_replace('\\', '/', $class) . '.php';
+        spl_autoload_register(function ($class) use ($root) {
+            $normalized = ltrim($class, '\\');
+            if ($normalized === '') {
+                return;
+            }
 
-            foreach ($baseDirs as $baseDir) {
-                $file = $baseDir . $relative;
-                if (is_file($file)) {
-                    require_once $file;
-                    return;
-                }
+            $parts = explode('\\', $normalized);
+            if (count($parts) === 0) {
+                return;
+            }
+
+            $prefix = strtolower(array_shift($parts));
+            if ($prefix !== 'app' && $prefix !== 'core') {
+                return;
+            }
+
+            $segments = [$prefix];
+            if (count($parts) > 0) {
+                $segments[] = strtolower(array_shift($parts));
+            }
+
+            if (count($parts) > 0) {
+                $segments[] = implode('/', $parts);
+            }
+
+            $file = $root . '/' . implode('/', $segments) . '.php';
+            if (is_file($file)) {
+                require_once $file;
             }
         });
 
