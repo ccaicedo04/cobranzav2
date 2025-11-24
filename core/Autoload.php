@@ -59,25 +59,5 @@ class Autoload
                 require_once $file;
             }
         });
-
-        spl_autoload_register(function ($class) {
-            $prefix = 'Dompdf\\';
-            $len = strlen($prefix);
-            if (strncmp($prefix, $class, $len) !== 0) {
-                return;
-            }
-
-            $baseDir = dirname(__DIR__) . '/app/libraries/dompdf/src/';
-            $relativeClass = substr($class, $len);
-            $file = $baseDir . str_replace('\\', '/', $relativeClass) . '.php';
-
-            if (is_file($file)) {
-                $autoloadFile = dirname(__DIR__) . '/app/libraries/dompdf/autoload.inc.php';
-                if (is_file($autoloadFile)) {
-                    require_once $autoloadFile;
-                }
-                require_once $file;
-            }
-        });
     }
 }

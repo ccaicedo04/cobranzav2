@@ -23,7 +23,9 @@ Para proyectos en **PHP crudo sin Composer**, la librería sugerida es **DOMPDF 
     src/
 ```
 
-3) **Registrar el autoload** (ya soportado por `core/Autoload.php`). No se necesita Composer ni vendor.
+3) **Registrar el autoload original**: en `public/index.php` se carga `app/libraries/dompdf/autoload.inc.php` si existe. No se necesita Composer ni vendor.
+
+4) **Carpetas internas**: dentro de `app/libraries/dompdf/lib/` deben existir `fonts/` y `cache/` (el proyecto las crea si faltan).
 
 ---
 

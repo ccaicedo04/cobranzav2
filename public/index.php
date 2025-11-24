@@ -28,6 +28,11 @@ use Core\Helpers;
 use Core\Router;
 use Core\Session;
 
+$dompdfAutoload = __DIR__ . '/../app/libraries/dompdf/autoload.inc.php';
+if (is_file($dompdfAutoload)) {
+    require_once $dompdfAutoload;
+}
+
 require_once dirname(__DIR__) . '/core/Autoload.php';
 Autoload::register();
 

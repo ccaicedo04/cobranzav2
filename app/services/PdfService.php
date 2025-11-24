@@ -49,15 +49,6 @@ class PdfService
      */
     private function dompdfDisponible()
     {
-        if (class_exists(Dompdf::class)) {
-            return true;
-        }
-
-        $autoload = dirname(__DIR__, 1) . '/libraries/dompdf/autoload.inc.php';
-        if (is_file($autoload)) {
-            require_once $autoload;
-        }
-
         return class_exists(Dompdf::class);
     }
 
@@ -71,9 +62,14 @@ class PdfService
     {
         $this->limpiarBuffers();
 
+        $this->asegurarDirectoriosDompdf();
+
         $options = new Options();
         $options->set('isRemoteEnabled', true);
         $options->set('defaultFont', 'Helvetica');
+        $options->set('fontDir', $this->dompdfFontsDir());
+        $options->set('fontCache', $this->dompdfFontsDir());
+        $options->set('tempDir', $this->dompdfCacheDir());
 
         $dompdf = new Dompdf($options);
         $dompdf->loadHtml($html ?: '<p>Sin contenido para mostrar.</p>');
@@ -151,5 +147,29 @@ class PdfService
         <?php
 
         return (string) ob_get_clean();
+    }
+
+    private function asegurarDirectoriosDompdf(): void
+    {
+        $fontsDir = $this->dompdfFontsDir();
+        $cacheDir = $this->dompdfCacheDir();
+
+        if (!is_dir($fontsDir)) {
+            mkdir($fontsDir, 0755, true);
+        }
+
+        if (!is_dir($cacheDir)) {
+            mkdir($cacheDir, 0755, true);
+        }
+    }
+
+    private function dompdfFontsDir(): string
+    {
+        return dirname(__DIR__, 1) . '/libraries/dompdf/lib/fonts';
+    }
+
+    private function dompdfCacheDir(): string
+    {
+        return dirname(__DIR__, 1) . '/libraries/dompdf/lib/cache';
     }
 }

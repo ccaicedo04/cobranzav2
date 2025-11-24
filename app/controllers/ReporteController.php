@@ -75,10 +75,8 @@ class ReporteController extends Controller
     public function exportPdf()
     {
         try {
-            if (function_exists('ob_get_level')) {
-                while (ob_get_level() > 0) {
-                    ob_end_clean();
-                }
+            if (function_exists('ob_start')) {
+                ob_start();
             }
 
             $tipo = $this->tipoDesdeRequest();
@@ -89,6 +87,12 @@ class ReporteController extends Controller
             $documento = $this->construirDocumentoPdf($config, $datos, $filtros, $tipo);
             $inline = isset($_GET['preview']) && $_GET['preview'] === '1';
             $html = $this->construirVistaPdf($config, $datos, $documento);
+
+            if (function_exists('ob_get_level')) {
+                while (ob_get_level() > 0) {
+                    ob_end_clean();
+                }
+            }
 
             $pdf = new PdfService();
             $pdf->exportar($config, $datos, $documento, $html, 'reporte_' . $tipo . '.pdf', $inline);
