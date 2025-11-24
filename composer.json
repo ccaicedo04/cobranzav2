@@ -3,7 +3,7 @@
     "description": "Gestión de cobranzas escolares con integración Twilio",
     "type": "project",
     "require": {
-        "php": "^8.1",
+        "php": ">=7.4",
         "twilio/sdk": "^7.21"
     },
     "autoload": {

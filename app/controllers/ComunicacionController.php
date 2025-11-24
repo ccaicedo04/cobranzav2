@@ -254,7 +254,7 @@ class ComunicacionController extends Controller
                 }
 
                 if (!$twilioServicio->ready()) {
-                    throw new RuntimeException('El SDK oficial de Twilio no está disponible en el servidor. Ejecuta "composer install" para habilitarlo.');
+                    throw new RuntimeException('El servidor no cuenta con el SDK de Twilio ni con soporte HTTP saliente habilitado. Instala el SDK oficial o habilita cURL/allow_url_fopen.');
                 }
 
                 $telefonoDestino = trim((string) ($responsable['telefono'] ?? ''));
