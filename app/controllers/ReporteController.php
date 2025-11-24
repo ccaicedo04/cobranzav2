@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\ReporteModel;
+use App\Services\PdfService;
 use Core\Controller;
 use Core\Helpers;
 use Core\Session;
@@ -73,10 +74,6 @@ class ReporteController extends Controller
 
     public function exportPdf()
     {
-        if (function_exists('ob_start')) {
-            ob_start();
-        }
-
         try {
             $tipo = $this->tipoDesdeRequest();
             $filtros = $this->extraerFiltros();
@@ -85,7 +82,10 @@ class ReporteController extends Controller
 
             $documento = $this->construirDocumentoPdf($config, $datos, $filtros, $tipo);
             $inline = isset($_GET['preview']) && $_GET['preview'] === '1';
-            SimplePdf::downloadTable('reporte_' . $tipo . '.pdf', $documento, $inline);
+            $html = $this->construirVistaPdf($config, $datos, $documento);
+
+            $pdf = new PdfService();
+            $pdf->exportar($config, $datos, $documento, $html, 'reporte_' . $tipo . '.pdf', $inline);
         } catch (Throwable $throwable) {
             if (function_exists('ob_get_level')) {
                 while (ob_get_level() > 0) {
@@ -249,6 +249,89 @@ class ReporteController extends Controller
             'filters' => $this->resumenFiltrosPdf($filtros, $tipo),
             'summary' => $this->totalesReporte($tipo, $datos),
         ];
+    }
+
+    private function construirVistaPdf(array $config, array $datos, array $documento): string
+    {
+        $columnas = $config['columnas'];
+        $resumen = $documento['summary'] ?? [];
+        $meta = $documento['meta'] ?? [];
+        $filtros = $documento['filters'] ?? [];
+
+        ob_start();
+        ?>
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <style>
+                body { font-family: Arial, sans-serif; margin: 24px; }
+                h1 { margin: 0 0 4px; color: #0b3b77; font-size: 20px; }
+                h2 { margin: 0 0 12px; font-size: 13px; color: #4b5563; font-weight: normal; }
+                .meta, .filters, .summary { margin: 10px 0; font-size: 11px; color: #111827; }
+                .pill { display: inline-block; padding: 4px 8px; border-radius: 6px; background: #eef2ff; color: #1f2937; margin-right: 6px; }
+                table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 11px; }
+                th { background: #0b3b77; color: #fff; padding: 8px; text-align: left; }
+                td { border: 1px solid #e5e7eb; padding: 8px; }
+                tr:nth-child(even) td { background: #f9fafb; }
+                .muted { color: #6b7280; }
+            </style>
+        </head>
+        <body>
+            <h1><?= htmlspecialchars($config['titulo']) ?></h1>
+            <h2><?= htmlspecialchars($config['descripcion'] ?? '') ?></h2>
+
+            <?php if (!empty($meta)): ?>
+                <div class="meta">
+                    <?php foreach ($meta as $label => $value): ?>
+                        <span class="pill"><strong><?= htmlspecialchars($label) ?>:</strong> <?= htmlspecialchars($value) ?></span>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+
+            <?php if (!empty($filtros)): ?>
+                <div class="filters">
+                    <?php foreach ($filtros as $linea): ?>
+                        <div><?= htmlspecialchars($linea) ?></div>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+
+            <table>
+                <thead>
+                    <tr>
+                        <?php foreach ($columnas as $columna): ?>
+                            <th><?= htmlspecialchars($columna['etiqueta']) ?></th>
+                        <?php endforeach; ?>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (empty($datos)): ?>
+                        <tr><td colspan="<?= count($columnas) ?>" class="muted">No hay información para los filtros aplicados.</td></tr>
+                    <?php else: ?>
+                        <?php foreach ($datos as $fila): ?>
+                            <tr>
+                                <?php foreach ($columnas as $columna): ?>
+                                    <td><?= htmlspecialchars($this->formatearValor($fila[$columna['campo']] ?? '', $columna)) ?></td>
+                                <?php endforeach; ?>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+
+            <?php if (!empty($resumen)): ?>
+                <div class="summary">
+                    <?php foreach ($resumen as $label => $value): ?>
+                        <div><strong><?= htmlspecialchars($label) ?>:</strong> <?= htmlspecialchars($value) ?></div>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </body>
+        </html>
+        <?php
+        $contenido = ob_get_clean();
+
+        return (string) $contenido;
     }
 
     private function resumenFiltrosPdf(array $filtros, string $tipo): array

@@ -22,6 +22,7 @@ Implementación MVC nativa en PHP 8.2 para la gestión integral de cartera multi
 - `app/views`: vistas basadas en el diseño entregado.
 - `plantillas/`: documentación de formatos para carga masiva.
 - `public/plantillas/`: script que genera la plantilla Excel sin almacenar binarios.
+- `docs/pdf-sin-composer.md`: guía rápida para integrar DOMPDF de forma manual y seguir generando reportes sin Composer.
 
 ## Licencia
 Uso interno educativo.
