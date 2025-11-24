@@ -299,7 +299,7 @@ class TwilioService
             $message .= ' Detalle: ' . $detail;
         }
 
-        return $message;
+        return $this->appendFromGuidance($message);
     }
 
     private function extractErrorMessageFromBody($body)
@@ -338,6 +338,23 @@ class TwilioService
 
         if ($status !== null && $status > 0) {
             $message .= ' Código: ' . $status;
+        }
+
+        return $this->appendFromGuidance($message);
+    }
+
+    private function appendFromGuidance($message)
+    {
+        $message = (string) $message;
+        $lower = strtolower($message);
+
+        if (
+            strpos($lower, 'from address') !== false ||
+            strpos($lower, 'from number') !== false ||
+            strpos($lower, 'from phone') !== false ||
+            strpos($lower, 'from parameter') !== false
+        ) {
+            $message .= ' Verifica que el remitente corresponda al número de WhatsApp habilitado por Twilio (sandbox "whatsapp:+14155238886" o un número aprobado) y que esté configurado en la sección de Twilio.';
         }
 
         return $message;
