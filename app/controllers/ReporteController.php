@@ -84,11 +84,14 @@ class ReporteController extends Controller
 
     private function obtenerDatosPorTipo(string $tipo, array $filtros): array
     {
-        return match ($tipo) {
-            'pagos' => $this->reportes->reportePagos($filtros),
-            'acuerdos' => $this->reportes->reporteAcuerdos($filtros),
-            default => $this->reportes->reporteCartera($filtros),
-        };
+        switch ($tipo) {
+            case 'pagos':
+                return $this->reportes->reportePagos($filtros);
+            case 'acuerdos':
+                return $this->reportes->reporteAcuerdos($filtros);
+            default:
+                return $this->reportes->reporteCartera($filtros);
+        }
     }
 
     private function tipoDesdeRequest(): string
@@ -307,11 +310,14 @@ class ReporteController extends Controller
             return [];
         }
 
-        return match ($tipo) {
-            'pagos' => $this->totalesPagos($datos),
-            'acuerdos' => $this->totalesAcuerdos($datos),
-            default => $this->totalesCartera($datos),
-        };
+        switch ($tipo) {
+            case 'pagos':
+                return $this->totalesPagos($datos);
+            case 'acuerdos':
+                return $this->totalesAcuerdos($datos);
+            default:
+                return $this->totalesCartera($datos);
+        }
     }
 
     private function totalesCartera(array $datos): array

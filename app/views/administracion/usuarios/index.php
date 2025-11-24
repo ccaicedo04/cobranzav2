@@ -89,12 +89,16 @@ include __DIR__ . '/../../_partials/header.php';
             <fieldset style="margin-top:12px;">
                 <legend>Permisos por módulo</legend>
                 <div class="chips">
-                    <?php foreach ($modulos as $modulo): ?>
-                        <label style="display:block;margin-bottom:6px;">
-                            <input type="checkbox" name="permisos_modulos[]" value="<?= htmlspecialchars($modulo['codigo']) ?>" <?= in_array($modulo['codigo'], $modulosPorDefecto, true) ? 'checked' : '' ?>>
-                            <?= htmlspecialchars($modulo['nombre']) ?>
-                        </label>
-                    <?php endforeach; ?>
+                    <?php if (!empty($modulos)): ?>
+                        <?php foreach ($modulos as $modulo): ?>
+                            <label style="display:block;margin-bottom:6px;">
+                                <input type="checkbox" name="permisos_modulos[]" value="<?= htmlspecialchars($modulo['codigo']) ?>" <?= in_array($modulo['codigo'], $modulosPorDefecto, true) ? 'checked' : '' ?>>
+                                <?= htmlspecialchars($modulo['nombre']) ?>
+                            </label>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <p class="small" style="margin:0;">No hay módulos configurados aún. Ajusta la parametrización para habilitar opciones.</p>
+                    <?php endif; ?>
                 </div>
             </fieldset>
             <label style="margin-top:12px;">Estado</label>

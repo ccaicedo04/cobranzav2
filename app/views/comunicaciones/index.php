@@ -284,12 +284,20 @@ $datasetJson = json_encode($dataset, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLA
                         }
                     }
                     $estado = strtolower((string) ($registro['estado_envio'] ?? ''));
-                    $estadoLabel = match ($estado) {
-                        'enviado' => ['label' => 'Enviado', 'class' => 'success'],
-                        'error' => ['label' => 'Error', 'class' => 'danger'],
-                        'registrado' => ['label' => 'Registrado', 'class' => 'neutral'],
-                        default => ['label' => ucfirst($estado ?: 'Pendiente'), 'class' => 'neutral'],
-                    };
+                    switch ($estado) {
+                        case 'enviado':
+                            $estadoLabel = ['label' => 'Enviado', 'class' => 'success'];
+                            break;
+                        case 'error':
+                            $estadoLabel = ['label' => 'Error', 'class' => 'danger'];
+                            break;
+                        case 'registrado':
+                            $estadoLabel = ['label' => 'Registrado', 'class' => 'neutral'];
+                            break;
+                        default:
+                            $estadoLabel = ['label' => ucfirst($estado ?: 'Pendiente'), 'class' => 'neutral'];
+                            break;
+                    }
                     ?>
                     <tr>
                         <td><?= htmlspecialchars($registro['fecha_envio']) ?></td>

@@ -70,10 +70,15 @@ class AuthController extends Controller
             );
 
             if (!$modulosPermitidos) {
-                $modulosPermitidos = match ($user['rol']) {
-                    'admin_global', 'admin_colegio' => ['cobranzas', 'administracion', 'parametrizacion'],
-                    default => ['cobranzas'],
-                };
+                switch ($user['rol']) {
+                    case 'admin_global':
+                    case 'admin_colegio':
+                        $modulosPermitidos = ['cobranzas', 'administracion', 'parametrizacion'];
+                        break;
+                    default:
+                        $modulosPermitidos = ['cobranzas'];
+                        break;
+                }
             }
 
             if (!$colegiosPermitidos && !empty($user['id_colegio'])) {
