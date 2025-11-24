@@ -1,90 +1,113 @@
-# 📄 README — Generación de PDF en PHP SIN COMPOSER (Sistema COBRANZA)
+# 📄 README — Integración Completa de DOMPDF en PHP Crudo (Sin Composer) para COBRANZA
 
-## 📌 1. Librería recomendada
+Este documento resume cómo dejar DOMPDF funcionando sin Composer, evitar PDFs en blanco y preparar la estructura exacta que espera el sistema COBRANZA.
 
-Para proyectos en **PHP crudo sin Composer**, la librería sugerida es **DOMPDF (versión standalone)**.
+## 🚀 1. Requisitos de PHP
 
-* Funciona sin Composer
-* Usa HTML + CSS para maquetar
-* Es liviana y portable
-* Encaja con el MVC existente (controladores + vistas)
+- PHP 7.4+
+- Extensiones activas en `php.ini`: `dom`, `gd`, `mbstring`
+- `allow_url_fopen = On` para cargar imágenes remotas
 
----
+## 📁 2. Estructura obligatoria
 
-## 📁 2. Instalación manual
-
-1) **Descargar DOMPDF standalone** desde la sección de releases: https://github.com/dompdf/dompdf/releases (archivo `dompdf_X.X.X.zip`).
-
-2) **Copiar los archivos** en el proyecto:
+Copia el ZIP standalone desde https://github.com/dompdf/dompdf/releases y ubícalo exactamente así:
 
 ```
 /app/libraries/dompdf/
     autoload.inc.php
     src/
+    lib/
+        fonts/
+        cache/
 ```
 
-3) **Registrar el autoload original**: en `public/index.php` se carga `app/libraries/dompdf/autoload.inc.php` si existe. No se necesita Composer ni vendor.
+> Si el ZIP se descomprime como `dompdf-X.X.X/`, mueve su contenido para que `autoload.inc.php` quede en `app/libraries/dompdf/`.
 
-4) **Carpetas internas**: dentro de `app/libraries/dompdf/lib/` deben existir `fonts/` y `cache/` (el proyecto las crea si faltan).
+El repositorio ya incluye los directorios `lib/fonts` y `lib/cache` con marcadores para que no falten.
 
----
+## 🔧 3. Autoload único
 
-## 🚀 3. Uso dentro del MVC
-
-Un ejemplo simple usando el nuevo `PdfService`:
+El proyecto carga **solo** el autoload oficial desde `public/index.php`:
 
 ```php
-use App\Services\PdfService;
-
-$pdf = new PdfService();
-$html = '<h1>Hola DOMPDF</h1><p>Este PDF se genera sin Composer.</p>';
-$documento = [
-    'title' => 'Ejemplo',
-    'subtitle' => 'Renderizado con DOMPDF',
-    'columns' => [['campo' => 'contenido', 'etiqueta' => 'Contenido', 'ancho' => 100]],
-    'rows' => [['Listo para usar']],
-    'meta' => [],
-    'filters' => [],
-    'summary' => [],
-];
-
-$pdf->exportar([], [], $documento, $html, 'ejemplo.pdf', true);
+require_once __DIR__ . '/../app/libraries/dompdf/autoload.inc.php';
 ```
 
-*Si DOMPDF no está presente*, el servicio usará el generador nativo `Core\SimplePdf` para mantener las descargas funcionales.
+No uses autoloaders adicionales ni Composer.
 
----
+## 🛠️ 4. Servicio PDF
 
-## ✅ 4. Integración en Reportes
+El servicio nativo `app/services/PdfService.php` limpia buffers, usa DOMPDF cuando está disponible y cae en `Core\SimplePdf` si faltan archivos. Para generar un PDF con HTML:
 
-El controlador `ReporteController::exportPdf` usa `PdfService` automáticamente. Solo debes colocar DOMPDF en `app/libraries/dompdf/` para que la vista previa y las descargas salgan con HTML + CSS. Si falta, seguirá funcionando con el generador plano.
+```php
+require_once __DIR__ . '/../app/services/PdfService.php';
 
----
-
-## ⚙️ 5. Requisitos
-
-* PHP 7.4+
-* Extensión `gd` habilitada para DOMPDF
-* Sin Composer ni vendor: solo copiar la carpeta `dompdf` a `app/libraries/`
-
----
-
-## 🧭 Estructura recomendada
-
-```
-/app
-  /libraries
-    /dompdf
-  /services
-    PdfService.php
-  /controllers
-    ReporteController.php
-  /views
-    /reportes
+$pdf = new \App\Services\PdfService();
+$html = '<h1>Hola DOMPDF</h1><p>PDF sin Composer.</p>';
+$pdf->generar($html, 'ejemplo.pdf');
 ```
 
----
+## 🎯 5. Controlador de ejemplo
 
-# 🚀 Listo para producción
+`ReporteController::exportPdf` ya llama a `PdfService`. Asegúrate de invocar la vista con `return true`:
 
-Con estos pasos, el sistema COBRANZA puede generar reportes PDF, estados de cuenta y comprobantes **sin Composer** y manteniendo la portabilidad del proyecto.
+```php
+$html = $this->view('reportes/cartera', ['data' => $data], true);
+$pdf->generar($html, 'reporte_cartera.pdf');
+```
+
+## 📝 6. Vista mínima de prueba
+
+Archivo: `app/views/reportes/cartera.php`
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial; }
+        h1 { text-align: center; }
+    </style>
+</head>
+<body>
+<h1>Reporte de Cartera</h1>
+<p>El PDF fue generado correctamente.</p>
+</body>
+</html>
+```
+
+## 🧪 7. Test manual
+
+Archivo: `public/testPdf.php`
+
+```php
+<?php
+require_once __DIR__ . '/../app/libraries/dompdf/autoload.inc.php';
+
+use Dompdf\Dompdf;
+use Dompdf\Options;
+
+$options = new Options();
+$options->set('isRemoteEnabled', true);
+
+$dompdf = new Dompdf($options);
+$dompdf->loadHtml('<h1>PDF funcionando correctamente</h1>');
+$dompdf->render();
+$dompdf->stream('prueba.pdf');
+```
+
+Abrir en el navegador:
+```
+http://localhost/cobranzav2/public/testPdf.php
+```
+
+## ❗ 8. Cómo evitar PDFs en blanco
+
+1. **Sin salida previa**: nada de `echo`, `var_dump` ni espacios antes de `<?php`. Usa `ob_start(); ... ob_end_clean();` antes de renderizar.
+2. **Vista debe retornar HTML**: llama a `view('ruta', $data, true)`.
+3. **Rutas válidas a imágenes/CSS** y `isRemoteEnabled = true`.
+4. **UTF-8** en la cabecera: `<meta charset="UTF-8">`.
+5. **Extensiones dom/gd/mbstring activas**.
+
+Con esta configuración, los PDFs dejan de salir en blanco y el proyecto sigue 100% libre de Composer.

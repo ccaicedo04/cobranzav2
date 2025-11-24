@@ -5,21 +5,73 @@ namespace App\Services;
 use Core\SimplePdf;
 use Dompdf\Dompdf;
 use Dompdf\Options;
-use Exception;
 use Throwable;
 
 class PdfService
 {
     /**
-     * Genera y envía el PDF del reporte. Si DOMPDF está disponible (carpeta app/libraries/dompdf),
-     * se usa para renderizar HTML; de lo contrario, se recurre al generador plano SimplePdf.
+     * Genera un PDF a partir de HTML usando DOMPDF cuando está disponible,
+     * con un fallback directo a SimplePdf para mantener la descarga funcional.
      *
-     * @param array $config Configuración de columnas y textos del reporte
-     * @param array $datos  Filas de datos asociadas al reporte
-     * @param array $documento Estructura ya preparada para SimplePdf
-     * @param string $html Vista HTML opcional ya renderizada para DOMPDF
-     * @param string $filename Nombre del archivo de salida
-     * @param bool $inline Si se debe mostrar en el navegador (true) o descargar (false)
+     * @param string $html       Contenido HTML listo para renderizar.
+     * @param string $nombre     Nombre del archivo de salida.
+     * @param string $orientacion Orientación del papel (portrait|landscape).
+     * @param bool   $inline     True para vista previa en navegador.
+     * @param array|null $documento Fallback para SimplePdf en caso de no contar con DOMPDF.
+     * @return void
+     */
+    public function generar($html, $nombre = 'documento.pdf', $orientacion = 'portrait', $inline = false, ?array $documento = null)
+    {
+        $this->limpiarBuffers();
+
+        $contenido = trim((string) $html);
+        if ($contenido === '' && $documento) {
+            $contenido = $this->htmlDesdeDocumento($documento);
+        }
+        if ($contenido === '') {
+            $contenido = '<p>Contenido no disponible para renderizar.</p>';
+        }
+
+        if ($this->dompdfDisponible()) {
+            $this->asegurarDirectoriosDompdf();
+
+            $options = new Options();
+            $options->set('isRemoteEnabled', true);
+            $options->set('defaultFont', 'Arial');
+            $options->set('tempDir', $this->dompdfCacheDir());
+            $options->set('fontDir', $this->dompdfFontsDir());
+            $options->set('fontCache', $this->dompdfFontsDir());
+
+            $dompdf = new Dompdf($options);
+            $dompdf->loadHtml($contenido);
+            $dompdf->setPaper('A4', $orientacion);
+            $dompdf->render();
+            $dompdf->stream($nombre, ['Attachment' => !$inline]);
+            exit;
+        }
+
+        $fallback = $documento ?: [
+            'title' => 'Documento PDF',
+            'subtitle' => '',
+            'columns' => [['campo' => 'contenido', 'etiqueta' => 'Contenido', 'ancho' => 100]],
+            'rows' => [[strip_tags($contenido)]],
+            'meta' => [],
+            'filters' => [],
+            'summary' => [],
+        ];
+
+        SimplePdf::downloadTable($nombre, $fallback, $inline);
+    }
+
+    /**
+     * Exporta la tabla estándar de reportes con HTML generado por la vista.
+     *
+     * @param array $config
+     * @param array $datos
+     * @param array $documento
+     * @param string $html
+     * @param string $filename
+     * @param bool $inline
      * @return void
      */
     public function exportar(array $config, array $datos, array $documento, $html, $filename, $inline = false)
@@ -31,17 +83,7 @@ class PdfService
             $htmlPreparado = $this->htmlDesdeDocumento($documento);
         }
 
-        if ($this->dompdfDisponible()) {
-            try {
-                $this->descargarConDompdf($htmlPreparado, $filename, $inline);
-
-                return;
-            } catch (Throwable $throwable) {
-                // Si DOMPDF falla, continuamos con SimplePdf para no entregar un archivo en blanco.
-            }
-        }
-
-        SimplePdf::downloadTable($filename, $documento, $inline);
+        $this->generar($htmlPreparado, $filename, 'portrait', $inline, $documento);
     }
 
     /**
@@ -50,39 +92,6 @@ class PdfService
     private function dompdfDisponible()
     {
         return class_exists(Dompdf::class);
-    }
-
-    /**
-     * @param string $html
-     * @param string $filename
-     * @param bool $inline
-     * @return void
-     */
-    private function descargarConDompdf($html, $filename, $inline)
-    {
-        $this->limpiarBuffers();
-
-        $this->asegurarDirectoriosDompdf();
-
-        $options = new Options();
-        $options->set('isRemoteEnabled', true);
-        $options->set('defaultFont', 'Helvetica');
-        $options->set('fontDir', $this->dompdfFontsDir());
-        $options->set('fontCache', $this->dompdfFontsDir());
-        $options->set('tempDir', $this->dompdfCacheDir());
-
-        $dompdf = new Dompdf($options);
-        $dompdf->loadHtml($html ?: '<p>Sin contenido para mostrar.</p>');
-        $dompdf->setPaper('A4', 'portrait');
-
-        try {
-            $dompdf->render();
-        } catch (Throwable $throwable) {
-            throw new Exception('No fue posible renderizar el PDF con DOMPDF: ' . $throwable->getMessage());
-        }
-
-        $dompdf->stream($filename, ['Attachment' => !$inline]);
-        exit;
     }
 
     /**
@@ -115,7 +124,8 @@ class PdfService
             <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
             <style>
                 body { font-family: Arial, sans-serif; margin: 24px; }
-                h1 { margin: 0 0 8px; font-size: 18px; color: #0b3b77; }
+                h1 { margin: 0 0 8px; font-size: 18px; color: #0b3b77; text-align: center; }
+                p { color: #374151; font-size: 12px; }
                 table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 11px; }
                 th { background: #0b3b77; color: #fff; padding: 8px; text-align: left; }
                 td { border: 1px solid #e5e7eb; padding: 8px; }
@@ -124,6 +134,9 @@ class PdfService
         </head>
         <body>
             <h1><?= htmlspecialchars($documento['title'] ?? 'Reporte') ?></h1>
+            <?php if (!empty($documento['subtitle'])): ?>
+                <p><?= htmlspecialchars($documento['subtitle']) ?></p>
+            <?php endif; ?>
             <table>
                 <thead>
                 <tr>

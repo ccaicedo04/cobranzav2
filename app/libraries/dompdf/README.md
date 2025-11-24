@@ -1,7 +1,7 @@
-# DOMPDF manual (sin Composer)
+# DOMPDF standalone (sin Composer)
 
-Coloca aquí la versión standalone de DOMPDF descargada desde https://github.com/dompdf/dompdf/releases.
-La estructura debe quedar exactamente así:
+Coloca aquí el ZIP oficial desde https://github.com/dompdf/dompdf/releases
+con la estructura exacta:
 
 ```
 app/libraries/dompdf/
@@ -12,4 +12,6 @@ app/libraries/dompdf/
     cache/
 ```
 
-No se usa Composer ni autoloads personalizados. `public/index.php` cargará `autoload.inc.php` si existe.
+No utilices autoloaders propios ni Composer. `public/index.php` carga este
+`autoload.inc.php` antes de despachar rutas. Activa las extensiones `dom`,
+`gd` y `mbstring` en tu `php.ini` para evitar PDFs en blanco.
