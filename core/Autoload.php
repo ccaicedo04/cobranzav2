@@ -25,12 +25,17 @@ class Autoload
             }
 
             $segments = [$prefix];
-            if (count($parts) > 0) {
-                $segments[] = strtolower(array_shift($parts));
-            }
-
-            if (count($parts) > 0) {
-                $segments[] = implode('/', $parts);
+            if ($prefix === 'app') {
+                if (count($parts) > 0) {
+                    $segments[] = strtolower(array_shift($parts));
+                }
+                if (count($parts) > 0) {
+                    $segments[] = implode('/', $parts);
+                }
+            } else {
+                if (count($parts) > 0) {
+                    $segments[] = implode('/', $parts);
+                }
             }
 
             $file = $root . '/' . implode('/', $segments) . '.php';
