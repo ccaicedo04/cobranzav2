@@ -56,6 +56,11 @@ include __DIR__ . '/../../_partials/header.php';
     </div>
     <div class="card">
         <h3>Crear usuario</h3>
+        <?php if (empty($colegios) || empty($sedes) || empty($modulos)): ?>
+            <div class="alert error" style="margin-bottom:14px;">
+                ⚠️ Para completar el formulario, primero configura al menos un colegio, una sede y los módulos en Parametrización.
+            </div>
+        <?php endif; ?>
         <form method="post" action="index.php?route=usuarios/store" data-confirm="¿Deseas crear el nuevo usuario con los permisos seleccionados?">
             <input type="hidden" name="_token" value="<?= htmlspecialchars($token) ?>">
             <label>Nombre completo</label>
@@ -74,17 +79,25 @@ include __DIR__ . '/../../_partials/header.php';
             </select>
             <div id="asignacionColegio" style="margin-top:12px;">
                 <label>Colegios asignados</label>
-                <select name="permisos_colegios[]" id="colegioSelector" onchange="filtrarSedes()" multiple size="4">
-                    <?php foreach ($colegios as $colegio): ?>
-                        <option value="<?= $colegio['id_colegio'] ?>"><?= htmlspecialchars($colegio['nombre']) ?></option>
-                    <?php endforeach; ?>
-                </select>
+                <?php if (!empty($colegios)): ?>
+                    <select name="permisos_colegios[]" id="colegioSelector" onchange="filtrarSedes()" multiple size="4">
+                        <?php foreach ($colegios as $colegio): ?>
+                            <option value="<?= $colegio['id_colegio'] ?>"><?= htmlspecialchars($colegio['nombre']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                <?php else: ?>
+                    <p class="small" style="margin:4px 0 0;">No hay colegios disponibles.</p>
+                <?php endif; ?>
                 <label>Sedes asignadas</label>
-                <select name="permisos_sedes[]" id="sedeSelector" multiple size="6">
-                    <?php foreach ($sedes as $sede): ?>
-                        <option value="<?= $sede['id_sede'] ?>" data-colegio="<?= $sede['id_colegio'] ?>"><?= htmlspecialchars($sede['colegio_nombre'] . ' - ' . $sede['nombre']) ?></option>
-                    <?php endforeach; ?>
-                </select>
+                <?php if (!empty($sedes)): ?>
+                    <select name="permisos_sedes[]" id="sedeSelector" multiple size="6">
+                        <?php foreach ($sedes as $sede): ?>
+                            <option value="<?= $sede['id_sede'] ?>" data-colegio="<?= $sede['id_colegio'] ?>"><?= htmlspecialchars($sede['colegio_nombre'] . ' - ' . $sede['nombre']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                <?php else: ?>
+                    <p class="small" style="margin:4px 0 0;">No hay sedes disponibles.</p>
+                <?php endif; ?>
             </div>
             <fieldset style="margin-top:12px;">
                 <legend>Permisos por módulo</legend>

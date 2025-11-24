@@ -32,6 +32,12 @@ class SimplePdf
      */
     public static function downloadTable(string $filename, array $document)
     {
+        if (function_exists('ob_get_level')) {
+            while (ob_get_level() > 0) {
+                ob_end_clean();
+            }
+        }
+
         $pdf = self::renderTable($document);
         header('Content-Type: application/pdf');
         header('Content-Disposition: attachment; filename="' . $filename . '"');
