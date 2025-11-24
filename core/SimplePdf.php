@@ -157,6 +157,11 @@ class SimplePdf
             $offsetX += $columnWidths[$index] ?? 0;
         }
 
+        $contents[] = 'q';
+        $contents[] = '0 0 0 RG 0.6 w';
+        $contents[] = self::rect($left, $headerRowY - $rowHeight, $tableWidth, $rowHeight, 'S');
+        $contents[] = 'Q';
+
         $cursorY = $headerRowY - $rowHeight;
         if (!$rows) {
             $contents[] = 'BT';
@@ -169,18 +174,21 @@ class SimplePdf
         } else {
             foreach ($rows as $rowIndex => $row) {
                 $rowY = $cursorY - $rowHeight;
-                if ($rowIndex % 2 === 0) {
-                    $contents[] = 'q';
-                    $contents[] = '0.96 0.97 0.99 rg';
-                    $contents[] = self::rect($left, $rowY, $tableWidth, $rowHeight, 'f');
-                    $contents[] = 'Q';
-                }
+                $contents[] = 'q';
+                $contents[] = ($rowIndex % 2 === 0) ? '0.96 0.97 0.99 rg' : '0.99 0.99 0.99 rg';
+                $contents[] = self::rect($left, $rowY, $tableWidth, $rowHeight, 'f');
+                $contents[] = 'Q';
+
+                $contents[] = 'q';
+                $contents[] = '0.85 0.85 0.85 RG 0.4 w';
+                $contents[] = self::rect($left, $rowY, $tableWidth, $rowHeight, 'S');
+                $contents[] = 'Q';
 
                 $textY = $rowY + $rowHeight - 6.0;
                 $offsetX = $left;
                 foreach ($columns as $index => $column) {
                     $value = $row[$index] ?? '';
-                    $fitted = self::fitText($value, $columnWidths[$index] ?? 60);
+                    $fitted = self::fitText((string) $value, $columnWidths[$index] ?? 60);
                     $contents[] = 'BT';
                     $contents[] = '0 0 0 rg';
                     $contents[] = '/F1 10 Tf';
@@ -300,7 +308,16 @@ class SimplePdf
 
     private static function escape(string $text): string
     {
+        $text = preg_replace("/[\r\n]+/", ' ', $text);
         $text = str_replace(['\\', '(', ')'], ['\\\\', '\\(', '\\)'], $text);
-        return preg_replace("/[\r\n]+/", ' ', $text);
+        if (function_exists('iconv')) {
+            $converted = iconv('UTF-8', 'ISO-8859-1//TRANSLIT//IGNORE', $text);
+            if ($converted !== false) {
+                $text = $converted;
+            }
+        }
+        $text = preg_replace('/[^\x20-\x7E]/', '?', $text);
+
+        return $text;
     }
 }

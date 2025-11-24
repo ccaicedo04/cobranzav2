@@ -128,7 +128,7 @@ include __DIR__ . '/../../_partials/header.php';
                 <option value="inactivo">Inactivo</option>
             </select>
             <div class="actions" style="display:flex;justify-content:flex-end;gap:10px;margin-top:12px;">
-                <button class="btn" type="submit" <?= $formDisabled ? 'disabled' : '' ?>>Guardar</button>
+                <button class="btn primary" type="submit" <?= $formDisabled ? 'disabled' : '' ?>>Crear usuario</button>
             </div>
         </form>
     </div>
@@ -152,7 +152,19 @@ function filtrarSedes() {
     });
 }
 
+function autoSeleccionInicial() {
+    const colegioSelector = document.getElementById('colegioSelector');
+    const sedeSelector = document.getElementById('sedeSelector');
+    if (colegioSelector && colegioSelector.options.length > 0 && colegioSelector.selectedOptions.length === 0) {
+        colegioSelector.options[0].selected = true;
+    }
+    if (sedeSelector && sedeSelector.options.length > 0 && sedeSelector.selectedOptions.length === 0) {
+        sedeSelector.options[0].selected = true;
+    }
+}
+
 toggleAsignacion();
+autoSeleccionInicial();
 filtrarSedes();
 </script>
 <?php include __DIR__ . '/../../_partials/footer.php'; ?>
