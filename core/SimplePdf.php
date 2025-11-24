@@ -240,7 +240,7 @@ class SimplePdf
             '<< /Type /Catalog /Pages 2 0 R >>',
             '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
             '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 4 0 R /Resources << /Font << /F1 5 0 R /F2 6 0 R >> >> >>',
-            '<< /Length ' . strlen($stream) . ' >>\nstream\n' . $stream . "endstream",
+            '<< /Length ' . strlen($stream) . ' >>\nstream\n' . $stream . "\nendstream\n",
             '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>',
             '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>',
         ];
@@ -270,7 +270,7 @@ class SimplePdf
             '<< /Type /Catalog /Pages 2 0 R >>',
             '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
             '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>',
-            '<< /Length ' . strlen($contenido) . ' >>\nstream\n' . $contenido . "\nendstream",
+            '<< /Length ' . strlen($contenido) . ' >>\nstream\n' . $contenido . "\nendstream\n",
             '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>',
         ];
 
