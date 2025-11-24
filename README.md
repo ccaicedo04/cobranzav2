@@ -3,7 +3,8 @@
 Implementación MVC nativa en PHP 8.2 para la gestión integral de cartera multi-colegio y multi-sede. Incluye autenticación segura, panel con KPIs, módulos CRUD para responsables, estudiantes, deudas, pagos, acuerdos y comunicaciones, además de utilidades de parametrización, auditoría y reportes exportables.
 
 ## Requisitos
-- PHP 8.2+
+- PHP 7.0+ (probado en entornos sin Composer)
+- Extensiones PHP habilitadas: `pdo`, `pdo_mysql`, `openssl` y (opcional) `curl`/`mbstring` para mensajería y exportes
 - MariaDB/MySQL 10.4+
 - Servidor Apache (XAMPP recomendado)
 
