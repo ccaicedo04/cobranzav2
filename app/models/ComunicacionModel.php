@@ -51,7 +51,10 @@ class ComunicacionModel extends BaseModel
         return (int) $stmt->fetchColumn();
     }
 
-    public function porResponsable(int $responsableId, ?string $canal = null, int $limit = 0): array
+    /**
+     * @param string|null $canal
+     */
+    public function porResponsable(int $responsableId, $canal = null, int $limit = 0): array
     {
         $filters = $this->applyTenantFilters(['id_responsable' => $responsableId]);
         if ($canal) {

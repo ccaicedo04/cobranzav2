@@ -33,14 +33,20 @@ class ConfiguracionModel extends BaseModel
         'fecha_actualizacion',
     ];
 
-    public function porColegio(int $idColegio): ?array
+    /**
+     * @return array|null
+     */
+    public function porColegio(int $idColegio)
     {
         $registros = $this->all(['id_colegio' => $idColegio], ['order' => 'id_configuracion DESC']);
 
         return $registros[0] ?? null;
     }
 
-    public function obtenerTwilio(int $idColegio): ?array
+    /**
+     * @return array|null
+     */
+    public function obtenerTwilio(int $idColegio)
     {
         $configuracion = $this->porColegio($idColegio);
         if (!$configuracion) {

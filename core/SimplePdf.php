@@ -4,7 +4,10 @@ namespace Core;
 
 class SimplePdf
 {
-    public static function download(string $filename, array $lines): void
+    /**
+     * @return void
+     */
+    public static function download(string $filename, array $lines)
     {
         $document = [
             'title' => 'Reporte',
@@ -24,7 +27,10 @@ class SimplePdf
         self::downloadTable($filename, $document);
     }
 
-    public static function downloadTable(string $filename, array $document): void
+    /**
+     * @return void
+     */
+    public static function downloadTable(string $filename, array $document)
     {
         $pdf = self::renderTable($document);
         header('Content-Type: application/pdf');

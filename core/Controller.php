@@ -7,7 +7,8 @@ use Core\Helpers;
 
 abstract class Controller
 {
-    protected array $data = [];
+    /** @var array */
+    protected $data = [];
 
     public function __construct()
     {
@@ -15,7 +16,10 @@ abstract class Controller
         Session::start();
     }
 
-    protected function view(string $view, array $data = []): void
+    /**
+     * @return void
+     */
+    protected function view(string $view, array $data = [])
     {
         $this->data = $data;
         extract($data, EXTR_SKIP);
@@ -28,7 +32,10 @@ abstract class Controller
         require $viewPath;
     }
 
-    protected function requireRole(string ...$roles): void
+    /**
+     * @return void
+     */
+    protected function requireRole(string ...$roles)
     {
         $user = Session::get('user');
         if (!$user || !in_array($user['rol'], $roles, true)) {
@@ -36,7 +43,10 @@ abstract class Controller
         }
     }
 
-    protected function requireModule(string $module): void
+    /**
+     * @return void
+     */
+    protected function requireModule(string $module)
     {
         $user = Session::get('user');
         if (!$user) {

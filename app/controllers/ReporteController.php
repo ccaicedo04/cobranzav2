@@ -276,7 +276,10 @@ class ReporteController extends Controller
         return ['colegio' => $colegio, 'sede' => $sede];
     }
 
-    private function descripcionUsuario(?array $usuario): string
+    /**
+     * @param array|null $usuario
+     */
+    private function descripcionUsuario($usuario): string
     {
         if (!$usuario) {
             return '';

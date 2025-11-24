@@ -12,24 +12,24 @@ class TwilioService
     private $accountSid;
     /** @var string */
     private $authToken;
-    /** @var ?string */
+    /** @var string|null */
     private $whatsAppFrom;
-    /** @var ?string */
+    /** @var string|null */
     private $smsFrom;
     /** @var string */
     private $defaultCountryCode;
-    /** @var ?string */
+    /** @var string|null */
     private $statusCallback;
     /** @var object|null */
     private $client = null;
 
     public function __construct(
-        ?string $accountSid = null,
-        ?string $authToken = null,
-        ?string $whatsAppFrom = null,
-        ?string $smsFrom = null,
-        ?string $defaultCountryCode = null,
-        ?string $statusCallback = null
+        $accountSid = null,
+        $authToken = null,
+        $whatsAppFrom = null,
+        $smsFrom = null,
+        $defaultCountryCode = null,
+        $statusCallback = null
     ) {
         $this->bootTwilioAutoload();
 
@@ -161,7 +161,11 @@ class TwilioService
         ];
     }
 
-    private function sanitizeNumber(?string $number): ?string
+    /**
+     * @param mixed $number
+     * @return string|null
+     */
+    private function sanitizeNumber($number)
     {
         $number = trim((string) $number);
         if ($number === '') {

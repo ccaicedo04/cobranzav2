@@ -24,7 +24,10 @@ class PlantillaModel extends BaseModel
         'fecha_actualizacion',
     ];
 
-    public function activasPorCanal(?string $canal = null): array
+    /**
+     * @param string|null $canal
+     */
+    public function activasPorCanal($canal = null): array
     {
         $filtros = ['estado' => 'activo', 'eliminado' => 0];
         if ($canal) {

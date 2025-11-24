@@ -118,7 +118,10 @@ class UsuarioModel extends BaseModel
         return $usuarios;
     }
 
-    public function authenticate(string $username, string $password): ?array
+    /**
+     * @return array|null
+     */
+    public function authenticate(string $username, string $password)
     {
         $sql = 'SELECT u.*, c.nombre AS colegio_nombre, s.nombre AS sede_nombre
                 FROM usuario u
@@ -137,7 +140,10 @@ class UsuarioModel extends BaseModel
         return null;
     }
 
-    public function detalle(int $idUsuario): ?array
+    /**
+     * @return array|null
+     */
+    public function detalle(int $idUsuario)
     {
         $sql = 'SELECT u.*, c.nombre AS colegio_nombre, s.nombre AS sede_nombre
                 FROM usuario u

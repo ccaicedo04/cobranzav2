@@ -139,7 +139,10 @@ class TwilioWebhookController extends Controller
         return $phone ?: '';
     }
 
-    private function parseTimestamp(string $timestamp): ?string
+    /**
+     * @return string|null
+     */
+    private function parseTimestamp(string $timestamp)
     {
         if ($timestamp === '') {
             return null;

@@ -717,7 +717,10 @@ class ComunicacionController extends Controller
         ];
     }
 
-    private function construirPlaceholders(array $responsable, ?array $estudiante, array $colegio, array $sede): array
+    /**
+     * @param array|null $estudiante
+     */
+    private function construirPlaceholders(array $responsable, $estudiante, array $colegio, array $sede): array
     {
         $saldoTotal = $responsable['totales']['saldo'] ?? 0;
         $proximoVencimiento = $responsable['totales']['proximo_vencimiento'] ?? '';
@@ -806,7 +809,10 @@ class ComunicacionController extends Controller
             . '</div></body></html>';
     }
 
-    private function crearServicioTwilio(?array $config): TwilioService
+    /**
+     * @param array|null $config
+     */
+    private function crearServicioTwilio($config): TwilioService
     {
         $config = $config ?? [];
 

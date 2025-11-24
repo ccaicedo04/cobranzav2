@@ -43,7 +43,10 @@ class ResponsableModel extends BaseModel
         return $stmt->fetchAll();
     }
 
-    public function buscarPorTelefono(string $telefono): ?array
+    /**
+     * @return array|null
+     */
+    public function buscarPorTelefono(string $telefono)
     {
         $telefono = preg_replace('/\D+/', '', $telefono);
         if ($telefono === '') {

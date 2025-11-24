@@ -16,7 +16,7 @@ abstract class BaseModel
     protected $primaryKey = 'id';
     /** @var bool */
     protected $softDelete = true;
-    /** @var ?string */
+    /** @var string|null */
     protected $softDeleteColumn = 'eliminado';
     /** @var array */
     protected $fillable = [];
@@ -59,7 +59,10 @@ abstract class BaseModel
         return $stmt->fetchAll();
     }
 
-    public function find(int $id, array $filters = []): ?array
+    /**
+     * @return array|null
+     */
+    public function find(int $id, array $filters = [])
     {
         $filters[$this->primaryKey] = $id;
         $results = $this->all($filters);

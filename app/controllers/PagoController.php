@@ -103,7 +103,10 @@ class PagoController extends Controller
         Helpers::redirect('index.php?route=pagos');
     }
 
-    private function guardarSoporte(array $archivo): ?string
+    /**
+     * @return string|null
+     */
+    private function guardarSoporte(array $archivo)
     {
         if (($archivo['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
             return null;
