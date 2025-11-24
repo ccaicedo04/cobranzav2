@@ -28,11 +28,6 @@ use Core\Helpers;
 use Core\Router;
 use Core\Session;
 
-$vendorAutoload = dirname(__DIR__) . '/vendor/autoload.php';
-if (file_exists($vendorAutoload)) {
-    require_once $vendorAutoload;
-}
-
 require_once dirname(__DIR__) . '/core/Autoload.php';
 Autoload::register();
 

@@ -248,8 +248,6 @@ class TwilioService
 
         $root = dirname(__DIR__, 2);
         $candidates = [
-            $root . '/vendor/autoload.php',
-            $root . '/vendor/twilio/sdk/src/Twilio/autoload.php',
             $root . '/app/libraries/twilio/src/Twilio/autoload.php',
         ];
 

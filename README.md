@@ -7,6 +7,7 @@ Implementación MVC nativa en PHP 8.2 para la gestión integral de cartera multi
 - Extensiones PHP habilitadas: `pdo`, `pdo_mysql`, `openssl` y (opcional) `curl`/`mbstring` para mensajería y exportes
 - MariaDB/MySQL 10.4+
 - Servidor Apache (XAMPP recomendado)
+- Sin Composer: el autoload propio (`core/Autoload.php`) carga tanto las clases del proyecto como los SDKs que copies manualmente en `app/libraries/` (ej. Twilio)
 
 ## Instalación rápida
 1. Copia el proyecto en tu carpeta web (`htdocs` en XAMPP).
