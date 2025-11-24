@@ -9,7 +9,8 @@ use Core\Session;
 
 class PlantillaController extends Controller
 {
-    private PlantillaModel $plantillas;
+    /** @var PlantillaModel */
+    private $plantillas;
 
     public function __construct()
     {
@@ -22,7 +23,7 @@ class PlantillaController extends Controller
         $this->plantillas = new PlantillaModel();
     }
 
-    public function index(): void
+    public function index()
     {
         $plantillas = $this->plantillas->all([], ['order' => "estado DESC, nombre"]);
         $this->view('parametrizacion/plantillas/index', [
@@ -31,14 +32,14 @@ class PlantillaController extends Controller
         ]);
     }
 
-    public function create(): void
+    public function create()
     {
         $this->view('parametrizacion/plantillas/form', [
             'token' => Helpers::csrfToken(),
         ]);
     }
 
-    public function edit(): void
+    public function edit()
     {
         $id = (int) ($_GET['id'] ?? 0);
         $plantilla = $this->plantillas->find($id);
@@ -52,17 +53,17 @@ class PlantillaController extends Controller
         ]);
     }
 
-    public function store(): void
+    public function store()
     {
         $this->persist();
     }
 
-    public function update(): void
+    public function update()
     {
         $this->persist((int) ($_POST['id_plantilla'] ?? 0));
     }
 
-    public function delete(): void
+    public function delete()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !Helpers::validateCsrf($_POST['_token'] ?? '')) {
             Helpers::redirect('index.php?route=plantillas');
@@ -83,7 +84,7 @@ class PlantillaController extends Controller
         Helpers::redirect('index.php?route=plantillas');
     }
 
-    private function persist(int $id = 0): void
+    private function persist(int $id = 0)
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !Helpers::validateCsrf($_POST['_token'] ?? '')) {
             Helpers::redirect('index.php?route=plantillas');

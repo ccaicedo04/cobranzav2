@@ -5,13 +5,18 @@ $breadcrumbs = 'Parametrización / Plantillas';
 include __DIR__ . '/../../_partials/header.php';
 
 $formatCanal = static function (string $canal): string {
-    return match ($canal) {
-        'email' => 'Correo electrónico',
-        'whatsapp' => 'WhatsApp',
-        'sms' => 'SMS',
-        'llamada' => 'Llamada telefónica',
-        default => ucfirst($canal),
-    };
+    switch ($canal) {
+        case 'email':
+            return 'Correo electrónico';
+        case 'whatsapp':
+            return 'WhatsApp';
+        case 'sms':
+            return 'SMS';
+        case 'llamada':
+            return 'Llamada telefónica';
+        default:
+            return ucfirst($canal);
+    }
 };
 
 ?>

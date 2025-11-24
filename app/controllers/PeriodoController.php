@@ -11,9 +11,12 @@ use Core\Session;
 
 class PeriodoController extends Controller
 {
-    private PeriodoModel $periodos;
-    private ColegioModel $colegios;
-    private AuditoriaModel $auditoria;
+    /** @var PeriodoModel */
+    private $periodos;
+    /** @var ColegioModel */
+    private $colegios;
+    /** @var AuditoriaModel */
+    private $auditoria;
 
     public function __construct()
     {
@@ -28,7 +31,7 @@ class PeriodoController extends Controller
         $this->auditoria = new AuditoriaModel();
     }
 
-    public function index(): void
+    public function index()
     {
         $usuario = Session::get('user');
         $periodos = $this->periodos->conColegio();
@@ -47,7 +50,7 @@ class PeriodoController extends Controller
         ]);
     }
 
-    public function store(): void
+    public function store()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !Helpers::validateCsrf($_POST['_token'] ?? '')) {
             Helpers::redirect('index.php?route=periodos');
@@ -83,7 +86,7 @@ class PeriodoController extends Controller
         Helpers::redirect('index.php?route=periodos');
     }
 
-    public function edit(): void
+    public function edit()
     {
         $id = (int) ($_GET['id'] ?? 0);
         $periodo = $this->periodos->find($id);
@@ -105,7 +108,7 @@ class PeriodoController extends Controller
         ]);
     }
 
-    public function update(): void
+    public function update()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !Helpers::validateCsrf($_POST['_token'] ?? '')) {
             Helpers::redirect('index.php?route=periodos');

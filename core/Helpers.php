@@ -29,7 +29,10 @@ class Helpers
         return $path === '' ? $base : $base . '/' . $path;
     }
 
-    public static function redirect(string $path): void
+    /**
+     * @return void
+     */
+    public static function redirect(string $path)
     {
         header('Location: ' . self::baseUrl($path));
         exit;

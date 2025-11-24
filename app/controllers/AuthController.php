@@ -12,10 +12,14 @@ use Core\Session;
 
 class AuthController extends Controller
 {
-    private UsuarioModel $usuarios;
-    private AuditoriaModel $auditoria;
-    private SedeModel $sedes;
-    private ColegioModel $colegios;
+    /** @var UsuarioModel */
+    private $usuarios;
+    /** @var AuditoriaModel */
+    private $auditoria;
+    /** @var SedeModel */
+    private $sedes;
+    /** @var ColegioModel */
+    private $colegios;
 
     public function __construct()
     {
@@ -26,7 +30,7 @@ class AuthController extends Controller
         $this->colegios = new ColegioModel();
     }
 
-    public function login(): void
+    public function login()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $usuario = $_POST['usuario'] ?? '';
@@ -66,10 +70,15 @@ class AuthController extends Controller
             );
 
             if (!$modulosPermitidos) {
-                $modulosPermitidos = match ($user['rol']) {
-                    'admin_global', 'admin_colegio' => ['cobranzas', 'administracion', 'parametrizacion'],
-                    default => ['cobranzas'],
-                };
+                switch ($user['rol']) {
+                    case 'admin_global':
+                    case 'admin_colegio':
+                        $modulosPermitidos = ['cobranzas', 'administracion', 'parametrizacion'];
+                        break;
+                    default:
+                        $modulosPermitidos = ['cobranzas'];
+                        break;
+                }
             }
 
             if (!$colegiosPermitidos && !empty($user['id_colegio'])) {
@@ -157,7 +166,7 @@ class AuthController extends Controller
         ]);
     }
 
-    public function logout(): void
+    public function logout()
     {
         $user = Session::get('user');
         if ($user) {

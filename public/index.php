@@ -22,18 +22,14 @@ use App\Controllers\SedeController;
 use App\Controllers\UsuarioController;
 use App\Controllers\ConceptoController;
 use App\Controllers\PlantillaController;
+use App\Controllers\TwilioWebhookController;
+use Core\Autoload;
 use Core\Helpers;
 use Core\Router;
 use Core\Session;
 
-spl_autoload_register(function (string $class): void {
-    $baseDir = dirname(__DIR__) . '/';
-    $class = ltrim($class, '\\');
-    $file = $baseDir . str_replace('\\', '/', $class) . '.php';
-    if (file_exists($file)) {
-        require_once $file;
-    }
-});
+require_once dirname(__DIR__) . '/core/Autoload.php';
+Autoload::register();
 
 Session::start();
 $route = $_GET['route'] ?? '/';
@@ -76,6 +72,7 @@ $router->post('/acuerdos/store', [AcuerdoController::class, 'store']);
 
 $router->get('/comunicaciones', [ComunicacionController::class, 'index']);
 $router->post('/comunicaciones/store', [ComunicacionController::class, 'store']);
+$router->get('/comunicaciones/conversacion', [ComunicacionController::class, 'conversation']);
 
 $router->get('/carga-masiva', [CargaController::class, 'index']);
 $router->post('/carga-masiva/store', [CargaController::class, 'store']);
@@ -130,6 +127,8 @@ $router->post('/configuracion/store', [ConfiguracionController::class, 'store'])
 $router->get('/perfil', [PerfilController::class, 'index']);
 $router->post('/perfil/actualizar', [PerfilController::class, 'actualizar']);
 $router->post('/contexto/actualizar', [ContextoController::class, 'actualizar']);
+
+$router->match(['GET', 'POST'], '/webhooks/twilio', [TwilioWebhookController::class, 'incoming']);
 
 try {
     $router->dispatch($method, $route);

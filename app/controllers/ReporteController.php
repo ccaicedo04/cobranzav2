@@ -12,7 +12,8 @@ use Throwable;
 
 class ReporteController extends Controller
 {
-    private ReporteModel $reportes;
+    /** @var ReporteModel */
+    private $reportes;
 
     public function __construct()
     {
@@ -25,7 +26,7 @@ class ReporteController extends Controller
         $this->reportes = new ReporteModel();
     }
 
-    public function index(): void
+    public function index()
     {
         $tipo = $this->tipoDesdeRequest();
         $filtros = $this->extraerFiltros();
@@ -43,7 +44,7 @@ class ReporteController extends Controller
         ]);
     }
 
-    public function exportExcel(): void
+    public function exportExcel()
     {
         $tipo = $this->tipoDesdeRequest();
         $filtros = $this->extraerFiltros();
@@ -70,24 +71,43 @@ class ReporteController extends Controller
         }
     }
 
-    public function exportPdf(): void
+    public function exportPdf()
     {
-        $tipo = $this->tipoDesdeRequest();
-        $filtros = $this->extraerFiltros();
-        $config = $this->definicionesReporte()[$tipo];
-        $datos = $this->obtenerDatosPorTipo($tipo, $filtros);
+        if (function_exists('ob_start')) {
+            ob_start();
+        }
 
-        $documento = $this->construirDocumentoPdf($config, $datos, $filtros, $tipo);
-        SimplePdf::downloadTable('reporte_' . $tipo . '.pdf', $documento);
+        try {
+            $tipo = $this->tipoDesdeRequest();
+            $filtros = $this->extraerFiltros();
+            $config = $this->definicionesReporte()[$tipo];
+            $datos = $this->obtenerDatosPorTipo($tipo, $filtros);
+
+            $documento = $this->construirDocumentoPdf($config, $datos, $filtros, $tipo);
+            $inline = isset($_GET['preview']) && $_GET['preview'] === '1';
+            SimplePdf::downloadTable('reporte_' . $tipo . '.pdf', $documento, $inline);
+        } catch (Throwable $throwable) {
+            if (function_exists('ob_get_level')) {
+                while (ob_get_level() > 0) {
+                    ob_end_clean();
+                }
+            }
+            http_response_code(500);
+            header('Content-Type: text/plain; charset=utf-8');
+            echo 'No fue posible generar el PDF: ' . $throwable->getMessage();
+        }
     }
 
     private function obtenerDatosPorTipo(string $tipo, array $filtros): array
     {
-        return match ($tipo) {
-            'pagos' => $this->reportes->reportePagos($filtros),
-            'acuerdos' => $this->reportes->reporteAcuerdos($filtros),
-            default => $this->reportes->reporteCartera($filtros),
-        };
+        switch ($tipo) {
+            case 'pagos':
+                return $this->reportes->reportePagos($filtros);
+            case 'acuerdos':
+                return $this->reportes->reporteAcuerdos($filtros);
+            default:
+                return $this->reportes->reporteCartera($filtros);
+        }
     }
 
     private function tipoDesdeRequest(): string
@@ -160,7 +180,10 @@ class ReporteController extends Controller
         ];
     }
 
-    private function formatearValor(mixed $valor, array $columna): string
+    /**
+     * @param mixed $valor
+     */
+    private function formatearValor($valor, array $columna): string
     {
         $formato = $columna['formato'] ?? null;
         $prefijo = $columna['prefijo'] ?? '';
@@ -199,6 +222,13 @@ class ReporteController extends Controller
                 $valor = $fila[$columna['campo']] ?? '';
                 return $this->formatearValor($valor, $columna);
             }, $config['columnas']);
+        }
+
+        if (!$rows) {
+            $rows[] = [str_repeat(' ', 1) . 'Sin información para los filtros aplicados.'];
+            if (count($columnas) > 1) {
+                $rows[0] = array_merge($rows[0], array_fill(1, count($columnas) - 1, ''));
+            }
         }
 
         $contexto = $this->resumenContextoPdf();
@@ -272,7 +302,10 @@ class ReporteController extends Controller
         return ['colegio' => $colegio, 'sede' => $sede];
     }
 
-    private function descripcionUsuario(?array $usuario): string
+    /**
+     * @param array|null $usuario
+     */
+    private function descripcionUsuario($usuario): string
     {
         if (!$usuario) {
             return '';
@@ -300,11 +333,14 @@ class ReporteController extends Controller
             return [];
         }
 
-        return match ($tipo) {
-            'pagos' => $this->totalesPagos($datos),
-            'acuerdos' => $this->totalesAcuerdos($datos),
-            default => $this->totalesCartera($datos),
-        };
+        switch ($tipo) {
+            case 'pagos':
+                return $this->totalesPagos($datos);
+            case 'acuerdos':
+                return $this->totalesAcuerdos($datos);
+            default:
+                return $this->totalesCartera($datos);
+        }
     }
 
     private function totalesCartera(array $datos): array

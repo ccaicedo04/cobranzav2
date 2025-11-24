@@ -6,7 +6,10 @@ use RuntimeException;
 
 class Mailer
 {
-    public static function send(array $settings, array $message): void
+    /**
+     * @return void
+     */
+    public static function send(array $settings, array $message)
     {
         $host = trim((string) ($settings['host'] ?? ''));
         $port = (int) ($settings['port'] ?? 587);
@@ -155,7 +158,11 @@ class Mailer
         return $response;
     }
 
-    private static function raw($socket, string $payload): void
+    /**
+     * @param resource $socket
+     * @return void
+     */
+    private static function raw($socket, string $payload)
     {
         $bytes = fwrite($socket, $payload);
         if ($bytes === false) {
