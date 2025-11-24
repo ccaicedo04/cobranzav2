@@ -274,7 +274,7 @@
     }
 
     const data = window.COMMS_DATA;
-    const form = shell.querySelector('form.comms-form');
+    const form = shell.querySelector('form.chat-form');
     if (!form) {
       return;
     }
@@ -292,17 +292,30 @@
     const previewDestinatario = shell.querySelector('[data-preview-destinatario]');
     const previewCanal = shell.querySelector('[data-preview-canal]');
     const previewContainer = shell.querySelector('[data-preview]');
+    const chatThread = shell.querySelector('[data-chat-thread]');
+    const notificationsList = shell.querySelector('[data-chat-notifications]');
+    const headerNombre = shell.querySelector('[data-chat-responsable]');
+    const headerContacto = shell.querySelector('[data-chat-contact]');
+    const clearButton = shell.querySelector('[data-clear-mensaje]');
+    const attachmentInput = form.querySelector('[data-chat-attachments]');
 
     const plantillasMap = {};
     (data.plantillas || []).forEach(function (plantilla) {
       plantillasMap[String(plantilla.id_plantilla)] = plantilla;
     });
 
+    function escapeHtml(value) {
+      const div = document.createElement('div');
+      div.textContent = value == null ? '' : String(value);
+      return div.innerHTML;
+    }
+
     function getResponsableData(id) {
-      if (!id) {
+      if (!id || !data.responsables) {
         return null;
       }
-      return data.responsables && data.responsables[String(id)] ? data.responsables[String(id)] : null;
+      const key = String(id);
+      return Object.prototype.hasOwnProperty.call(data.responsables, key) ? data.responsables[key] : null;
     }
 
     function getEstudianteData(responsableId, estudianteId) {
@@ -310,14 +323,12 @@
         return null;
       }
       const responsable = getResponsableData(responsableId);
-      if (!responsable) {
+      if (!responsable || !Array.isArray(responsable.estudiantes)) {
         return null;
       }
-
-      const estudiantes = responsable.estudiantes || [];
-      for (let index = 0; index < estudiantes.length; index += 1) {
-        if (Number(estudiantes[index].id) === Number(estudianteId)) {
-          return estudiantes[index];
+      for (let index = 0; index < responsable.estudiantes.length; index += 1) {
+        if (Number(responsable.estudiantes[index].id) === Number(estudianteId)) {
+          return responsable.estudiantes[index];
         }
       }
       return null;
@@ -379,58 +390,168 @@
       });
     }
 
-    function renderEmailPreview(content, subject, responsableId) {
-      const responsable = getResponsableData(responsableId) || {};
-      const sede = responsable.sede_id && data.sedes ? data.sedes[String(responsable.sede_id)] : null;
-      const colegio = data.colegio || {};
-      const sedeNombre = sede && sede.nombre ? 'Sede ' + sede.nombre : '';
-      const telefono = sede && sede.telefono ? sede.telefono : (colegio.telefono || '');
-      const correo = sede && sede.correo ? sede.correo : (colegio.correo || '');
-      const direccion = sede && sede.direccion ? sede.direccion : (colegio.direccion || '');
-      const logo = colegio.logo_url || '';
+    function renderConversation(messages) {
+      if (!chatThread) {
+        return;
+      }
+      chatThread.innerHTML = '';
+      if (!Array.isArray(messages) || !messages.length) {
+        const empty = document.createElement('div');
+        empty.className = 'chat-thread-empty';
+        empty.textContent = 'Aún no hay mensajes registrados para este canal.';
+        chatThread.appendChild(empty);
+        return;
+      }
 
-      return [
-        '<div class="preview-mail">',
-        '  <div class="preview-mail-header">',
-        logo ? '    <img src="' + logo + '" alt="' + (colegio.nombre || 'Colegio') + '">' : '',
-        '    <div>',
-        '      <strong>' + (colegio.nombre || 'Colegio') + '</strong>',
-        sedeNombre ? '      <span>' + sedeNombre + '</span>' : '',
-        subject ? '      <span class="subject">' + subject + '</span>' : '',
-        '    </div>',
-        '  </div>',
-        '  <div class="preview-mail-body">' + content + '</div>',
-        '  <div class="preview-mail-footer">',
-        telefono ? '    <span>Tel: ' + telefono + '</span>' : '',
-        correo ? '    <span>Correo: ' + correo + '</span>' : '',
-        direccion ? '    <span>' + direccion + '</span>' : '',
-        '  </div>',
-        '</div>',
-      ].join('');
+      messages.forEach(function (message) {
+        const wrapper = document.createElement('div');
+        const origen = message && message.origen === 'responsable' ? 'incoming' : 'outgoing';
+        wrapper.className = 'chat-message ' + origen;
+
+        const meta = document.createElement('div');
+        meta.className = 'chat-message-meta';
+        const autor = document.createElement('span');
+        autor.textContent = origen === 'incoming' ? 'Responsable' : 'Equipo de cartera';
+        const tiempo = document.createElement('span');
+        tiempo.textContent = message.fecha_formateada || message.fecha || '';
+        meta.appendChild(autor);
+        meta.appendChild(tiempo);
+        wrapper.appendChild(meta);
+
+        const cuerpo = document.createElement('div');
+        cuerpo.className = 'chat-message-body';
+        cuerpo.innerHTML = escapeHtml(message.texto || '').replace(/\n/g, '<br>');
+        wrapper.appendChild(cuerpo);
+
+        if (Array.isArray(message.adjuntos) && message.adjuntos.length) {
+          const archivos = document.createElement('div');
+          archivos.className = 'chat-message-files';
+          message.adjuntos.forEach(function (adjunto) {
+            if (!adjunto || !adjunto.url) {
+              return;
+            }
+            const enlace = document.createElement('a');
+            enlace.href = adjunto.url;
+            enlace.target = '_blank';
+            enlace.rel = 'noopener';
+            enlace.textContent = adjunto.nombre || 'Descargar adjunto';
+            archivos.appendChild(enlace);
+          });
+          wrapper.appendChild(archivos);
+        }
+
+        if (message.detalle) {
+          const estado = document.createElement('div');
+          estado.className = 'chat-message-status';
+          estado.textContent = message.detalle;
+          wrapper.appendChild(estado);
+        }
+
+        chatThread.appendChild(wrapper);
+      });
+
+      chatThread.scrollTop = chatThread.scrollHeight;
     }
 
-    function renderMessagePreview(content, canal) {
-      const body = content.replace(/\n/g, '<br>');
-      return '<div class="preview-message preview-' + canal + '">' + body + '</div>';
+    function renderNotifications(list) {
+      if (!notificationsList) {
+        return;
+      }
+      notificationsList.innerHTML = '';
+      if (!Array.isArray(list) || !list.length) {
+        const empty = document.createElement('li');
+        empty.className = 'chat-notification empty';
+        empty.textContent = 'Sin novedades recientes.';
+        notificationsList.appendChild(empty);
+        return;
+      }
+
+      list.forEach(function (item) {
+        const li = document.createElement('li');
+        const boton = document.createElement('button');
+        boton.type = 'button';
+        boton.className = 'chat-notification';
+        boton.dataset.responsable = String(item.id_responsable || '');
+        boton.dataset.canal = item.canal || 'whatsapp';
+
+        const head = document.createElement('div');
+        head.className = 'chat-notification-head';
+        const nombre = document.createElement('span');
+        nombre.className = 'chat-notification-name';
+        nombre.textContent = item.responsable || ('Responsable #' + (item.id_responsable || ''));
+        const hora = document.createElement('span');
+        hora.className = 'chat-notification-time';
+        hora.textContent = item.fecha_formateada || item.fecha || '';
+        head.appendChild(nombre);
+        head.appendChild(hora);
+        boton.appendChild(head);
+
+        const cuerpo = document.createElement('div');
+        cuerpo.className = 'chat-notification-body';
+        cuerpo.textContent = item.mensaje || '';
+        boton.appendChild(cuerpo);
+
+        const etiqueta = document.createElement('span');
+        etiqueta.className = 'chat-notification-tag';
+        etiqueta.textContent = String(item.canal || '').toUpperCase();
+        boton.appendChild(etiqueta);
+
+        li.appendChild(boton);
+        notificationsList.appendChild(li);
+      });
+    }
+
+    function updateHeader() {
+      if (!headerNombre || !headerContacto) {
+        return;
+      }
+      const responsableId = Number(responsableSelect.value || 0);
+      const responsable = getResponsableData(responsableId);
+      if (!responsable) {
+        headerNombre.textContent = 'Selecciona un responsable';
+        headerContacto.textContent = 'Selecciona un responsable para ver su información de contacto.';
+        return;
+      }
+      headerNombre.textContent = responsable.nombre || 'Responsable';
+      const contacto = [responsable.telefono || '', responsable.correo || ''].filter(function (value) {
+        return value && value.trim();
+      }).join(' • ');
+      headerContacto.textContent = contacto || 'Sin datos de contacto registrados.';
     }
 
     function updateResume() {
       const responsableId = Number(responsableSelect.value || 0);
       const responsable = getResponsableData(responsableId);
       if (!responsable) {
-        resumeSaldo.textContent = '$ 0';
-        resumeDeudas.textContent = '0';
-        resumeVencimiento.textContent = '—';
+        if (resumeSaldo) {
+          resumeSaldo.textContent = '$ 0';
+        }
+        if (resumeDeudas) {
+          resumeDeudas.textContent = '0';
+        }
+        if (resumeVencimiento) {
+          resumeVencimiento.textContent = '—';
+        }
         return;
       }
-      resumeSaldo.textContent = responsable.totales && responsable.totales.saldo_formateado ? responsable.totales.saldo_formateado : '$ 0';
-      resumeDeudas.textContent = responsable.totales && typeof responsable.totales.deudas_activas !== 'undefined'
-        ? String(responsable.totales.deudas_activas)
-        : '0';
-      resumeVencimiento.textContent = responsable.totales && responsable.totales.proximo_vencimiento ? responsable.totales.proximo_vencimiento : '—';
+      if (resumeSaldo) {
+        resumeSaldo.textContent = responsable.totales && responsable.totales.saldo_formateado ? responsable.totales.saldo_formateado : '$ 0';
+      }
+      if (resumeDeudas) {
+        const deudas = responsable.totales && typeof responsable.totales.deudas_activas !== 'undefined'
+          ? String(responsable.totales.deudas_activas)
+          : '0';
+        resumeDeudas.textContent = deudas;
+      }
+      if (resumeVencimiento) {
+        resumeVencimiento.textContent = responsable.totales && responsable.totales.proximo_vencimiento ? responsable.totales.proximo_vencimiento : '—';
+      }
     }
 
     function updateEstudiantes() {
+      if (!estudianteSelect) {
+        return;
+      }
       const responsableId = Number(responsableSelect.value || 0);
       let firstVisible = null;
       Array.from(estudianteSelect.options).forEach(function (option) {
@@ -454,6 +575,9 @@
     }
 
     function updateTemplateOptions() {
+      if (!plantillaSelect) {
+        return;
+      }
       const canal = canalSelect.value;
       let shouldReset = false;
       Array.from(plantillaSelect.options).forEach(function (option) {
@@ -473,9 +597,47 @@
       }
     }
 
+    function renderEmailPreview(content, subject, responsableId) {
+      const responsable = getResponsableData(responsableId) || {};
+      const sede = responsable.sede_id && data.sedes ? data.sedes[String(responsable.sede_id)] : null;
+      const colegio = data.colegio || {};
+      const sedeNombre = sede && sede.nombre ? 'Sede ' + sede.nombre : '';
+      const telefono = sede && sede.telefono ? sede.telefono : (colegio.telefono || '');
+      const correo = sede && sede.correo ? sede.correo : (colegio.correo || '');
+      const direccion = sede && sede.direccion ? sede.direccion : (colegio.direccion || '');
+      const logo = colegio.logo_url || '';
+
+      return [
+        '<div class="preview-mail">',
+        '  <div class="preview-mail-header">',
+        logo ? '    <img src="' + logo + '" alt="' + escapeHtml(colegio.nombre || 'Colegio') + '">' : '',
+        '    <div>',
+        '      <strong>' + escapeHtml(colegio.nombre || 'Colegio') + '</strong>',
+        sedeNombre ? '      <span>' + escapeHtml(sedeNombre) + '</span>' : '',
+        subject ? '      <span class="subject">' + escapeHtml(subject) + '</span>' : '',
+        '    </div>',
+        '  </div>',
+        '  <div class="preview-mail-body">' + content + '</div>',
+        '  <div class="preview-mail-footer">',
+        telefono ? '    <span>Tel: ' + escapeHtml(telefono) + '</span>' : '',
+        correo ? '    <span>Correo: ' + escapeHtml(correo) + '</span>' : '',
+        direccion ? '    <span>' + escapeHtml(direccion) + '</span>' : '',
+        '  </div>',
+        '</div>',
+      ].join('');
+    }
+
+    function renderMessagePreview(content, canal) {
+      const body = escapeHtml(content || '').replace(/\n/g, '<br>');
+      return '<div class="preview-message preview-' + canal + '">' + body + '</div>';
+    }
+
     function updatePreview() {
+      if (!previewContainer) {
+        return;
+      }
       const responsableId = Number(responsableSelect.value || 0);
-      const estudianteId = Number(estudianteSelect.value || 0) || null;
+      const estudianteId = Number(estudianteSelect && estudianteSelect.value ? estudianteSelect.value : 0) || null;
       const placeholders = buildPlaceholders(responsableId, estudianteId);
       const responsable = getResponsableData(responsableId);
       const mensajeBase = mensajeArea.value || '';
@@ -483,12 +645,17 @@
       const mensajeRenderizado = applyPlaceholders(mensajeBase, placeholders);
       const asuntoRenderizado = applyPlaceholders(asuntoBase, placeholders);
 
-      previewCanal.textContent = canalSelect.selectedOptions.length ? canalSelect.selectedOptions[0].textContent.trim() : '';
-      if (responsable) {
-        const contacto = responsable.correo || responsable.telefono || '';
-        previewDestinatario.textContent = responsable.nombre + (contacto ? ' — ' + contacto : '');
-      } else {
-        previewDestinatario.textContent = 'Selecciona un responsable';
+      if (previewCanal) {
+        previewCanal.textContent = canalSelect.selectedOptions.length ? canalSelect.selectedOptions[0].textContent.trim() : '';
+      }
+
+      if (previewDestinatario) {
+        if (responsable) {
+          const contacto = responsable.correo || responsable.telefono || '';
+          previewDestinatario.textContent = responsable.nombre + (contacto ? ' — ' + contacto : '');
+        } else {
+          previewDestinatario.textContent = 'Selecciona un responsable';
+        }
       }
 
       if (!mensajeRenderizado) {
@@ -520,24 +687,65 @@
       updatePreview();
     }
 
+    function fetchConversation() {
+      const responsableId = Number(responsableSelect.value || 0);
+      if (!responsableId) {
+        renderConversation([]);
+        return Promise.resolve();
+      }
+      const url = 'index.php?route=comunicaciones/conversacion&responsable=' + responsableId + '&canal=' + encodeURIComponent(canalSelect.value || 'whatsapp');
+      return fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+        .then(function (response) {
+          if (!response.ok) {
+            return null;
+          }
+          return response.json();
+        })
+        .then(function (json) {
+          if (!json) {
+            return;
+          }
+          if (Array.isArray(json.conversation)) {
+            renderConversation(json.conversation);
+          }
+          if (Array.isArray(json.notifications)) {
+            renderNotifications(json.notifications);
+          }
+        })
+        .catch(function () {
+          /* Silenciar errores de red */
+        });
+    }
+
     function initialize() {
+      renderConversation(Array.isArray(data.conversation) ? data.conversation : []);
+      renderNotifications(Array.isArray(data.notifications) ? data.notifications : []);
       updateTemplateOptions();
       updateEstudiantes();
       updateResume();
+      updateHeader();
       applyTemplate(true);
+      updatePreview();
     }
 
-    responsableSelect.addEventListener('change', function () {
-      updateEstudiantes();
-      updateResume();
-      updatePreview();
-    });
+    if (responsableSelect) {
+      responsableSelect.addEventListener('change', function () {
+        updateEstudiantes();
+        updateResume();
+        updateHeader();
+        updatePreview();
+        fetchConversation();
+      });
+    }
 
-    estudianteSelect.addEventListener('change', updatePreview);
+    if (estudianteSelect) {
+      estudianteSelect.addEventListener('change', updatePreview);
+    }
 
     canalSelect.addEventListener('change', function () {
       updateTemplateOptions();
       updatePreview();
+      fetchConversation();
     });
 
     plantillaSelect.addEventListener('change', function () {
@@ -547,7 +755,38 @@
     asuntoInput.addEventListener('input', updatePreview);
     mensajeArea.addEventListener('input', updatePreview);
 
+    if (clearButton) {
+      clearButton.addEventListener('click', function () {
+        mensajeArea.value = '';
+        if (attachmentInput) {
+          attachmentInput.value = '';
+        }
+        updatePreview();
+      });
+    }
+
+    if (notificationsList) {
+      notificationsList.addEventListener('click', function (event) {
+        const button = event.target.closest('.chat-notification');
+        if (!button) {
+          return;
+        }
+        const responsableId = button.dataset.responsable || '';
+        const canal = button.dataset.canal || 'whatsapp';
+        if (responsableId && responsableSelect) {
+          responsableSelect.value = responsableId;
+          responsableSelect.dispatchEvent(new Event('change'));
+        }
+        if (canalSelect && canal) {
+          canalSelect.value = canal;
+          canalSelect.dispatchEvent(new Event('change'));
+        }
+      });
+    }
+
     initialize();
+    fetchConversation();
+    window.setInterval(fetchConversation, 15000);
   }
 
   onReady(function () {

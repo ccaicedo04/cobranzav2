@@ -6,9 +6,12 @@ use Core\Session;
 
 class PagoModel extends BaseModel
 {
-    protected string $table = 'registro_pago';
-    protected string $primaryKey = 'id_pago';
-    protected array $fillable = [
+    /** @var string */
+    protected $table = 'registro_pago';
+    /** @var string */
+    protected $primaryKey = 'id_pago';
+    /** @var array */
+    protected $fillable = [
         'id_colegio',
         'id_sede',
         'id_estudiante',

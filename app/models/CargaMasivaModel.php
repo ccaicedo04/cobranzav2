@@ -4,10 +4,14 @@ namespace App\Models;
 
 class CargaMasivaModel extends BaseModel
 {
-    protected string $table = 'carga_masiva';
-    protected string $primaryKey = 'id_carga';
-    protected bool $softDelete = false;
-    protected array $fillable = [
+    /** @var string */
+    protected $table = 'carga_masiva';
+    /** @var string */
+    protected $primaryKey = 'id_carga';
+    /** @var bool */
+    protected $softDelete = false;
+    /** @var array */
+    protected $fillable = [
         'id_colegio',
         'id_sede',
         'tipo_archivo',

@@ -102,6 +102,7 @@ $formatValue = static function (array $fila, array $columna): string {
     <div style="display:flex;gap:12px;flex-wrap:wrap;">
         <a class="btn" href="index.php?route=reportes/export-excel&amp;<?= htmlspecialchars($queryString) ?>">Exportar Excel (XLSX)</a>
         <a class="btn secondary" href="index.php?route=reportes/export-pdf&amp;<?= htmlspecialchars($queryString) ?>">Exportar PDF</a>
+        <a class="btn ghost" href="index.php?route=reportes/export-pdf&amp;preview=1&amp;<?= htmlspecialchars($queryString) ?>" target="_blank" rel="noopener">Vista previa PDF</a>
     </div>
 </div>
 <div class="card">

@@ -4,9 +4,12 @@ namespace App\Models;
 
 class PlantillaModel extends BaseModel
 {
-    protected string $table = 'plantilla_comunicacion';
-    protected string $primaryKey = 'id_plantilla';
-    protected array $fillable = [
+    /** @var string */
+    protected $table = 'plantilla_comunicacion';
+    /** @var string */
+    protected $primaryKey = 'id_plantilla';
+    /** @var array */
+    protected $fillable = [
         'id_colegio',
         'nombre',
         'canal',
@@ -21,7 +24,10 @@ class PlantillaModel extends BaseModel
         'fecha_actualizacion',
     ];
 
-    public function activasPorCanal(?string $canal = null): array
+    /**
+     * @param string|null $canal
+     */
+    public function activasPorCanal($canal = null): array
     {
         $filtros = ['estado' => 'activo', 'eliminado' => 0];
         if ($canal) {

@@ -4,9 +4,12 @@ namespace App\Models;
 
 class ParametroModel extends BaseModel
 {
-    protected string $table = 'parametros_sistema';
-    protected string $primaryKey = 'id_parametro';
-    protected array $fillable = [
+    /** @var string */
+    protected $table = 'parametros_sistema';
+    /** @var string */
+    protected $primaryKey = 'id_parametro';
+    /** @var array */
+    protected $fillable = [
         'clave',
         'valor',
         'descripcion',

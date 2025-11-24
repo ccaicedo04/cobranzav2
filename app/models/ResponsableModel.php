@@ -4,9 +4,12 @@ namespace App\Models;
 
 class ResponsableModel extends BaseModel
 {
-    protected string $table = 'responsable_financiero';
-    protected string $primaryKey = 'id_responsable';
-    protected array $fillable = [
+    /** @var string */
+    protected $table = 'responsable_financiero';
+    /** @var string */
+    protected $primaryKey = 'id_responsable';
+    /** @var array */
+    protected $fillable = [
         'id_colegio',
         'id_sede',
         'nombre_completo',
@@ -38,5 +41,34 @@ class ResponsableModel extends BaseModel
         $stmt->execute($params);
 
         return $stmt->fetchAll();
+    }
+
+    /**
+     * @return array|null
+     */
+    public function buscarPorTelefono(string $telefono)
+    {
+        $telefono = preg_replace('/\D+/', '', $telefono);
+        if ($telefono === '') {
+            return null;
+        }
+
+        $variantes = [$telefono];
+        if (strlen($telefono) === 10 && $telefono[0] === '3') {
+            $variantes[] = '57' . $telefono;
+        }
+        if (strlen($telefono) > 2 && str_starts_with($telefono, '57')) {
+            $variantes[] = substr($telefono, 2);
+        }
+
+        $placeholders = implode(',', array_fill(0, count($variantes), '?'));
+        $sql = 'SELECT * FROM ' . $this->table . ' WHERE eliminado = 0 AND REPLACE(REPLACE(REPLACE(telefono, " ", ""), "-", ""), "+", "") IN (' . $placeholders . ') LIMIT 1';
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($variantes);
+
+        $resultado = $stmt->fetch();
+
+        return $resultado ?: null;
     }
 }

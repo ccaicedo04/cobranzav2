@@ -67,11 +67,15 @@ foreach ($modulosDisponibles as $moduloDisponible) {
             <fieldset style="margin-top:12px;">
                 <legend>Módulos habilitados</legend>
                 <div class="chips">
-                    <?php foreach ($modulosDisponibles as $modulo): ?>
-                        <label style="display:block;margin-bottom:6px;">
-                            <input type="checkbox" name="permisos_modulos[]" value="<?= htmlspecialchars($modulo['codigo']) ?>" <?= in_array($modulo['codigo'], $modulosSeleccionados, true) ? 'checked' : '' ?>> <?= htmlspecialchars($modulo['nombre']) ?>
-                        </label>
-                    <?php endforeach; ?>
+                    <?php if (!empty($modulosDisponibles)): ?>
+                        <?php foreach ($modulosDisponibles as $modulo): ?>
+                            <label style="display:block;margin-bottom:6px;">
+                                <input type="checkbox" name="permisos_modulos[]" value="<?= htmlspecialchars($modulo['codigo']) ?>" <?= in_array($modulo['codigo'], $modulosSeleccionados, true) ? 'checked' : '' ?>> <?= htmlspecialchars($modulo['nombre']) ?>
+                            </label>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <p class="small" style="margin:0;">No hay módulos definidos. Configura módulos en parametrización para habilitarlos.</p>
+                    <?php endif; ?>
                 </div>
             </fieldset>
             <label style="margin-top:12px;">Estado</label>

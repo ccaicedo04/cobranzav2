@@ -11,9 +11,12 @@ use Core\Session;
 
 class CargaController extends Controller
 {
-    private CargaMasivaModel $cargas;
-    private ReporteModel $reportes;
-    private ComunicacionModel $comunicaciones;
+    /** @var CargaMasivaModel */
+    private $cargas;
+    /** @var ReporteModel */
+    private $reportes;
+    /** @var ComunicacionModel */
+    private $comunicaciones;
 
     public function __construct()
     {
@@ -28,7 +31,7 @@ class CargaController extends Controller
         $this->comunicaciones = new ComunicacionModel();
     }
 
-    public function index(): void
+    public function index()
     {
         $cargas = $this->cargas->all([], ['order' => 'fecha_registro DESC']);
 
@@ -39,7 +42,7 @@ class CargaController extends Controller
         ]);
     }
 
-    public function store(): void
+    public function store()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !Helpers::validateCsrf($_POST['_token'] ?? '')) {
             Helpers::redirect('index.php?route=carga-masiva');

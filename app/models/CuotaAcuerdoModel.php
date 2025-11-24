@@ -4,9 +4,12 @@ namespace App\Models;
 
 class CuotaAcuerdoModel extends BaseModel
 {
-    protected string $table = 'cuota_acuerdo';
-    protected string $primaryKey = 'id_cuota';
-    protected array $fillable = [
+    /** @var string */
+    protected $table = 'cuota_acuerdo';
+    /** @var string */
+    protected $primaryKey = 'id_cuota';
+    /** @var array */
+    protected $fillable = [
         'id_acuerdo',
         'numero_cuota',
         'fecha_pago',
@@ -16,5 +19,6 @@ class CuotaAcuerdoModel extends BaseModel
         'observaciones',
     ];
 
-    protected array $tenantColumns = [];
+    /** @var array */
+    protected $tenantColumns = [];
 }

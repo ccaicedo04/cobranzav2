@@ -4,9 +4,12 @@ namespace App\Models;
 
 class SedeModel extends BaseModel
 {
-    protected string $table = 'sede';
-    protected string $primaryKey = 'id_sede';
-    protected array $fillable = [
+    /** @var string */
+    protected $table = 'sede';
+    /** @var string */
+    protected $primaryKey = 'id_sede';
+    /** @var array */
+    protected $fillable = [
         'id_colegio',
         'nombre',
         'direccion',
@@ -16,7 +19,8 @@ class SedeModel extends BaseModel
         'eliminado',
     ];
 
-    protected array $tenantColumns = ['id_colegio'];
+    /** @var array */
+    protected $tenantColumns = ['id_colegio'];
 
     public function conColegio(array $filters = []): array
     {

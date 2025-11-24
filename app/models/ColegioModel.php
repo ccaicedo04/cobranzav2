@@ -4,9 +4,12 @@ namespace App\Models;
 
 class ColegioModel extends BaseModel
 {
-    protected string $table = 'colegio';
-    protected string $primaryKey = 'id_colegio';
-    protected array $fillable = [
+    /** @var string */
+    protected $table = 'colegio';
+    /** @var string */
+    protected $primaryKey = 'id_colegio';
+    /** @var array */
+    protected $fillable = [
         'nombre',
         'nit',
         'direccion',
@@ -17,7 +20,8 @@ class ColegioModel extends BaseModel
         'eliminado',
     ];
 
-    protected array $tenantColumns = [];
+    /** @var array */
+    protected $tenantColumns = [];
 
     public function porIds(array $ids): array
     {
