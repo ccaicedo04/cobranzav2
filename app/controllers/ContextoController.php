@@ -10,8 +10,10 @@ use Core\Session;
 
 class ContextoController extends Controller
 {
-    private ColegioModel $colegios;
-    private SedeModel $sedes;
+    /** @var ColegioModel */
+    private $colegios;
+    /** @var SedeModel */
+    private $sedes;
 
     public function __construct()
     {
@@ -20,7 +22,7 @@ class ContextoController extends Controller
         $this->sedes = new SedeModel();
     }
 
-    public function actualizar(): void
+    public function actualizar()
     {
         $token = $_POST['_token'] ?? '';
         if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !hash_equals((string) Session::get('contexto_token'), (string) $token)) {

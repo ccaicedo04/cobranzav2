@@ -11,9 +11,12 @@ use Core\Session;
 
 class PagoController extends Controller
 {
-    private PagoModel $pagos;
-    private EstudianteModel $estudiantes;
-    private AuditoriaModel $auditoria;
+    /** @var PagoModel */
+    private $pagos;
+    /** @var EstudianteModel */
+    private $estudiantes;
+    /** @var AuditoriaModel */
+    private $auditoria;
 
     public function __construct()
     {
@@ -28,7 +31,7 @@ class PagoController extends Controller
         $this->auditoria = new AuditoriaModel();
     }
 
-    public function index(): void
+    public function index()
     {
         $pagos = $this->pagos->listadoCompleto();
         $this->view('pagos/index', [
@@ -36,7 +39,7 @@ class PagoController extends Controller
         ]);
     }
 
-    public function create(): void
+    public function create()
     {
         $responsableId = (int) ($_GET['responsable'] ?? 0);
         $filtros = [];
@@ -50,7 +53,7 @@ class PagoController extends Controller
         ]);
     }
 
-    public function store(): void
+    public function store()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !Helpers::validateCsrf($_POST['_token'] ?? '')) {
             Helpers::redirect('index.php?route=pagos');
@@ -100,7 +103,10 @@ class PagoController extends Controller
         Helpers::redirect('index.php?route=pagos');
     }
 
-    private function guardarSoporte(array $archivo): ?string
+    /**
+     * @return string|null
+     */
+    private function guardarSoporte(array $archivo)
     {
         if (($archivo['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
             return null;

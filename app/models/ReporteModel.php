@@ -10,7 +10,8 @@ use PDO;
 
 class ReporteModel
 {
-    private PDO $db;
+    /** @var PDO */
+    private $db;
 
     public function __construct()
     {

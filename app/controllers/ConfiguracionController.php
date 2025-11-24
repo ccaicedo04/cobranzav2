@@ -9,7 +9,8 @@ use Core\Session;
 
 class ConfiguracionController extends Controller
 {
-    private ConfiguracionModel $configuracion;
+    /** @var ConfiguracionModel */
+    private $configuracion;
 
     public function __construct()
     {
@@ -22,7 +23,7 @@ class ConfiguracionController extends Controller
         $this->configuracion = new ConfiguracionModel();
     }
 
-    public function index(): void
+    public function index()
     {
         $usuario = Session::get('user');
         $config = $this->configuracion->all([
@@ -34,7 +35,7 @@ class ConfiguracionController extends Controller
         ]);
     }
 
-    public function store(): void
+    public function store()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !Helpers::validateCsrf($_POST['_token'] ?? '')) {
             Helpers::redirect('index.php?route=configuracion');
@@ -43,14 +44,21 @@ class ConfiguracionController extends Controller
         $usuario = Session::get('user');
         $payload = [
             'id_colegio' => $usuario['id_colegio'],
-            'smtp_host' => $_POST['smtp_host'] ?? '',
-            'smtp_puerto' => $_POST['smtp_puerto'] ?? '',
-            'smtp_usuario' => $_POST['smtp_usuario'] ?? '',
-            'smtp_password' => $_POST['smtp_password'] ?? '',
-            'whatsapp_api_key' => $_POST['whatsapp_api_key'] ?? '',
-            'whatsapp_endpoint' => $_POST['whatsapp_endpoint'] ?? '',
-            'sms_api_key' => $_POST['sms_api_key'] ?? '',
-            'sms_endpoint' => $_POST['sms_endpoint'] ?? '',
+            'smtp_host' => trim((string) ($_POST['smtp_host'] ?? '')),
+            'smtp_puerto' => trim((string) ($_POST['smtp_puerto'] ?? '')),
+            'smtp_usuario' => trim((string) ($_POST['smtp_usuario'] ?? '')),
+            'smtp_password' => trim((string) ($_POST['smtp_password'] ?? '')),
+            'whatsapp_api_key' => trim((string) ($_POST['whatsapp_api_key'] ?? '')),
+            'whatsapp_endpoint' => trim((string) ($_POST['whatsapp_endpoint'] ?? '')),
+            'sms_api_key' => trim((string) ($_POST['sms_api_key'] ?? '')),
+            'sms_endpoint' => trim((string) ($_POST['sms_endpoint'] ?? '')),
+            'twilio_account_sid' => trim((string) ($_POST['twilio_account_sid'] ?? '')),
+            'twilio_auth_token' => trim((string) ($_POST['twilio_auth_token'] ?? '')),
+            'twilio_whatsapp_from' => trim((string) ($_POST['twilio_whatsapp_from'] ?? '')),
+            'twilio_sms_from' => trim((string) ($_POST['twilio_sms_from'] ?? '')),
+            'twilio_default_country' => trim((string) ($_POST['twilio_default_country'] ?? '+57')) ?: '+57',
+            'twilio_status_callback' => trim((string) ($_POST['twilio_status_callback'] ?? '')),
+            'twilio_incoming_webhook' => trim((string) ($_POST['twilio_incoming_webhook'] ?? '')),
             'logo_path' => null,
             'actualizado_por' => $usuario['id_usuario'],
             'fecha_actualizacion' => date('Y-m-d H:i:s'),

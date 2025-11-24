@@ -4,9 +4,12 @@ namespace App\Models;
 
 class ConceptoModel extends BaseModel
 {
-    protected string $table = 'concepto_deuda';
-    protected string $primaryKey = 'id_concepto';
-    protected array $fillable = [
+    /** @var string */
+    protected $table = 'concepto_deuda';
+    /** @var string */
+    protected $primaryKey = 'id_concepto';
+    /** @var array */
+    protected $fillable = [
         'id_colegio',
         'nombre',
         'descripcion',

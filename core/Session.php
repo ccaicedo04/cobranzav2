@@ -4,36 +4,56 @@ namespace Core;
 
 class Session
 {
-    public static function start(): void
+    /**
+     * @return void
+     */
+    public static function start()
     {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
     }
 
-    public static function regenerate(): void
+    /**
+     * @return void
+     */
+    public static function regenerate()
     {
         if (session_status() === PHP_SESSION_ACTIVE) {
             session_regenerate_id(true);
         }
     }
 
-    public static function set(string $key, mixed $value): void
+    /**
+     * @param mixed $value
+     * @return void
+     */
+    public static function set(string $key, $value)
     {
         $_SESSION[$key] = $value;
     }
 
-    public static function get(string $key, mixed $default = null): mixed
+    /**
+     * @param mixed $default
+     * @return mixed
+     */
+    public static function get(string $key, $default = null)
     {
         return $_SESSION[$key] ?? $default;
     }
 
-    public static function remove(string $key): void
+    /**
+     * @return void
+     */
+    public static function remove(string $key)
     {
         unset($_SESSION[$key]);
     }
 
-    public static function destroy(): void
+    /**
+     * @return void
+     */
+    public static function destroy()
     {
         if (session_status() === PHP_SESSION_ACTIVE) {
             $_SESSION = [];

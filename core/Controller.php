@@ -7,7 +7,8 @@ use Core\Helpers;
 
 abstract class Controller
 {
-    protected array $data = [];
+    /** @var array */
+    protected $data = [];
 
     public function __construct()
     {
@@ -15,7 +16,13 @@ abstract class Controller
         Session::start();
     }
 
-    protected function view(string $view, array $data = []): void
+    /**
+     * Renderiza una vista. Cuando $return es true se devuelve el contenido como string
+     * (útil para preparar HTML antes de generar PDFs) y no se envía salida directa.
+     *
+     * @return string|void
+     */
+    protected function view(string $view, array $data = [], bool $return = false)
     {
         $this->data = $data;
         extract($data, EXTR_SKIP);
@@ -25,10 +32,20 @@ abstract class Controller
             throw new \RuntimeException("Vista {$view} no encontrada");
         }
 
+        if ($return) {
+            ob_start();
+            require $viewPath;
+
+            return (string) ob_get_clean();
+        }
+
         require $viewPath;
     }
 
-    protected function requireRole(string ...$roles): void
+    /**
+     * @return void
+     */
+    protected function requireRole(string ...$roles)
     {
         $user = Session::get('user');
         if (!$user || !in_array($user['rol'], $roles, true)) {
@@ -36,7 +53,10 @@ abstract class Controller
         }
     }
 
-    protected function requireModule(string $module): void
+    /**
+     * @return void
+     */
+    protected function requireModule(string $module)
     {
         $user = Session::get('user');
         if (!$user) {

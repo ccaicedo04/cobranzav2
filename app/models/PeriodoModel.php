@@ -4,9 +4,12 @@ namespace App\Models;
 
 class PeriodoModel extends BaseModel
 {
-    protected string $table = 'periodo';
-    protected string $primaryKey = 'id_periodo';
-    protected array $fillable = [
+    /** @var string */
+    protected $table = 'periodo';
+    /** @var string */
+    protected $primaryKey = 'id_periodo';
+    /** @var array */
+    protected $fillable = [
         'id_colegio',
         'nombre',
         'fecha_inicio',

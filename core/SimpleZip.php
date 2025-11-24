@@ -9,9 +9,12 @@ class SimpleZip
     /**
      * @var array<int, array{name: string, data: string, time: int}>
      */
-    private array $entries = [];
+    private $entries = [];
 
-    public function addFile(string $name, string $contents): void
+    /**
+     * @return void
+     */
+    public function addFile(string $name, string $contents)
     {
         $name = ltrim(str_replace('\\', '/', $name), '/');
         if ($name === '' || str_ends_with($name, '/')) {

@@ -6,9 +6,12 @@ use Core\Session;
 
 class DeudaModel extends BaseModel
 {
-    protected string $table = 'deuda';
-    protected string $primaryKey = 'id_deuda';
-    protected array $fillable = [
+    /** @var string */
+    protected $table = 'deuda';
+    /** @var string */
+    protected $primaryKey = 'id_deuda';
+    /** @var array */
+    protected $fillable = [
         'id_colegio',
         'id_sede',
         'id_estudiante',

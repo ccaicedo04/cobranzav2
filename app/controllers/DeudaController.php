@@ -14,11 +14,16 @@ use Core\Session;
 
 class DeudaController extends Controller
 {
-    private DeudaModel $deudas;
-    private EstudianteModel $estudiantes;
-    private ConceptoModel $conceptos;
-    private PeriodoModel $periodos;
-    private AuditoriaModel $auditoria;
+    /** @var DeudaModel */
+    private $deudas;
+    /** @var EstudianteModel */
+    private $estudiantes;
+    /** @var ConceptoModel */
+    private $conceptos;
+    /** @var PeriodoModel */
+    private $periodos;
+    /** @var AuditoriaModel */
+    private $auditoria;
 
     public function __construct()
     {
@@ -35,7 +40,7 @@ class DeudaController extends Controller
         $this->auditoria = new AuditoriaModel();
     }
 
-    public function index(): void
+    public function index()
     {
         $deudas = $this->deudas->listadoCompleto();
         $this->view('deudas/index', [
@@ -43,7 +48,7 @@ class DeudaController extends Controller
         ]);
     }
 
-    public function create(): void
+    public function create()
     {
         $this->view('deudas/form', [
             'responsables' => $this->responsablesLista(),
@@ -54,7 +59,7 @@ class DeudaController extends Controller
         ]);
     }
 
-    public function store(): void
+    public function store()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !Helpers::validateCsrf($_POST['_token'] ?? '')) {
             Helpers::redirect('index.php?route=deudas');

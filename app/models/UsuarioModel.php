@@ -6,9 +6,12 @@ use PDO;
 
 class UsuarioModel extends BaseModel
 {
-    protected string $table = 'usuario';
-    protected string $primaryKey = 'id_usuario';
-    protected array $fillable = [
+    /** @var string */
+    protected $table = 'usuario';
+    /** @var string */
+    protected $primaryKey = 'id_usuario';
+    /** @var array */
+    protected $fillable = [
         'id_colegio',
         'id_sede',
         'nombre_completo',
@@ -19,7 +22,8 @@ class UsuarioModel extends BaseModel
         'estado',
     ];
 
-    protected array $tenantColumns = [];
+    /** @var array */
+    protected $tenantColumns = [];
 
     public function listadoConContexto(array $restricciones = []): array
     {
@@ -114,7 +118,10 @@ class UsuarioModel extends BaseModel
         return $usuarios;
     }
 
-    public function authenticate(string $username, string $password): ?array
+    /**
+     * @return array|null
+     */
+    public function authenticate(string $username, string $password)
     {
         $sql = 'SELECT u.*, c.nombre AS colegio_nombre, s.nombre AS sede_nombre
                 FROM usuario u
@@ -133,7 +140,10 @@ class UsuarioModel extends BaseModel
         return null;
     }
 
-    public function detalle(int $idUsuario): ?array
+    /**
+     * @return array|null
+     */
+    public function detalle(int $idUsuario)
     {
         $sql = 'SELECT u.*, c.nombre AS colegio_nombre, s.nombre AS sede_nombre
                 FROM usuario u
@@ -173,17 +183,17 @@ class UsuarioModel extends BaseModel
         return $stmt->execute(['hash' => $hash, 'id' => $idUsuario]);
     }
 
-    public function syncColegios(int $idUsuario, array $colegios): void
+    public function syncColegios(int $idUsuario, array $colegios)
     {
         $this->syncPivot('usuario_colegio', 'id_colegio', $idUsuario, array_map('intval', $colegios));
     }
 
-    public function syncSedes(int $idUsuario, array $sedes): void
+    public function syncSedes(int $idUsuario, array $sedes)
     {
         $this->syncPivot('usuario_sede', 'id_sede', $idUsuario, array_map('intval', $sedes));
     }
 
-    public function syncModulosPorCodigo(int $idUsuario, array $codigos): void
+    public function syncModulosPorCodigo(int $idUsuario, array $codigos)
     {
         $codigos = array_values(array_unique(array_filter($codigos, static fn ($codigo) => $codigo !== null && $codigo !== '')));
         if (!$codigos) {
@@ -200,7 +210,7 @@ class UsuarioModel extends BaseModel
         $this->syncPivot('usuario_modulo', 'id_modulo', $idUsuario, $ids);
     }
 
-    private function syncPivot(string $tabla, string $columna, int $idUsuario, array $valores): void
+    private function syncPivot(string $tabla, string $columna, int $idUsuario, array $valores)
     {
         $this->db->beginTransaction();
         $delete = $this->db->prepare('DELETE FROM ' . $tabla . ' WHERE id_usuario = :id_usuario');
