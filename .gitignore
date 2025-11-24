@@ -1,3 +1,6 @@
-/vendor/
+/vendor/*
+!/vendor/.gitkeep
+!/vendor/twilio/
+!/vendor/twilio/**
 /.env
 /uploads/

@@ -7,5 +7,6 @@ Si tu entorno no puede ejecutar `composer install`, puedes cargar el SDK oficial
 3. Crea la ruta `vendor/twilio/sdk/src/` dentro del proyecto (respeta las mayúsculas/minúsculas).
 4. Copia la carpeta `Twilio` descomprimida dentro de `vendor/twilio/sdk/src/` y asegúrate de que exista el archivo `vendor/twilio/sdk/src/Twilio/autoload.php`.
 5. (Opcional) Si recibes actualizaciones frecuentes, conserva también la carpeta `vendor/twilio/sdk/lib/` y cualquier otro recurso incluido en el `.zip` para mantener completa la librería.
+6. Si deseas subir el SDK al repositorio, simplemente agrega los archivos bajo `vendor/twilio/`; el control de versiones ya permite incluir esa carpeta sin exponer otros paquetes.
 
 El proyecto detectará automáticamente la clase `Twilio\Rest\Client` siempre que el autoloader `vendor/twilio/sdk/src/Twilio/autoload.php` esté presente. En caso contrario, el sistema seguirá utilizando el modo HTTP directo para enviar mensajes y descargar adjuntos.
