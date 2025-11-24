@@ -21,7 +21,7 @@ class DashboardController extends Controller
         $this->reportes = new ReporteModel();
     }
 
-    public function index(): void
+    public function index()
     {
         $kpis = [
             'carteraPendiente' => $this->reportes->carteraPendiente(),

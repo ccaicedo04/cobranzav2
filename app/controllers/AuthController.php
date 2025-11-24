@@ -30,7 +30,7 @@ class AuthController extends Controller
         $this->colegios = new ColegioModel();
     }
 
-    public function login(): void
+    public function login()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $usuario = $_POST['usuario'] ?? '';
@@ -161,7 +161,7 @@ class AuthController extends Controller
         ]);
     }
 
-    public function logout(): void
+    public function logout()
     {
         $user = Session::get('user');
         if ($user) {

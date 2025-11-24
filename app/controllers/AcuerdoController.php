@@ -39,7 +39,7 @@ class AcuerdoController extends Controller
         $this->auditoria = new AuditoriaModel();
     }
 
-    public function index(): void
+    public function index()
     {
         $responsableId = (int) ($_GET['responsable'] ?? 0);
         $acuerdos = $this->acuerdos->all();
@@ -56,7 +56,7 @@ class AcuerdoController extends Controller
         ]);
     }
 
-    public function store(): void
+    public function store()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !Helpers::validateCsrf($_POST['_token'] ?? '')) {
             Helpers::redirect('index.php?route=acuerdos');

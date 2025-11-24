@@ -39,7 +39,7 @@ class UsuarioController extends Controller
         $this->modulos = new ModuloModel();
     }
 
-    public function index(): void
+    public function index()
     {
         $usuario = Session::get('user');
         $restricciones = [];
@@ -92,7 +92,7 @@ class UsuarioController extends Controller
         ]);
     }
 
-    public function store(): void
+    public function store()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !Helpers::validateCsrf($_POST['_token'] ?? '')) {
             Helpers::redirect('index.php?route=usuarios');
@@ -160,7 +160,7 @@ class UsuarioController extends Controller
         Helpers::redirect('index.php?route=usuarios');
     }
 
-    public function detalle(): void
+    public function detalle()
     {
         $id = (int) ($_GET['id'] ?? 0);
         if ($id <= 0) {
@@ -195,7 +195,7 @@ class UsuarioController extends Controller
         ]);
     }
 
-    public function update(): void
+    public function update()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !Helpers::validateCsrf($_POST['_token'] ?? '')) {
             Helpers::redirect('index.php?route=usuarios');

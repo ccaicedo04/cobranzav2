@@ -74,7 +74,7 @@ class ComunicacionController extends Controller
         $this->twilio = $this->crearServicioTwilio($this->twilioConfig);
     }
 
-    public function index(): void
+    public function index()
     {
         $selectedResponsable = (int) ($_GET['responsable'] ?? 0);
         $selectedCanal = $_GET['canal'] ?? 'whatsapp';
@@ -125,7 +125,7 @@ class ComunicacionController extends Controller
         ]);
     }
 
-    public function store(): void
+    public function store()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !Helpers::validateCsrf($_POST['_token'] ?? '')) {
             Helpers::redirect('index.php?route=comunicaciones');
@@ -347,7 +347,7 @@ class ComunicacionController extends Controller
         Helpers::redirect($redirect);
     }
 
-    public function conversation(): void
+    public function conversation()
     {
         if (!Session::get('user')) {
             http_response_code(401);
@@ -376,7 +376,7 @@ class ComunicacionController extends Controller
         ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     }
 
-    private function guardarAdjuntosCargados(int $idComunicacion): void
+    private function guardarAdjuntosCargados(int $idComunicacion)
     {
         if (empty($_FILES['adjuntos']) || !is_array($_FILES['adjuntos']['name'])) {
             return;

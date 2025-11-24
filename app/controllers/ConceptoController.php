@@ -31,7 +31,7 @@ class ConceptoController extends Controller
         $this->auditoria = new AuditoriaModel();
     }
 
-    public function index(): void
+    public function index()
     {
         $usuario = Session::get('user');
         $conceptos = $this->conceptos->conColegio();
@@ -50,7 +50,7 @@ class ConceptoController extends Controller
         ]);
     }
 
-    public function store(): void
+    public function store()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !Helpers::validateCsrf($_POST['_token'] ?? '')) {
             Helpers::redirect('index.php?route=conceptos');
@@ -87,7 +87,7 @@ class ConceptoController extends Controller
         Helpers::redirect('index.php?route=conceptos');
     }
 
-    public function edit(): void
+    public function edit()
     {
         $id = (int) ($_GET['id'] ?? 0);
         $concepto = $this->conceptos->find($id);
@@ -109,7 +109,7 @@ class ConceptoController extends Controller
         ]);
     }
 
-    public function update(): void
+    public function update()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !Helpers::validateCsrf($_POST['_token'] ?? '')) {
             Helpers::redirect('index.php?route=conceptos');

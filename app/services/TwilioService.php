@@ -220,7 +220,7 @@ class TwilioService
         return $formatted;
     }
 
-    private function ensureClient(): void
+    private function ensureClient()
     {
         if (!$this->configured()) {
             throw new RuntimeException('No se han configurado las credenciales de Twilio.');
@@ -236,7 +236,7 @@ class TwilioService
         }
     }
 
-    private function bootTwilioAutoload(): void
+    private function bootTwilioAutoload()
     {
         if (class_exists(self::CLIENT_CLASS)) {
             return;

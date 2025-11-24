@@ -23,7 +23,7 @@ class ConfiguracionController extends Controller
         $this->configuracion = new ConfiguracionModel();
     }
 
-    public function index(): void
+    public function index()
     {
         $usuario = Session::get('user');
         $config = $this->configuracion->all([
@@ -35,7 +35,7 @@ class ConfiguracionController extends Controller
         ]);
     }
 
-    public function store(): void
+    public function store()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !Helpers::validateCsrf($_POST['_token'] ?? '')) {
             Helpers::redirect('index.php?route=configuracion');

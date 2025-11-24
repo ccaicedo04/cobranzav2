@@ -31,7 +31,7 @@ class ColegioController extends Controller
         $this->sedes = new SedeModel();
     }
 
-    public function index(): void
+    public function index()
     {
         $this->requireRole('admin_global');
         $colegios = $this->colegios->all([]);
@@ -41,7 +41,7 @@ class ColegioController extends Controller
         ]);
     }
 
-    public function store(): void
+    public function store()
     {
         $this->requireRole('admin_global');
         if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !Helpers::validateCsrf($_POST['_token'] ?? '')) {
@@ -74,7 +74,7 @@ class ColegioController extends Controller
         Helpers::redirect('index.php?route=colegios');
     }
 
-    public function edit(): void
+    public function edit()
     {
         $id = (int) ($_GET['id'] ?? 0);
         $colegio = $this->colegioAccesible($id);
@@ -85,7 +85,7 @@ class ColegioController extends Controller
         ]);
     }
 
-    public function update(): void
+    public function update()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !Helpers::validateCsrf($_POST['_token'] ?? '')) {
             Helpers::redirect('index.php?route=colegios');
@@ -123,7 +123,7 @@ class ColegioController extends Controller
         Helpers::redirect('index.php?route=colegios');
     }
 
-    public function detalle(): void
+    public function detalle()
     {
         $id = (int) ($_GET['id'] ?? 0);
         $colegio = $this->colegioAccesible($id);

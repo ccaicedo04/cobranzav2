@@ -29,7 +29,7 @@ class TwilioWebhookController extends Controller
         $this->configuracion = new ConfiguracionModel();
     }
 
-    public function incoming(): void
+    public function incoming()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             $this->respondXml();
@@ -93,7 +93,7 @@ class TwilioWebhookController extends Controller
         $this->respondXml();
     }
 
-    private function guardarAdjuntos(int $idComunicacion, int $numMedia, TwilioService $twilio): void
+    private function guardarAdjuntos(int $idComunicacion, int $numMedia, TwilioService $twilio)
     {
         $basePath = dirname(__DIR__, 2) . '/uploads/comunicaciones/' . $idComunicacion;
         if (!is_dir($basePath)) {
@@ -179,7 +179,7 @@ class TwilioWebhookController extends Controller
         return '.bin';
     }
 
-    private function respondXml(): void
+    private function respondXml()
     {
         header('Content-Type: text/xml');
         echo '<?xml version="1.0" encoding="UTF-8"?><Response></Response>';

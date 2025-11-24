@@ -31,7 +31,7 @@ class CargaController extends Controller
         $this->comunicaciones = new ComunicacionModel();
     }
 
-    public function index(): void
+    public function index()
     {
         $cargas = $this->cargas->all([], ['order' => 'fecha_registro DESC']);
 
@@ -42,7 +42,7 @@ class CargaController extends Controller
         ]);
     }
 
-    public function store(): void
+    public function store()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !Helpers::validateCsrf($_POST['_token'] ?? '')) {
             Helpers::redirect('index.php?route=carga-masiva');

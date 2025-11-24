@@ -23,7 +23,7 @@ class ParametroController extends Controller
         $this->parametros = new ParametroModel();
     }
 
-    public function index(): void
+    public function index()
     {
         $parametros = $this->parametros->all();
         $this->view('administracion/parametros/index', [
@@ -32,7 +32,7 @@ class ParametroController extends Controller
         ]);
     }
 
-    public function store(): void
+    public function store()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !Helpers::validateCsrf($_POST['_token'] ?? '')) {
             Helpers::redirect('index.php?route=parametros');
@@ -51,7 +51,7 @@ class ParametroController extends Controller
         Helpers::redirect('index.php?route=parametros');
     }
 
-    public function update(): void
+    public function update()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !Helpers::validateCsrf($_POST['_token'] ?? '')) {
             Helpers::redirect('index.php?route=parametros');

@@ -22,7 +22,7 @@ class ContextoController extends Controller
         $this->sedes = new SedeModel();
     }
 
-    public function actualizar(): void
+    public function actualizar()
     {
         $token = $_POST['_token'] ?? '';
         if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !hash_equals((string) Session::get('contexto_token'), (string) $token)) {

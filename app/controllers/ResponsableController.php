@@ -51,7 +51,7 @@ class ResponsableController extends Controller
         $this->auditoria = new AuditoriaModel();
     }
 
-    public function index(): void
+    public function index()
     {
         $filtros = [
             'numero_documento' => $_GET['documento'] ?? null,
@@ -65,7 +65,7 @@ class ResponsableController extends Controller
         ]);
     }
 
-    public function create(): void
+    public function create()
     {
         $usuario = Session::get('user');
         $sedes = $this->sedes->conColegio();
@@ -81,7 +81,7 @@ class ResponsableController extends Controller
         ]);
     }
 
-    public function store(): void
+    public function store()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             Helpers::redirect('index.php?route=responsables');
@@ -125,7 +125,7 @@ class ResponsableController extends Controller
         Helpers::redirect('index.php?route=responsables/detalle&id=' . $id);
     }
 
-    public function edit(): void
+    public function edit()
     {
         $id = (int) ($_GET['id'] ?? 0);
         $responsable = $this->responsables->find($id);
@@ -148,7 +148,7 @@ class ResponsableController extends Controller
         ]);
     }
 
-    public function update(): void
+    public function update()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             Helpers::redirect('index.php?route=responsables');
@@ -193,7 +193,7 @@ class ResponsableController extends Controller
         Helpers::redirect('index.php?route=responsables/detalle&id=' . $id);
     }
 
-    public function delete(): void
+    public function delete()
     {
         $id = (int) ($_POST['id'] ?? 0);
         if (!$id) {
@@ -222,7 +222,7 @@ class ResponsableController extends Controller
         Helpers::redirect('index.php?route=responsables');
     }
 
-    public function detalle(): void
+    public function detalle()
     {
         $id = (int) ($_GET['id'] ?? 0);
         $listado = $this->responsables->conContexto(['id_responsable' => $id]);

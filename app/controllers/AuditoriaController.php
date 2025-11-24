@@ -23,7 +23,7 @@ class AuditoriaController extends Controller
         $this->auditoria = new AuditoriaModel();
     }
 
-    public function index(): void
+    public function index()
     {
         $registros = $this->auditoria->conUsuarios();
         $this->view('administracion/auditoria/index', [

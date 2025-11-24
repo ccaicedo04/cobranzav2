@@ -177,17 +177,17 @@ class UsuarioModel extends BaseModel
         return $stmt->execute(['hash' => $hash, 'id' => $idUsuario]);
     }
 
-    public function syncColegios(int $idUsuario, array $colegios): void
+    public function syncColegios(int $idUsuario, array $colegios)
     {
         $this->syncPivot('usuario_colegio', 'id_colegio', $idUsuario, array_map('intval', $colegios));
     }
 
-    public function syncSedes(int $idUsuario, array $sedes): void
+    public function syncSedes(int $idUsuario, array $sedes)
     {
         $this->syncPivot('usuario_sede', 'id_sede', $idUsuario, array_map('intval', $sedes));
     }
 
-    public function syncModulosPorCodigo(int $idUsuario, array $codigos): void
+    public function syncModulosPorCodigo(int $idUsuario, array $codigos)
     {
         $codigos = array_values(array_unique(array_filter($codigos, static fn ($codigo) => $codigo !== null && $codigo !== '')));
         if (!$codigos) {
@@ -204,7 +204,7 @@ class UsuarioModel extends BaseModel
         $this->syncPivot('usuario_modulo', 'id_modulo', $idUsuario, $ids);
     }
 
-    private function syncPivot(string $tabla, string $columna, int $idUsuario, array $valores): void
+    private function syncPivot(string $tabla, string $columna, int $idUsuario, array $valores)
     {
         $this->db->beginTransaction();
         $delete = $this->db->prepare('DELETE FROM ' . $tabla . ' WHERE id_usuario = :id_usuario');

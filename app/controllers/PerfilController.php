@@ -22,7 +22,7 @@ class PerfilController extends Controller
         $this->usuarios = new UsuarioModel();
     }
 
-    public function index(): void
+    public function index()
     {
         $usuario = Session::get('user');
         $detalle = $this->usuarios->detalle((int) ($usuario['id_usuario'] ?? 0));
@@ -35,7 +35,7 @@ class PerfilController extends Controller
         ]);
     }
 
-    public function actualizar(): void
+    public function actualizar()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !Helpers::validateCsrf($_POST['_token'] ?? '')) {
             Helpers::redirect('index.php?route=perfil');

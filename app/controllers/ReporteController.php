@@ -26,7 +26,7 @@ class ReporteController extends Controller
         $this->reportes = new ReporteModel();
     }
 
-    public function index(): void
+    public function index()
     {
         $tipo = $this->tipoDesdeRequest();
         $filtros = $this->extraerFiltros();
@@ -44,7 +44,7 @@ class ReporteController extends Controller
         ]);
     }
 
-    public function exportExcel(): void
+    public function exportExcel()
     {
         $tipo = $this->tipoDesdeRequest();
         $filtros = $this->extraerFiltros();
@@ -71,7 +71,7 @@ class ReporteController extends Controller
         }
     }
 
-    public function exportPdf(): void
+    public function exportPdf()
     {
         $tipo = $this->tipoDesdeRequest();
         $filtros = $this->extraerFiltros();
@@ -161,7 +161,10 @@ class ReporteController extends Controller
         ];
     }
 
-    private function formatearValor(mixed $valor, array $columna): string
+    /**
+     * @param mixed $valor
+     */
+    private function formatearValor($valor, array $columna): string
     {
         $formato = $columna['formato'] ?? null;
         $prefijo = $columna['prefijo'] ?? '';
