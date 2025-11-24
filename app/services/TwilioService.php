@@ -3,17 +3,19 @@
 namespace App\Services;
 
 use RuntimeException;
-use Twilio\Rest\Client;
 
 class TwilioService
 {
+    private const CLIENT_CLASS = '\\Twilio\\Rest\\Client';
+
     private string $accountSid;
     private string $authToken;
     private ?string $whatsAppFrom;
     private ?string $smsFrom;
     private string $defaultCountryCode;
     private ?string $statusCallback;
-    private ?Client $client = null;
+    /** @var object|null */
+    private $client = null;
 
     public function __construct(
         ?string $accountSid = null,
@@ -23,6 +25,8 @@ class TwilioService
         ?string $defaultCountryCode = null,
         ?string $statusCallback = null
     ) {
+        $this->bootTwilioAutoload();
+
         $this->accountSid = trim((string) ($accountSid ?? getenv('TWILIO_ACCOUNT_SID') ?: ''));
         $this->authToken = trim((string) ($authToken ?? getenv('TWILIO_AUTH_TOKEN') ?: ''));
         $this->whatsAppFrom = $this->sanitizeNumber($whatsAppFrom ?? getenv('TWILIO_WHATSAPP_FROM') ?: null);
@@ -39,8 +43,9 @@ class TwilioService
         $statusCallback = trim((string) ($statusCallback ?? getenv('TWILIO_STATUS_CALLBACK') ?: ''));
         $this->statusCallback = $statusCallback !== '' ? $statusCallback : null;
 
-        if ($this->configured() && class_exists(Client::class)) {
-            $this->client = new Client($this->accountSid, $this->authToken);
+        if ($this->configured() && class_exists(self::CLIENT_CLASS)) {
+            $clientClass = self::CLIENT_CLASS;
+            $this->client = new $clientClass($this->accountSid, $this->authToken);
         }
     }
 
@@ -51,7 +56,7 @@ class TwilioService
 
     public function ready(): bool
     {
-        return $this->configured() && (class_exists(Client::class) || $this->httpSupported());
+        return $this->configured() && (class_exists(self::CLIENT_CLASS) || $this->httpSupported());
     }
 
     public function sendWhatsApp(string $to, string $body, array $mediaUrls = []): array
@@ -215,12 +220,35 @@ class TwilioService
             throw new RuntimeException('No se han configurado las credenciales de Twilio.');
         }
 
-        if (class_exists(Client::class) && !$this->client) {
-            $this->client = new Client($this->accountSid, $this->authToken);
+        if (class_exists(self::CLIENT_CLASS) && !$this->client) {
+            $clientClass = self::CLIENT_CLASS;
+            $this->client = new $clientClass($this->accountSid, $this->authToken);
         }
 
         if (!$this->client && !$this->httpSupported()) {
             throw new RuntimeException('El SDK oficial de Twilio no está disponible y el entorno no permite realizar peticiones HTTP directas.');
+        }
+    }
+
+    private function bootTwilioAutoload(): void
+    {
+        if (class_exists(self::CLIENT_CLASS)) {
+            return;
+        }
+
+        $root = dirname(__DIR__, 2);
+        $candidates = [
+            $root . '/vendor/autoload.php',
+            $root . '/vendor/twilio/sdk/src/Twilio/autoload.php',
+        ];
+
+        foreach ($candidates as $file) {
+            if (is_file($file)) {
+                require_once $file;
+                if (class_exists(self::CLIENT_CLASS)) {
+                    break;
+                }
+            }
         }
     }
 
