@@ -17,9 +17,12 @@ abstract class Controller
     }
 
     /**
-     * @return void
+     * Renderiza una vista. Cuando $return es true se devuelve el contenido como string
+     * (útil para preparar HTML antes de generar PDFs) y no se envía salida directa.
+     *
+     * @return string|void
      */
-    protected function view(string $view, array $data = [])
+    protected function view(string $view, array $data = [], bool $return = false)
     {
         $this->data = $data;
         extract($data, EXTR_SKIP);
@@ -27,6 +30,13 @@ abstract class Controller
 
         if (!file_exists($viewPath)) {
             throw new \RuntimeException("Vista {$view} no encontrada");
+        }
+
+        if ($return) {
+            ob_start();
+            require $viewPath;
+
+            return (string) ob_get_clean();
         }
 
         require $viewPath;

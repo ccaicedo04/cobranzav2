@@ -75,6 +75,12 @@ class ReporteController extends Controller
     public function exportPdf()
     {
         try {
+            if (function_exists('ob_get_level')) {
+                while (ob_get_level() > 0) {
+                    ob_end_clean();
+                }
+            }
+
             $tipo = $this->tipoDesdeRequest();
             $filtros = $this->extraerFiltros();
             $config = $this->definicionesReporte()[$tipo];

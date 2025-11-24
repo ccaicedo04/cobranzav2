@@ -2,6 +2,10 @@
 $title = 'Usuarios';
 $pageTitle = 'Usuarios';
 $breadcrumbs = 'Administración / Usuarios';
+$usuarios = $usuarios ?? [];
+$colegios = $colegios ?? [];
+$sedes = $sedes ?? [];
+$modulos = $modulos ?? [];
 $rolesDisponibles = $rolesDisponibles ?? ['agente' => 'Agente'];
 $modulosPorDefecto = $modulosPorDefecto ?? [];
 $formDisabled = false;
@@ -73,6 +77,10 @@ include __DIR__ . '/../../_partials/header.php';
                 <li>Activa los <strong>Módulos</strong> que podrá usar el nuevo usuario.</li>
                 <li>Vuelve aquí y selecciona las opciones para habilitar el guardado.</li>
             </ul>
+            <div class="alert" style="background:#f8fafc;border:1px dashed #cbd5e1;color:#0f172a;">
+                Aún puedes crear el usuario: se guardará sin colegio ni sede hasta que los definas. Luego podrás editarlo y
+                asignar el contexto desde esta misma pantalla.
+            </div>
         <?php endif; ?>
         <form method="post" action="index.php?route=usuarios/store" data-confirm="¿Deseas crear el nuevo usuario con los permisos seleccionados?" style="display:flex;flex-direction:column;gap:10px;">
             <input type="hidden" name="_token" value="<?= htmlspecialchars($token) ?>">
@@ -135,7 +143,7 @@ include __DIR__ . '/../../_partials/header.php';
                 <option value="activo">Activo</option>
                 <option value="inactivo">Inactivo</option>
             </select>
-            <div class="actions" style="display:flex;justify-content:flex-end;gap:10px;margin-top:12px;">
+            <div class="actions" style="display:flex;justify-content:flex-end;gap:10px;margin-top:12px;position:sticky;bottom:0;background:#fff;padding-top:8px;">
                 <button class="btn primary" type="submit" <?= $formDisabled ? 'disabled' : '' ?>>Crear usuario</button>
             </div>
         </form>

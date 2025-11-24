@@ -24,9 +24,21 @@ class PdfService
      */
     public function exportar(array $config, array $datos, array $documento, $html, $filename, $inline = false)
     {
+        $this->limpiarBuffers();
+
+        $htmlPreparado = trim((string) $html);
+        if ($htmlPreparado === '') {
+            $htmlPreparado = $this->htmlDesdeDocumento($documento);
+        }
+
         if ($this->dompdfDisponible()) {
-            $this->descargarConDompdf((string) $html, $filename, $inline);
-            return;
+            try {
+                $this->descargarConDompdf($htmlPreparado, $filename, $inline);
+
+                return;
+            } catch (Throwable $throwable) {
+                // Si DOMPDF falla, continuamos con SimplePdf para no entregar un archivo en blanco.
+            }
         }
 
         SimplePdf::downloadTable($filename, $documento, $inline);
@@ -57,6 +69,8 @@ class PdfService
      */
     private function descargarConDompdf($html, $filename, $inline)
     {
+        $this->limpiarBuffers();
+
         $options = new Options();
         $options->set('isRemoteEnabled', true);
         $options->set('defaultFont', 'Helvetica');
@@ -73,5 +87,69 @@ class PdfService
 
         $dompdf->stream($filename, ['Attachment' => !$inline]);
         exit;
+    }
+
+    /**
+     * @return void
+     */
+    private function limpiarBuffers()
+    {
+        if (function_exists('ob_get_level')) {
+            while (ob_get_level() > 0) {
+                ob_end_clean();
+            }
+        }
+    }
+
+    private function htmlDesdeDocumento(array $documento): string
+    {
+        $columnas = $documento['columns'] ?? [];
+        $rows = $documento['rows'] ?? [];
+        if (!$columnas) {
+            $columnas = [['campo' => 'contenido', 'etiqueta' => 'Contenido']];
+        }
+        if (!$rows) {
+            $rows = [['No hay información para los filtros aplicados.']];
+        }
+
+        ob_start();
+        ?>
+        <html>
+        <head>
+            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+            <style>
+                body { font-family: Arial, sans-serif; margin: 24px; }
+                h1 { margin: 0 0 8px; font-size: 18px; color: #0b3b77; }
+                table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 11px; }
+                th { background: #0b3b77; color: #fff; padding: 8px; text-align: left; }
+                td { border: 1px solid #e5e7eb; padding: 8px; }
+                tr:nth-child(even) td { background: #f9fafb; }
+            </style>
+        </head>
+        <body>
+            <h1><?= htmlspecialchars($documento['title'] ?? 'Reporte') ?></h1>
+            <table>
+                <thead>
+                <tr>
+                    <?php foreach ($columnas as $columna): ?>
+                        <th><?= htmlspecialchars($columna['etiqueta'] ?? '') ?></th>
+                    <?php endforeach; ?>
+                </tr>
+                </thead>
+                <tbody>
+                <?php foreach ($rows as $fila): ?>
+                    <tr>
+                        <?php foreach ($fila as $celda): ?>
+                            <td><?= htmlspecialchars((string) $celda, ENT_QUOTES, 'UTF-8') ?></td>
+                        <?php endforeach; ?>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        </body>
+        </html>
+        <?php
+
+        return (string) ob_get_clean();
     }
 }
