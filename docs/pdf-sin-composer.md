@@ -17,7 +17,9 @@ Copia el ZIP standalone desde https://github.com/dompdf/dompdf/releases (ej: `do
     dompdf-3.1.4.zip
 ```
 
-Al iniciar la app, `Core\DompdfSetup` descomprime automáticamente el ZIP, mueve los archivos al nivel correcto y crea `lib/fonts` y `lib/cache` si no existen. La ruta final queda:
+Si ya tienes la carpeta completa, también puedes colocarla dentro de `/app/libraries/dompdf/dompdf/`: el instalador la reubicará automáticamente.
+
+Al iniciar la app, `Core\DompdfSetup` descomprime automáticamente el ZIP (ya esté en `app/libraries/dompdf/` o en `app/libraries/dompdf/dompdf/`), mueve los archivos al nivel correcto y crea `lib/fonts` y `lib/cache` si no existen. La ruta final queda:
 
 ```
 /app/libraries/dompdf/

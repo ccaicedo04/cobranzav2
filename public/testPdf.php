@@ -7,7 +7,7 @@ use Dompdf\Options;
 
 if (!DompdfSetup::bootstrap() || !class_exists(Dompdf::class)) {
     header('HTTP/1.1 500 Internal Server Error');
-    echo 'DOMPDF no está disponible. Copia dompdf-3.1.4.zip en app/libraries/dompdf/ y recarga esta página.';
+    echo 'DOMPDF no está disponible. Copia dompdf-3.1.4.zip o la carpeta dompdf/ en app/libraries/dompdf/ y recarga esta página.';
     exit;
 }
 
