@@ -73,13 +73,28 @@ class ReporteController extends Controller
 
     public function exportPdf()
     {
-        $tipo = $this->tipoDesdeRequest();
-        $filtros = $this->extraerFiltros();
-        $config = $this->definicionesReporte()[$tipo];
-        $datos = $this->obtenerDatosPorTipo($tipo, $filtros);
+        if (function_exists('ob_start')) {
+            ob_start();
+        }
 
-        $documento = $this->construirDocumentoPdf($config, $datos, $filtros, $tipo);
-        SimplePdf::downloadTable('reporte_' . $tipo . '.pdf', $documento);
+        try {
+            $tipo = $this->tipoDesdeRequest();
+            $filtros = $this->extraerFiltros();
+            $config = $this->definicionesReporte()[$tipo];
+            $datos = $this->obtenerDatosPorTipo($tipo, $filtros);
+
+            $documento = $this->construirDocumentoPdf($config, $datos, $filtros, $tipo);
+            SimplePdf::downloadTable('reporte_' . $tipo . '.pdf', $documento);
+        } catch (Throwable $throwable) {
+            if (function_exists('ob_get_level')) {
+                while (ob_get_level() > 0) {
+                    ob_end_clean();
+                }
+            }
+            http_response_code(500);
+            header('Content-Type: text/plain; charset=utf-8');
+            echo 'No fue posible generar el PDF: ' . $throwable->getMessage();
+        }
     }
 
     private function obtenerDatosPorTipo(string $tipo, array $filtros): array

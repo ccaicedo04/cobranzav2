@@ -39,6 +39,16 @@ class SimplePdf
         }
 
         $pdf = self::renderTable($document);
+        if ($pdf === '') {
+            $pdf = self::renderTable([
+                'title' => 'Reporte',
+                'columns' => [
+                    ['campo' => 'mensaje', 'etiqueta' => 'Mensaje', 'ancho' => 100],
+                ],
+                'rows' => [['No se pudo construir el PDF con los datos suministrados.']],
+                'meta' => ['Generado' => date('Y-m-d H:i:s')],
+            ]);
+        }
         header('Content-Type: application/pdf');
         header('Content-Disposition: attachment; filename="' . $filename . '"');
         header('Content-Length: ' . strlen($pdf));

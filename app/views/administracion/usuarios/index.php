@@ -4,6 +4,7 @@ $pageTitle = 'Usuarios';
 $breadcrumbs = 'Administración / Usuarios';
 $rolesDisponibles = $rolesDisponibles ?? ['agente' => 'Agente'];
 $modulosPorDefecto = $modulosPorDefecto ?? [];
+$formDisabled = empty($colegios) || empty($sedes) || empty($modulos);
 include __DIR__ . '/../../_partials/header.php';
 ?>
 <div class="grid" style="grid-template-columns:2fr 1fr;">
@@ -56,23 +57,28 @@ include __DIR__ . '/../../_partials/header.php';
     </div>
     <div class="card">
         <h3>Crear usuario</h3>
-        <?php if (empty($colegios) || empty($sedes) || empty($modulos)): ?>
+        <?php if ($formDisabled): ?>
             <div class="alert error" style="margin-bottom:14px;">
                 ⚠️ Para completar el formulario, primero configura al menos un colegio, una sede y los módulos en Parametrización.
             </div>
+            <ul class="small" style="margin:-4px 0 10px 16px; color:#6b7280;">
+                <li>Configura <strong>Colegios</strong> y <strong>Sedes</strong> desde Parametrización.</li>
+                <li>Activa los <strong>Módulos</strong> que podrá usar el nuevo usuario.</li>
+                <li>Vuelve aquí y selecciona las opciones para habilitar el guardado.</li>
+            </ul>
         <?php endif; ?>
         <form method="post" action="index.php?route=usuarios/store" data-confirm="¿Deseas crear el nuevo usuario con los permisos seleccionados?">
             <input type="hidden" name="_token" value="<?= htmlspecialchars($token) ?>">
             <label>Nombre completo</label>
-            <input name="nombre_completo" required>
+            <input name="nombre_completo" <?= $formDisabled ? 'disabled' : '' ?> required>
             <label>Correo</label>
-            <input type="email" name="email" required>
+            <input type="email" name="email" <?= $formDisabled ? 'disabled' : '' ?> required>
             <label>Usuario</label>
-            <input name="usuario" required>
+            <input name="usuario" <?= $formDisabled ? 'disabled' : '' ?> required>
             <label>Contraseña</label>
-            <input type="password" name="password" required>
+            <input type="password" name="password" <?= $formDisabled ? 'disabled' : '' ?> required>
             <label>Rol</label>
-            <select name="rol" id="rolSelector" onchange="toggleAsignacion()">
+            <select name="rol" id="rolSelector" onchange="toggleAsignacion()" <?= $formDisabled ? 'disabled' : '' ?> >
                 <?php foreach ($rolesDisponibles as $claveRol => $nombreRol): ?>
                     <option value="<?= htmlspecialchars($claveRol) ?>" <?= $claveRol === 'agente' ? 'selected' : '' ?>><?= htmlspecialchars($nombreRol) ?></option>
                 <?php endforeach; ?>
@@ -80,7 +86,7 @@ include __DIR__ . '/../../_partials/header.php';
             <div id="asignacionColegio" style="margin-top:12px;">
                 <label>Colegios asignados</label>
                 <?php if (!empty($colegios)): ?>
-                    <select name="permisos_colegios[]" id="colegioSelector" onchange="filtrarSedes()" multiple size="4">
+                    <select name="permisos_colegios[]" id="colegioSelector" onchange="filtrarSedes()" multiple size="4" <?= $formDisabled ? 'disabled' : '' ?> >
                         <?php foreach ($colegios as $colegio): ?>
                             <option value="<?= $colegio['id_colegio'] ?>"><?= htmlspecialchars($colegio['nombre']) ?></option>
                         <?php endforeach; ?>
@@ -90,7 +96,7 @@ include __DIR__ . '/../../_partials/header.php';
                 <?php endif; ?>
                 <label>Sedes asignadas</label>
                 <?php if (!empty($sedes)): ?>
-                    <select name="permisos_sedes[]" id="sedeSelector" multiple size="6">
+                    <select name="permisos_sedes[]" id="sedeSelector" multiple size="6" <?= $formDisabled ? 'disabled' : '' ?> >
                         <?php foreach ($sedes as $sede): ?>
                             <option value="<?= $sede['id_sede'] ?>" data-colegio="<?= $sede['id_colegio'] ?>"><?= htmlspecialchars($sede['colegio_nombre'] . ' - ' . $sede['nombre']) ?></option>
                         <?php endforeach; ?>
@@ -105,7 +111,7 @@ include __DIR__ . '/../../_partials/header.php';
                     <?php if (!empty($modulos)): ?>
                         <?php foreach ($modulos as $modulo): ?>
                             <label style="display:block;margin-bottom:6px;">
-                                <input type="checkbox" name="permisos_modulos[]" value="<?= htmlspecialchars($modulo['codigo']) ?>" <?= in_array($modulo['codigo'], $modulosPorDefecto, true) ? 'checked' : '' ?>>
+                                <input type="checkbox" name="permisos_modulos[]" value="<?= htmlspecialchars($modulo['codigo']) ?>" <?= in_array($modulo['codigo'], $modulosPorDefecto, true) ? 'checked' : '' ?> <?= $formDisabled ? 'disabled' : '' ?> >
                                 <?= htmlspecialchars($modulo['nombre']) ?>
                             </label>
                         <?php endforeach; ?>
@@ -115,12 +121,12 @@ include __DIR__ . '/../../_partials/header.php';
                 </div>
             </fieldset>
             <label style="margin-top:12px;">Estado</label>
-            <select name="estado">
+            <select name="estado" <?= $formDisabled ? 'disabled' : '' ?> >
                 <option value="activo">Activo</option>
                 <option value="inactivo">Inactivo</option>
             </select>
             <div class="actions" style="display:flex;justify-content:flex-end;gap:10px;margin-top:12px;">
-                <button class="btn" type="submit">Guardar</button>
+                <button class="btn" type="submit" <?= $formDisabled ? 'disabled' : '' ?>>Guardar</button>
             </div>
         </form>
     </div>
