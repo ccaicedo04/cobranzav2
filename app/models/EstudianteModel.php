@@ -4,9 +4,12 @@ namespace App\Models;
 
 class EstudianteModel extends BaseModel
 {
-    protected string $table = 'estudiante';
-    protected string $primaryKey = 'id_estudiante';
-    protected array $fillable = [
+    /** @var string */
+    protected $table = 'estudiante';
+    /** @var string */
+    protected $primaryKey = 'id_estudiante';
+    /** @var array */
+    protected $fillable = [
         'id_colegio',
         'id_sede',
         'id_responsable',
@@ -17,6 +20,26 @@ class EstudianteModel extends BaseModel
         'estado',
         'eliminado',
     ];
+
+    /**
+     * @return array|null
+     */
+    public function buscarPorCodigo(string $codigo, int $idColegio, int $idSede)
+    {
+        $codigo = trim($codigo);
+        if ($codigo === '') {
+            return null;
+        }
+
+        $coincidencias = $this->all([
+            'codigo_estudiante' => $codigo,
+            'id_colegio' => $idColegio,
+            'id_sede' => $idSede,
+            'eliminado' => 0,
+        ], ['order' => 'id_estudiante DESC']);
+
+        return $coincidencias[0] ?? null;
+    }
 
     public function conContexto(array $filtros = []): array
     {

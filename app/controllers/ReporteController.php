@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\ReporteModel;
+use App\Services\PdfService;
 use Core\Controller;
 use Core\Helpers;
 use Core\Session;
@@ -12,7 +13,8 @@ use Throwable;
 
 class ReporteController extends Controller
 {
-    private ReporteModel $reportes;
+    /** @var ReporteModel */
+    private $reportes;
 
     public function __construct()
     {
@@ -25,7 +27,7 @@ class ReporteController extends Controller
         $this->reportes = new ReporteModel();
     }
 
-    public function index(): void
+    public function index()
     {
         $tipo = $this->tipoDesdeRequest();
         $filtros = $this->extraerFiltros();
@@ -43,7 +45,7 @@ class ReporteController extends Controller
         ]);
     }
 
-    public function exportExcel(): void
+    public function exportExcel()
     {
         $tipo = $this->tipoDesdeRequest();
         $filtros = $this->extraerFiltros();
@@ -70,24 +72,52 @@ class ReporteController extends Controller
         }
     }
 
-    public function exportPdf(): void
+    public function exportPdf()
     {
-        $tipo = $this->tipoDesdeRequest();
-        $filtros = $this->extraerFiltros();
-        $config = $this->definicionesReporte()[$tipo];
-        $datos = $this->obtenerDatosPorTipo($tipo, $filtros);
+        try {
+            if (function_exists('ob_start')) {
+                ob_start();
+            }
 
-        $documento = $this->construirDocumentoPdf($config, $datos, $filtros, $tipo);
-        SimplePdf::downloadTable('reporte_' . $tipo . '.pdf', $documento);
+            $tipo = $this->tipoDesdeRequest();
+            $filtros = $this->extraerFiltros();
+            $config = $this->definicionesReporte()[$tipo];
+            $datos = $this->obtenerDatosPorTipo($tipo, $filtros);
+
+            $documento = $this->construirDocumentoPdf($config, $datos, $filtros, $tipo);
+            $inline = isset($_GET['preview']) && $_GET['preview'] === '1';
+            $html = $this->construirVistaPdf($config, $datos, $documento);
+
+            if (function_exists('ob_get_level')) {
+                while (ob_get_level() > 0) {
+                    ob_end_clean();
+                }
+            }
+
+            $pdf = new PdfService();
+            $pdf->exportar($config, $datos, $documento, $html, 'reporte_' . $tipo . '.pdf', $inline);
+        } catch (Throwable $throwable) {
+            if (function_exists('ob_get_level')) {
+                while (ob_get_level() > 0) {
+                    ob_end_clean();
+                }
+            }
+            http_response_code(500);
+            header('Content-Type: text/plain; charset=utf-8');
+            echo 'No fue posible generar el PDF: ' . $throwable->getMessage();
+        }
     }
 
     private function obtenerDatosPorTipo(string $tipo, array $filtros): array
     {
-        return match ($tipo) {
-            'pagos' => $this->reportes->reportePagos($filtros),
-            'acuerdos' => $this->reportes->reporteAcuerdos($filtros),
-            default => $this->reportes->reporteCartera($filtros),
-        };
+        switch ($tipo) {
+            case 'pagos':
+                return $this->reportes->reportePagos($filtros);
+            case 'acuerdos':
+                return $this->reportes->reporteAcuerdos($filtros);
+            default:
+                return $this->reportes->reporteCartera($filtros);
+        }
     }
 
     private function tipoDesdeRequest(): string
@@ -160,7 +190,10 @@ class ReporteController extends Controller
         ];
     }
 
-    private function formatearValor(mixed $valor, array $columna): string
+    /**
+     * @param mixed $valor
+     */
+    private function formatearValor($valor, array $columna): string
     {
         $formato = $columna['formato'] ?? null;
         $prefijo = $columna['prefijo'] ?? '';
@@ -201,6 +234,13 @@ class ReporteController extends Controller
             }, $config['columnas']);
         }
 
+        if (!$rows) {
+            $rows[] = [str_repeat(' ', 1) . 'Sin información para los filtros aplicados.'];
+            if (count($columnas) > 1) {
+                $rows[0] = array_merge($rows[0], array_fill(1, count($columnas) - 1, ''));
+            }
+        }
+
         $contexto = $this->resumenContextoPdf();
         $meta = array_filter([
             'Generado' => date('Y-m-d H:i'),
@@ -219,6 +259,89 @@ class ReporteController extends Controller
             'filters' => $this->resumenFiltrosPdf($filtros, $tipo),
             'summary' => $this->totalesReporte($tipo, $datos),
         ];
+    }
+
+    private function construirVistaPdf(array $config, array $datos, array $documento): string
+    {
+        $columnas = $config['columnas'];
+        $resumen = $documento['summary'] ?? [];
+        $meta = $documento['meta'] ?? [];
+        $filtros = $documento['filters'] ?? [];
+
+        ob_start();
+        ?>
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <style>
+                body { font-family: Arial, sans-serif; margin: 24px; }
+                h1 { margin: 0 0 4px; color: #0b3b77; font-size: 20px; }
+                h2 { margin: 0 0 12px; font-size: 13px; color: #4b5563; font-weight: normal; }
+                .meta, .filters, .summary { margin: 10px 0; font-size: 11px; color: #111827; }
+                .pill { display: inline-block; padding: 4px 8px; border-radius: 6px; background: #eef2ff; color: #1f2937; margin-right: 6px; }
+                table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 11px; }
+                th { background: #0b3b77; color: #fff; padding: 8px; text-align: left; }
+                td { border: 1px solid #e5e7eb; padding: 8px; }
+                tr:nth-child(even) td { background: #f9fafb; }
+                .muted { color: #6b7280; }
+            </style>
+        </head>
+        <body>
+            <h1><?= htmlspecialchars($config['titulo']) ?></h1>
+            <h2><?= htmlspecialchars($config['descripcion'] ?? '') ?></h2>
+
+            <?php if (!empty($meta)): ?>
+                <div class="meta">
+                    <?php foreach ($meta as $label => $value): ?>
+                        <span class="pill"><strong><?= htmlspecialchars($label) ?>:</strong> <?= htmlspecialchars($value) ?></span>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+
+            <?php if (!empty($filtros)): ?>
+                <div class="filters">
+                    <?php foreach ($filtros as $linea): ?>
+                        <div><?= htmlspecialchars($linea) ?></div>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+
+            <table>
+                <thead>
+                    <tr>
+                        <?php foreach ($columnas as $columna): ?>
+                            <th><?= htmlspecialchars($columna['etiqueta']) ?></th>
+                        <?php endforeach; ?>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (empty($datos)): ?>
+                        <tr><td colspan="<?= count($columnas) ?>" class="muted">No hay información para los filtros aplicados.</td></tr>
+                    <?php else: ?>
+                        <?php foreach ($datos as $fila): ?>
+                            <tr>
+                                <?php foreach ($columnas as $columna): ?>
+                                    <td><?= htmlspecialchars($this->formatearValor($fila[$columna['campo']] ?? '', $columna)) ?></td>
+                                <?php endforeach; ?>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+
+            <?php if (!empty($resumen)): ?>
+                <div class="summary">
+                    <?php foreach ($resumen as $label => $value): ?>
+                        <div><strong><?= htmlspecialchars($label) ?>:</strong> <?= htmlspecialchars($value) ?></div>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </body>
+        </html>
+        <?php
+        $contenido = ob_get_clean();
+
+        return (string) $contenido;
     }
 
     private function resumenFiltrosPdf(array $filtros, string $tipo): array
@@ -272,7 +395,10 @@ class ReporteController extends Controller
         return ['colegio' => $colegio, 'sede' => $sede];
     }
 
-    private function descripcionUsuario(?array $usuario): string
+    /**
+     * @param array|null $usuario
+     */
+    private function descripcionUsuario($usuario): string
     {
         if (!$usuario) {
             return '';
@@ -300,11 +426,14 @@ class ReporteController extends Controller
             return [];
         }
 
-        return match ($tipo) {
-            'pagos' => $this->totalesPagos($datos),
-            'acuerdos' => $this->totalesAcuerdos($datos),
-            default => $this->totalesCartera($datos),
-        };
+        switch ($tipo) {
+            case 'pagos':
+                return $this->totalesPagos($datos);
+            case 'acuerdos':
+                return $this->totalesAcuerdos($datos);
+            default:
+                return $this->totalesCartera($datos);
+        }
     }
 
     private function totalesCartera(array $datos): array

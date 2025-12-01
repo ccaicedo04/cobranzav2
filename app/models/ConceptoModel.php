@@ -4,9 +4,12 @@ namespace App\Models;
 
 class ConceptoModel extends BaseModel
 {
-    protected string $table = 'concepto_deuda';
-    protected string $primaryKey = 'id_concepto';
-    protected array $fillable = [
+    /** @var string */
+    protected $table = 'concepto_deuda';
+    /** @var string */
+    protected $primaryKey = 'id_concepto';
+    /** @var array */
+    protected $fillable = [
         'id_colegio',
         'nombre',
         'descripcion',
@@ -15,6 +18,25 @@ class ConceptoModel extends BaseModel
         'estado',
         'eliminado',
     ];
+
+    /**
+     * @return array|null
+     */
+    public function buscarPorNombre(string $nombre, int $idColegio)
+    {
+        $nombre = trim($nombre);
+        if ($nombre === '') {
+            return null;
+        }
+
+        $coincidencias = $this->all([
+            'nombre' => $nombre,
+            'id_colegio' => $idColegio,
+            'eliminado' => 0,
+        ], ['order' => 'id_concepto DESC']);
+
+        return $coincidencias[0] ?? null;
+    }
 
     public function conColegio(): array
     {

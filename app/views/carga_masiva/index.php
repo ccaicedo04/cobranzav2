@@ -9,10 +9,17 @@ $ultima = $ventana['ultima'] ?? null;
 $ultimaFecha = $ultima && !empty($ultima['fecha_registro']) ? date('Y-m-d H:i', strtotime((string) $ultima['fecha_registro'])) : 'Sin registros previos';
 $ultimaArchivo = $ultima['archivo_original'] ?? 'N/D';
 $ultimaResultado = $ultima['resultado'] ?? 'Pendiente';
-$mapResultado = static fn(string $estado): array => match (strtolower($estado)) {
-    'exitoso', 'ok' => ['label' => 'Exitoso', 'class' => 'success'],
-    'parcial' => ['label' => 'Parcial', 'class' => 'neutral'],
-    default => ['label' => ucfirst($estado ?: 'Pendiente'), 'class' => 'danger'],
+$mapResultado = static function (string $estado): array {
+    $estado = strtolower($estado);
+    switch ($estado) {
+        case 'exitoso':
+        case 'ok':
+            return ['label' => 'Exitoso', 'class' => 'success'];
+        case 'parcial':
+            return ['label' => 'Parcial', 'class' => 'neutral'];
+        default:
+            return ['label' => ucfirst($estado ?: 'Pendiente'), 'class' => 'danger'];
+    }
 };
 ?>
 

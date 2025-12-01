@@ -3,9 +3,11 @@
 Implementación MVC nativa en PHP 8.2 para la gestión integral de cartera multi-colegio y multi-sede. Incluye autenticación segura, panel con KPIs, módulos CRUD para responsables, estudiantes, deudas, pagos, acuerdos y comunicaciones, además de utilidades de parametrización, auditoría y reportes exportables.
 
 ## Requisitos
-- PHP 8.2+
+- PHP 7.4+ (código PHP crudo, sin Composer)
+- Extensiones PHP habilitadas: `pdo`, `pdo_mysql`, `openssl` y (opcional) `curl`/`mbstring` para mensajería y exportes. Para PDF HTML con DOMPDF activa también `dom`, `gd` y `mbstring`.
 - MariaDB/MySQL 10.4+
 - Servidor Apache (XAMPP recomendado)
+- Sin Composer: el autoload propio (`core/Autoload.php`) carga tanto las clases del proyecto (usa rutas en minúscula como `app/controllers`, `app/models`, etc.) como los SDKs que copies manualmente en `app/libraries/` (ej. Twilio)
 
 ## Instalación rápida
 1. Copia el proyecto en tu carpeta web (`htdocs` en XAMPP).
@@ -20,6 +22,7 @@ Implementación MVC nativa en PHP 8.2 para la gestión integral de cartera multi
 - `app/views`: vistas basadas en el diseño entregado.
 - `plantillas/`: documentación de formatos para carga masiva.
 - `public/plantillas/`: script que genera la plantilla Excel sin almacenar binarios.
+- `docs/pdf-sin-composer.md`: guía detallada para integrar DOMPDF de forma manual (sin Composer) y evitar PDFs en blanco.
 
 ## Licencia
 Uso interno educativo.

@@ -6,7 +6,10 @@ use RuntimeException;
 
 class SimpleXlsx
 {
-    public static function download(string $filename, array $headers, array $rows, array $options = []): void
+    /**
+     * @return void
+     */
+    public static function download(string $filename, array $headers, array $rows, array $options = [])
     {
         $headers = array_values($headers);
         $rows = array_map(static fn ($row) => array_values((array) $row), $rows);

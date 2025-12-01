@@ -226,6 +226,18 @@ CREATE TABLE comunicacion (
     creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE comunicacion_adjunto (
+    id_adjunto INT AUTO_INCREMENT PRIMARY KEY,
+    id_comunicacion INT NOT NULL,
+    nombre VARCHAR(255) NOT NULL,
+    ruta VARCHAR(255) NOT NULL,
+    tipo VARCHAR(150) NULL,
+    tamano BIGINT NULL,
+    metadata TEXT NULL,
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_comunicacion) REFERENCES comunicacion(id_comunicacion)
+);
+
 -- Tabla plantilla_comunicacion
 CREATE TABLE plantilla_comunicacion (
     id_plantilla INT AUTO_INCREMENT PRIMARY KEY,
@@ -285,6 +297,13 @@ CREATE TABLE configuracion_colegio (
     whatsapp_endpoint VARCHAR(255) NULL,
     sms_api_key VARCHAR(255) NULL,
     sms_endpoint VARCHAR(255) NULL,
+    twilio_account_sid VARCHAR(64) NULL,
+    twilio_auth_token VARCHAR(128) NULL,
+    twilio_whatsapp_from VARCHAR(32) NULL,
+    twilio_sms_from VARCHAR(32) NULL,
+    twilio_default_country VARCHAR(8) NULL,
+    twilio_status_callback VARCHAR(255) NULL,
+    twilio_incoming_webhook VARCHAR(255) NULL,
     logo_path VARCHAR(255) NULL,
     actualizado_por INT NULL,
     fecha_actualizacion DATETIME NULL
@@ -341,8 +360,8 @@ INSERT INTO usuario_modulo (id_usuario, id_modulo) VALUES
 (2, 3),
 (3, 1);
 
-INSERT INTO configuracion_colegio (id_colegio, smtp_host, smtp_puerto, smtp_usuario, smtp_password, whatsapp_api_key, whatsapp_endpoint, sms_api_key, sms_endpoint, logo_path, actualizado_por, fecha_actualizacion) VALUES
-(1, 'smtp.gmail.com', '587', 'carlos.quinones@lm-technology.com.co', 'Carlitos 2025*', NULL, NULL, NULL, NULL, 'logos/principado-monaco.png', 1, CURRENT_TIMESTAMP);
+INSERT INTO configuracion_colegio (id_colegio, smtp_host, smtp_puerto, smtp_usuario, smtp_password, whatsapp_api_key, whatsapp_endpoint, sms_api_key, sms_endpoint, twilio_account_sid, twilio_auth_token, twilio_whatsapp_from, twilio_sms_from, twilio_default_country, twilio_status_callback, twilio_incoming_webhook, logo_path, actualizado_por, fecha_actualizacion) VALUES
+(1, 'smtp.gmail.com', '587', 'carlos.quinones@lm-technology.com.co', 'Carlitos 2025*', NULL, NULL, NULL, NULL, 'AC20721067f213f23d24dc2e550556fb52', 'c0994f196c815f16a4eade49778e094c', '+12566374335', '+12566374335', '+57', NULL, 'https://timberwolf-mastiff-9776.twil.io/demo-reply', 'logos/principado-monaco.png', 1, CURRENT_TIMESTAMP);
 
 INSERT INTO responsable_financiero (id_colegio, id_sede, nombre_completo, tipo_documento, numero_documento, telefono, correo, direccion, estado, eliminado) VALUES
 (1, 1, 'Villalobos Munoz Fernando', 'CC', '80073011', '+57 308 007 3011', 'villalobos.munoz.fernando@familias-principado.edu.co', 'Cra 12 #145-30, Bogotá', 'activo', 0),
@@ -489,6 +508,11 @@ INSERT INTO plantilla_comunicacion (id_colegio, nombre, canal, descripcion, asun
         <p>Si requieres modificar la fecha o el valor acordado, responde a este correo o comunícate con el área financiera.</p>
         <p>Equipo de cartera — {{colegio_nombre}} ({{sede_nombre}})</p>', 'responsable_nombre,estudiante_nombre,fecha_vencimiento,colegio_nombre,sede_nombre', 'activo', 0, 2);
 
+
+INSERT INTO plantilla_comunicacion (id_colegio, nombre, canal, descripcion, asunto_default, cuerpo_html, variables, estado, eliminado, creado_por) VALUES
+(1, 'WhatsApp seguimiento compromiso', 'whatsapp', 'Mensaje cordial para confirmar compromisos previos.', NULL, 'Hola {{responsable_nombre}}, esperamos que estés bien. Te recordamos el compromiso de pago para {{estudiante_nombre}} con fecha {{fecha_vencimiento}}. Si necesitas apoyo contáctanos al {{telefono_contacto}}.', 'responsable_nombre,estudiante_nombre,fecha_vencimiento,telefono_contacto', 'activo', 0, 2),
+(1, 'SMS alerta vencimiento', 'sms', 'Texto corto para vencimientos inmediatos.', NULL, '{{responsable_nombre}}: saldo {{saldo_pendiente}} de {{estudiante_nombre}} vence {{fecha_vencimiento}}. Escríbenos al {{telefono_contacto}}.', 'responsable_nombre,saldo_pendiente,estudiante_nombre,fecha_vencimiento,telefono_contacto', 'activo', 0, 2),
+(1, 'Guion llamada verificación', 'llamada', 'Guion orientador para registrar llamadas manuales.', NULL, 'Presentación: Buenos días/tardes {{responsable_nombre}}, te habla el área de cartera de {{colegio_nombre}}.\nObjetivo: confirmar el estado del pago de {{estudiante_nombre}} con saldo {{saldo_pendiente}}.\nAcciones: registra compromisos, dudas y fecha estimada de pago.\nCierre: agradece su tiempo y recuerda nuestros canales de atención {{telefono_contacto}}.', 'responsable_nombre,colegio_nombre,estudiante_nombre,saldo_pendiente,telefono_contacto', 'activo', 0, 2);
 INSERT INTO carga_masiva (id_colegio, id_sede, tipo_archivo, archivo_original, archivo_procesado, total_registros, total_errores, resultado, mensaje, usuario_registro, fecha_registro) VALUES
 (1, 1, 'deudas', 'cargue_octubre_2024.xlsx', 'cargue_octubre_2024.xlsx', 25, 1, 'exitoso', 'Base inicial octubre integrada', 2, '2024-10-02 08:45:00'),
 (1, 1, 'deudas', 'cargue_noviembre_2024.xlsx', 'cargue_noviembre_2024.xlsx', 25, 0, 'exitoso', 'Actualización mensual noviembre', 2, '2024-11-01 09:05:00'),

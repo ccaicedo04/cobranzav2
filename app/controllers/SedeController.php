@@ -13,9 +13,12 @@ use Core\Session;
 
 class SedeController extends Controller
 {
-    private SedeModel $sedes;
-    private AuditoriaModel $auditoria;
-    private ColegioModel $colegios;
+    /** @var SedeModel */
+    private $sedes;
+    /** @var AuditoriaModel */
+    private $auditoria;
+    /** @var ColegioModel */
+    private $colegios;
 
     public function __construct()
     {
@@ -30,7 +33,7 @@ class SedeController extends Controller
         $this->colegios = new ColegioModel();
     }
 
-    public function index(): void
+    public function index()
     {
         $usuario = Session::get('user');
         $filtros = [];
@@ -54,7 +57,7 @@ class SedeController extends Controller
         ]);
     }
 
-    public function store(): void
+    public function store()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !Helpers::validateCsrf($_POST['_token'] ?? '')) {
             Helpers::redirect('index.php?route=sedes');
@@ -90,7 +93,7 @@ class SedeController extends Controller
         Helpers::redirect('index.php?route=sedes');
     }
 
-    public function edit(): void
+    public function edit()
     {
         $id = (int) ($_GET['id'] ?? 0);
         $sede = $this->sedeAccesible($id);
@@ -109,7 +112,7 @@ class SedeController extends Controller
         ]);
     }
 
-    public function update(): void
+    public function update()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !Helpers::validateCsrf($_POST['_token'] ?? '')) {
             Helpers::redirect('index.php?route=sedes');
@@ -152,7 +155,7 @@ class SedeController extends Controller
         Helpers::redirect('index.php?route=sedes');
     }
 
-    public function detalle(): void
+    public function detalle()
     {
         $id = (int) ($_GET['id'] ?? 0);
         $sede = $this->sedeAccesible($id);

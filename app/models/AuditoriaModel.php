@@ -6,10 +6,14 @@ use Core\Session;
 
 class AuditoriaModel extends BaseModel
 {
-    protected string $table = 'auditoria_usuario';
-    protected string $primaryKey = 'id_auditoria';
-    protected bool $softDelete = false;
-    protected array $fillable = [
+    /** @var string */
+    protected $table = 'auditoria_usuario';
+    /** @var string */
+    protected $primaryKey = 'id_auditoria';
+    /** @var bool */
+    protected $softDelete = false;
+    /** @var array */
+    protected $fillable = [
         'id_usuario',
         'id_colegio',
         'id_sede',
