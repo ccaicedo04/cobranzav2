@@ -21,6 +21,26 @@ class EstudianteModel extends BaseModel
         'eliminado',
     ];
 
+    /**
+     * @return array|null
+     */
+    public function buscarPorCodigo(string $codigo, int $idColegio, int $idSede)
+    {
+        $codigo = trim($codigo);
+        if ($codigo === '') {
+            return null;
+        }
+
+        $coincidencias = $this->all([
+            'codigo_estudiante' => $codigo,
+            'id_colegio' => $idColegio,
+            'id_sede' => $idSede,
+            'eliminado' => 0,
+        ], ['order' => 'id_estudiante DESC']);
+
+        return $coincidencias[0] ?? null;
+    }
+
     public function conContexto(array $filtros = []): array
     {
         $filtros = $this->applyTenantFilters($filtros);

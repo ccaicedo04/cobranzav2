@@ -22,6 +22,26 @@ class ResponsableModel extends BaseModel
         'eliminado',
     ];
 
+    /**
+     * @return array|null
+     */
+    public function buscarPorDocumento(string $documento, int $idColegio, int $idSede)
+    {
+        $documento = trim($documento);
+        if ($documento === '') {
+            return null;
+        }
+
+        $coincidencias = $this->all([
+            'numero_documento' => $documento,
+            'id_colegio' => $idColegio,
+            'id_sede' => $idSede,
+            'eliminado' => 0,
+        ], ['order' => 'id_responsable DESC']);
+
+        return $coincidencias[0] ?? null;
+    }
+
     public function conContexto(array $filtros = []): array
     {
         $filtros = $this->applyTenantFilters($filtros);

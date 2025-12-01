@@ -19,6 +19,25 @@ class ConceptoModel extends BaseModel
         'eliminado',
     ];
 
+    /**
+     * @return array|null
+     */
+    public function buscarPorNombre(string $nombre, int $idColegio)
+    {
+        $nombre = trim($nombre);
+        if ($nombre === '') {
+            return null;
+        }
+
+        $coincidencias = $this->all([
+            'nombre' => $nombre,
+            'id_colegio' => $idColegio,
+            'eliminado' => 0,
+        ], ['order' => 'id_concepto DESC']);
+
+        return $coincidencias[0] ?? null;
+    }
+
     public function conColegio(): array
     {
         $filters = $this->applyTenantFilters([]);
