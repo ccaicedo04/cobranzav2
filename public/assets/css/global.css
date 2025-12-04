@@ -154,7 +154,7 @@ footer{margin:24px 0 40px 0;color:#4b5563;font-size:13px;text-align:center}
 
 /* Header single-row */
 .appbar{background:linear-gradient(0deg,var(--nav-2),var(--nav));color:var(--nav-txt);padding:10px 12px;box-shadow:0 4px 16px rgba(2,23,42,.18);position:sticky;top:0;z-index:1000}
-.appbar .container{display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.appbar .container{display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap;position:relative}
 .brand-link{display:flex;align-items:center;gap:8px;text-decoration:none;color:inherit;font-weight:600}
 .brand-link img{height:36px;width:auto}
 .nav{flex:1 1 520px;min-width:320px;display:flex;gap:8px;align-items:center;justify-content:flex-start;flex-wrap:wrap}
@@ -168,9 +168,9 @@ footer{margin:24px 0 40px 0;color:#4b5563;font-size:13px;text-align:center}
 .tenant-field-label{font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:rgba(207,224,255,.72)}
 .tenant select{appearance:none;background:rgba(15,50,93,.88);border:1px solid rgba(255,255,255,.18);color:#f8fbff;border-radius:10px;padding:6px 10px;font-size:13px;min-width:160px;cursor:pointer}
 .tenant select:focus{outline:2px solid rgba(147,197,253,.4)}
-.userbox{flex-shrink:0;position:relative;margin-left:auto}
+.userbox{flex-shrink:0;position:relative;margin-left:auto;align-self:center}
 .userbox .user-toggle{background:#0f325d;color:#e8f1ff;border:1px solid rgba(255,255,255,.15);padding:6px 10px;border-radius:10px;cursor:pointer}
-.userbox .menu{position:absolute;right:0;top:40px;background:#0f325d;border:1px solid rgba(255,255,255,.22);border-radius:12px;padding:8px;display:none;min-width:220px;z-index:1300}
+.userbox .menu{position:absolute;right:0;left:auto;top:40px;background:#0f325d;border:1px solid rgba(255,255,255,.22);border-radius:12px;padding:8px;display:none;min-width:220px;z-index:1300;box-shadow:0 12px 30px rgba(0,0,0,.25)}
 .userbox .menu a{display:block;color:#e8f1ff;text-decoration:none;padding:8px 10px;border-radius:8px}
 .userbox .menu a:hover{background:rgba(255,255,255,.10)}
 
@@ -210,7 +210,7 @@ h2.section{margin:6px 0 14px 0;font-size:20px;letter-spacing:.2px}
   .brand-link{order:1}
   .tenant{order:2;width:100%;display:flex;flex-wrap:wrap;gap:12px}
   .nav{order:3;width:100%;justify-content:flex-start}
-  .userbox{order:4;align-self:flex-end}
+  .userbox{order:4;align-self:flex-end;margin-left:0}
 }
 .grid{gap:20px;margin-bottom:18px}
 h3{margin:0 0 12px 0}
@@ -229,7 +229,7 @@ h3{margin:0 0 12px 0}
 @media(max-width:1280px){
   .nav{order:3;width:100%;justify-content:flex-start}
   .tenant{order:2;margin-left:0;flex:1 1 100%;width:100%}
-  .userbox{order:4;margin-left:0}
+  .userbox{order:4;margin-left:0;align-self:flex-end}
   .brand-link{order:1}
 }
 
@@ -239,7 +239,7 @@ h3{margin:0 0 12px 0}
   .tenant select{width:100%}
   .nav{order:2;justify-content:flex-start}
   .brand-link{order:1}
-  .userbox{order:4;margin-left:0}
+  .userbox{order:4;margin-left:0;align-self:flex-end}
   .comms-layout{grid-template-columns:1fr}
   .wizard-body{grid-template-columns:1fr}
   .wizard-preview{order:-1;position:relative}
@@ -251,4 +251,6 @@ h3{margin:0 0 12px 0}
   .nav{gap:4px}
   .nav .nav-toggle,.nav a.link{padding:6px 8px;font-size:13px}
   .brand-link strong{font-size:15px}
+  .userbox{width:100%;display:flex;justify-content:flex-end}
+  .userbox .menu{right:10px;left:auto}
 }

@@ -36,13 +36,14 @@ class PdfService
         $rowCount = is_array($documento['rows'] ?? null) ? count($documento['rows']) : 0;
         $rowCountHtml = $this->contarFilasHtml($contenido);
         $contenidoPesado = strlen($contenido) > 900_000 || $rowCount > 600 || $rowCountHtml > 800;
+        $dompdfExcesivo = strlen($contenido) > 1_500_000 || $rowCount > 2000 || $rowCountHtml > 2000;
 
-        if ($this->dompdfDisponible()) {
+        if ($this->dompdfDisponible() && !$dompdfExcesivo) {
             try {
                 // Permitimos más memoria y tiempo en listados grandes antes de caer al fallback.
                 @ini_set('memory_limit', $contenidoPesado ? '4096M' : '2048M');
                 if (function_exists('set_time_limit')) {
-                    @set_time_limit($contenidoPesado ? 180 : 90);
+                    @set_time_limit($contenidoPesado ? 240 : 120);
                 }
 
                 $this->asegurarDirectoriosDompdf();
