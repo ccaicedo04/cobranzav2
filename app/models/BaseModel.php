@@ -206,7 +206,7 @@ abstract class BaseModel
                 foreach ($value as $idx => $item) {
                     $placeholder = ':' . $sanitizedColumn . '_' . $idx;
                     $placeholders[] = $placeholder;
-                    $params[$placeholder] = $item;
+                    $params[$sanitizedColumn . '_' . $idx] = $item;
                 }
 
                 $where[] = $prefix . $column . ' IN (' . implode(',', $placeholders) . ')';
@@ -215,7 +215,7 @@ abstract class BaseModel
 
             $placeholder = ':' . $sanitizedColumn;
             $where[] = $prefix . $column . ' = ' . $placeholder;
-            $params[$placeholder] = $value;
+            $params[$sanitizedColumn] = $value;
         }
 
         return [$where, $params];

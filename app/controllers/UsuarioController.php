@@ -72,6 +72,14 @@ class UsuarioController extends Controller
 
         $contextoForm = $this->contextoSelecciones();
         $modulosDisponibles = $this->modulosAsignables((array) $usuario);
+        if (empty($modulosDisponibles)) {
+            $modulosDisponibles = [
+                ['codigo' => 'cobranzas', 'nombre' => 'Cobranzas'],
+                ['codigo' => 'administracion', 'nombre' => 'Administración'],
+                ['codigo' => 'parametrizacion', 'nombre' => 'Parametrización'],
+            ];
+        }
+
         $mapModulos = [];
         foreach ($modulosDisponibles as $modulo) {
             $mapModulos[$modulo['codigo']] = $modulo['nombre'];

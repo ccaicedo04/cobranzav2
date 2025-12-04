@@ -36,7 +36,7 @@ class EstudianteModel extends BaseModel
                 e.nombre_completo LIKE :q_busqueda OR
                 r.nombre_completo LIKE :q_busqueda
             )';
-            $params[':q_busqueda'] = '%' . $busqueda . '%';
+            $params['q_busqueda'] = '%' . $busqueda . '%';
         }
 
         $sql = 'SELECT e.*, c.nombre AS colegio_nombre, s.nombre AS sede_nombre, r.nombre_completo AS responsable_nombre'
