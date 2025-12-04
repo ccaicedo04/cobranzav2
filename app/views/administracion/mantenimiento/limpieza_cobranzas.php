@@ -3,7 +3,7 @@ $title = 'Limpieza de cobranzas';
 $pageTitle = 'Limpieza de datos de cobranza';
 $breadcrumbs = 'Administración / Limpieza de cobranzas';
 $resumen = $resumen ?? [];
-include __DIR__ . '/../../../_partials/header.php';
+include __DIR__ . '/../../_partials/header.php';
 ?>
 <div class="card" style="max-width:980px;margin:0 auto;">
     <h3 style="margin-top:0;">Solo para administradores globales</h3>
@@ -34,4 +34,4 @@ include __DIR__ . '/../../../_partials/header.php';
         </div>
     </form>
 </div>
-<?php include __DIR__ . '/../../../_partials/footer.php'; ?>
+<?php include __DIR__ . '/../../_partials/footer.php'; ?>

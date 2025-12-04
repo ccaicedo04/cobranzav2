@@ -100,12 +100,14 @@ class CargaController extends Controller
             $resultado = $this->cargador->procesar($archivo['tmp_name'], $idColegio, $idSede, $anio);
             $errores = $resultado['errores'];
             $mensaje = $notas !== '' ? $notas : 'Carga procesada correctamente';
+            $mensaje .= ' | Deudas creadas/actualizadas: ' . number_format((int) ($resultado['deudas'] ?? 0), 0, ',', '.');
+            $mensaje .= ' | Valor total: $' . number_format((float) ($resultado['valor_total'] ?? 0), 0, ',', '.');
             if ($errores) {
                 $mensaje .= ' | Errores: ' . count($errores);
             }
 
             $this->cargas->update($cargaId, [
-                'total_registros' => $resultado['deudas'],
+                'total_registros' => (float) ($resultado['valor_total'] ?? 0),
                 'total_errores' => count($errores),
                 'resultado' => $errores ? 'Parcial' : 'Exitoso',
                 'mensaje' => $mensaje,
@@ -125,10 +127,10 @@ class CargaController extends Controller
     private function resumenVentana(array $cargas): array
     {
         $ultimaCarga = $cargas[0] ?? null;
-        $totalRegistros = 0;
+        $totalRegistros = 0.0;
         $totalErrores = 0;
         foreach ($cargas as $carga) {
-            $totalRegistros += (int) ($carga['total_registros'] ?? 0);
+            $totalRegistros += (float) ($carga['total_registros'] ?? 0);
             $totalErrores += (int) ($carga['total_errores'] ?? 0);
         }
 

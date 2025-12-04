@@ -59,7 +59,11 @@ class CargaPhidiasService
         $responsablesProcesados = 0;
         $estudiantesProcesados = 0;
         $deudasRegistradas = 0;
+        $valorTotal = 0.0;
         $filaExcel = $indiceEncabezado + 2; // Excel es 1-based
+
+        $responsablesVistos = [];
+        $estudiantesVistos = [];
 
         $contexto = [
             'id_responsable' => null,
@@ -89,15 +93,24 @@ class CargaPhidiasService
                 $contexto['id_estudiante'] = $this->upsertEstudiante($idColegio, $idSede, $contexto['id_responsable'], $colE, $colF);
                 $contexto['estudiante'] = $colF;
 
-                $responsablesProcesados++;
-                $estudiantesProcesados++;
+                if (!in_array($colA, $responsablesVistos, true)) {
+                    $responsablesVistos[] = $colA;
+                    $responsablesProcesados++;
+                }
+                if (!in_array($colE, $estudiantesVistos, true)) {
+                    $estudiantesVistos[] = $colE;
+                    $estudiantesProcesados++;
+                }
                 continue;
             }
 
             if ($colA === '' && $colE !== '' && $colF !== '' && $contexto['id_responsable']) {
                 $contexto['id_estudiante'] = $this->upsertEstudiante($idColegio, $idSede, $contexto['id_responsable'], $colE, $colF);
                 $contexto['estudiante'] = $colF;
-                $estudiantesProcesados++;
+                if (!in_array($colE, $estudiantesVistos, true)) {
+                    $estudiantesVistos[] = $colE;
+                    $estudiantesProcesados++;
+                }
                 continue;
             }
 
@@ -107,7 +120,9 @@ class CargaPhidiasService
             }
 
             if ($colA === '' && $colE === '' && $colF !== '' && $contexto['id_estudiante']) {
-                $deudasRegistradas += $this->procesarDetalleConcepto($fila, $contexto, $idColegio, $idSede, $anio, $filaExcel);
+                [$deudasSumadas, $valorSumado] = $this->procesarDetalleConcepto($fila, $contexto, $idColegio, $idSede, $anio, $filaExcel);
+                $deudasRegistradas += $deudasSumadas;
+                $valorTotal += $valorSumado;
                 continue;
             }
 
@@ -119,6 +134,7 @@ class CargaPhidiasService
         return [
             'procesados' => $responsablesProcesados + $estudiantesProcesados,
             'deudas' => $deudasRegistradas,
+            'valor_total' => $valorTotal,
             'responsables' => $responsablesProcesados,
             'estudiantes' => $estudiantesProcesados,
             'errores' => $errores,
@@ -218,15 +234,16 @@ class CargaPhidiasService
         return $this->estudiantes->create($payload);
     }
 
-    private function procesarDetalleConcepto(array $fila, array $contexto, int $idColegio, int $idSede, int $anio, int $filaExcel): int
+    private function procesarDetalleConcepto(array $fila, array $contexto, int $idColegio, int $idSede, int $anio, int $filaExcel): array
     {
         $concepto = trim((string) ($fila[5] ?? ''));
         if ($concepto === '') {
-            return 0;
+            return [0, 0.0];
         }
 
         $meses = [6 => 7, 7 => 8, 8 => 9, 9 => 10];
         $totalDeudas = 0;
+        $totalValor = 0.0;
 
         foreach ($meses as $columna => $mes) {
             $valor = $this->normalizarNumero($fila[$columna] ?? null);
@@ -236,9 +253,10 @@ class CargaPhidiasService
 
             $this->registrarDeuda($idColegio, $idSede, $contexto['id_estudiante'], $concepto, $anio, $mes, $valor);
             $totalDeudas++;
+            $totalValor += $valor;
         }
 
-        return $totalDeudas;
+        return [$totalDeudas, $totalValor];
     }
 
     private function registrarDeuda(int $idColegio, int $idSede, int $idEstudiante, string $concepto, int $anio, int $mes, float $valor): void

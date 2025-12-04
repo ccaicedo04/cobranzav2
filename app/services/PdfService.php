@@ -37,24 +37,28 @@ class PdfService
         $contenidoPesado = strlen($contenido) > 1_500_000 || $rowCount > 1200;
 
         if ($this->dompdfDisponible() && !$contenidoPesado) {
-            @ini_set('memory_limit', '1024M');
-            $this->asegurarDirectoriosDompdf();
+            try {
+                @ini_set('memory_limit', '1024M');
+                $this->asegurarDirectoriosDompdf();
 
-            $options = new Options();
-            $options->set('isRemoteEnabled', true);
-            $options->set('defaultFont', 'Arial');
-            $options->set('tempDir', $this->dompdfCacheDir());
-            $options->set('fontDir', $this->dompdfFontsDir());
-            $options->set('fontCache', $this->dompdfFontsDir());
-            $options->set('isHtml5ParserEnabled', true);
-            $options->set('enable_font_subsetting', true);
+                $options = new Options();
+                $options->set('isRemoteEnabled', true);
+                $options->set('defaultFont', 'Arial');
+                $options->set('tempDir', $this->dompdfCacheDir());
+                $options->set('fontDir', $this->dompdfFontsDir());
+                $options->set('fontCache', $this->dompdfFontsDir());
+                $options->set('isHtml5ParserEnabled', true);
+                $options->set('enable_font_subsetting', true);
 
-            $dompdf = new Dompdf($options);
-            $dompdf->loadHtml($contenido);
-            $dompdf->setPaper('A4', $orientacion);
-            $dompdf->render();
-            $dompdf->stream($nombre, ['Attachment' => !$inline]);
-            exit;
+                $dompdf = new Dompdf($options);
+                $dompdf->loadHtml($contenido, 'UTF-8');
+                $dompdf->setPaper('A4', $orientacion);
+                $dompdf->render();
+                $dompdf->stream($nombre, ['Attachment' => !$inline]);
+                exit;
+            } catch (Throwable $e) {
+                // Fallback silencioso a SimplePdf si DOMPDF falla en renderizar
+            }
         }
 
         $fallback = $documento ?: [

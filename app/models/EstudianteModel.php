@@ -46,11 +46,7 @@ class EstudianteModel extends BaseModel
         $sql .= ' ORDER BY c.nombre, s.nombre, e.nombre_completo';
 
         $stmt = $this->db->prepare($sql);
-        $normalizedParams = [];
-        foreach ($params as $key => $value) {
-            $normalizedParams[ltrim($key, ':')] = $value;
-        }
-        $stmt->execute($normalizedParams);
+        $stmt->execute($params);
 
         return $stmt->fetchAll();
     }

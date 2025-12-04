@@ -45,9 +45,9 @@ $mapResultado = static function (string $estado): array {
             <span class="tag <?= $mapResultado($ultimaResultado)['class'] ?>" style="margin-top:6px;display:inline-flex;">Estado: <?= htmlspecialchars($mapResultado($ultimaResultado)['label']) ?></span>
         </div>
         <div>
-            <span>Registros acumulados</span>
-            <strong><?= number_format((int) ($ventana['total_registros'] ?? 0), 0, ',', '.') ?></strong>
-            <p class="small" style="margin:4px 0 0;">Suma de registros procesados en los cargues históricos.</p>
+            <span>Valor acumulado cargado</span>
+            <strong>$ <?= number_format((float) ($ventana['total_registros'] ?? 0), 0, ',', '.') ?></strong>
+            <p class="small" style="margin:4px 0 0;">Suma total de valores ingresados en los cargues históricos.</p>
         </div>
         <div>
             <span>Errores detectados</span>
@@ -86,7 +86,7 @@ $mapResultado = static function (string $estado): array {
                         <span><?= htmlspecialchars($carga['archivo_original'] ?? 'N/A') ?></span>
                         <div style="margin:6px 0;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
                             <span class="tag <?= $estado['class'] ?>"><?= htmlspecialchars($estado['label']) ?></span>
-                            <span class="small">Registros: <?= number_format((int) ($carga['total_registros'] ?? 0), 0, ',', '.') ?></span>
+                            <span class="small">Valor cargado: $ <?= number_format((float) ($carga['total_registros'] ?? 0), 0, ',', '.') ?></span>
                             <span class="small">Errores: <?= number_format((int) ($carga['total_errores'] ?? 0), 0, ',', '.') ?></span>
                         </div>
                         <p class="small" style="margin:0;"><?= htmlspecialchars($carga['mensaje'] ?? 'Sin observaciones') ?></p>
@@ -170,7 +170,7 @@ $mapResultado = static function (string $estado): array {
                     <th>Fecha</th>
                     <th>Archivo</th>
                     <th>Resultado</th>
-                    <th>Registros</th>
+                    <th>Valor cargado ($)</th>
                     <th>Errores</th>
                     <th>Mensaje</th>
                 </tr>
@@ -182,7 +182,7 @@ $mapResultado = static function (string $estado): array {
                         <td><?= htmlspecialchars($carga['fecha_registro'] ?? '') ?></td>
                         <td><?= htmlspecialchars($carga['archivo_original'] ?? '') ?></td>
                         <td><span class="tag <?= $estado['class'] ?>"><?= htmlspecialchars($estado['label']) ?></span></td>
-                        <td><?= number_format((int) ($carga['total_registros'] ?? 0), 0, ',', '.') ?></td>
+                        <td><?= number_format((float) ($carga['total_registros'] ?? 0), 0, ',', '.') ?></td>
                         <td><?= number_format((int) ($carga['total_errores'] ?? 0), 0, ',', '.') ?></td>
                         <td><?= htmlspecialchars($carga['mensaje'] ?? '') ?></td>
                     </tr>

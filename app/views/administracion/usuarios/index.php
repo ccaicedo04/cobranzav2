@@ -12,12 +12,15 @@ $formDisabled = false;
 $mostrarAdvertenciaContexto = empty($colegios) || empty($sedes);
 include __DIR__ . '/../../_partials/header.php';
 ?>
-<div class="actions" style="justify-content:flex-end;margin-bottom:12px;">
-    <a class="btn primary" href="#form-usuario">+ Nuevo usuario</a>
-</div>
-<div class="grid" style="grid-template-columns:2fr 1fr;align-items:start;gap:20px;">
+<div class="grid" style="grid-template-columns:1.4fr .9fr;align-items:start;gap:20px;">
     <div class="card">
-        <h3>Usuarios del sistema</h3>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
+            <div>
+                <h3 style="margin:0;">Usuarios del sistema</h3>
+                <p class="small" style="margin:4px 0 0;">Consulta y navega por los usuarios creados, su rol y contexto.</p>
+            </div>
+            <a class="btn secondary" href="#form-usuario">Ir al formulario</a>
+        </div>
         <table class="table">
             <thead><tr><th>Nombre</th><th>Usuario</th><th>Rol</th><th>Colegios</th><th>Sedes</th><th>Módulos</th><th>Estado</th><th></th></tr></thead>
             <tbody>
@@ -69,7 +72,10 @@ include __DIR__ . '/../../_partials/header.php';
                 <h3 style="margin:0;">Crear usuario</h3>
                 <p class="small" style="margin:4px 0 0;">Completa los datos básicos, asigna colegios/sedes y el módulo que podrá usar. Todos los campos marcados con * son obligatorios.</p>
             </div>
-            <span class="tag" style="align-self:center;">Nuevo</span>
+            <div style="display:flex;align-items:center;gap:8px;">
+                <span class="tag" style="align-self:center;">Nuevo</span>
+                <button class="btn primary" form="formCrearUsuario" type="submit">Guardar</button>
+            </div>
         </div>
         <?php if ($mostrarAdvertenciaContexto): ?>
             <div class="alert error" style="margin-bottom:14px;">
@@ -85,7 +91,7 @@ include __DIR__ . '/../../_partials/header.php';
                 asignar el contexto desde esta misma pantalla.
             </div>
         <?php endif; ?>
-        <form method="post" action="index.php?route=usuarios/store" data-confirm="¿Deseas crear el nuevo usuario con los permisos seleccionados?" style="display:flex;flex-direction:column;gap:10px;" data-form-usuario onsubmit="return validarUsuario();">
+        <form id="formCrearUsuario" method="post" action="index.php?route=usuarios/store" data-confirm="¿Deseas crear el nuevo usuario con los permisos seleccionados?" style="display:flex;flex-direction:column;gap:10px;" data-form-usuario onsubmit="return validarUsuario();">
             <input type="hidden" name="_token" value="<?= htmlspecialchars($token) ?>">
             <h4 style="margin:6px 0 0;">Datos básicos</h4>
             <div style="display:grid;grid-template-columns:1fr;gap:10px;">
