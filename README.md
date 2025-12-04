@@ -26,3 +26,6 @@ Implementación MVC nativa en PHP 8.2 para la gestión integral de cartera multi
 
 ## Licencia
 Uso interno educativo.
+
+## Entrega completa
+Consulta `docs/ENTREGA_COMPLETA.md` para ver el inventario de carpetas, base de datos y guías incluidas en esta entrega.
