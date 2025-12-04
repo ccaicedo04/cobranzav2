@@ -33,7 +33,11 @@ class PdfService
             $contenido = '<p>Contenido no disponible para renderizar.</p>';
         }
 
-        if ($this->dompdfDisponible()) {
+        $rowCount = is_array($documento['rows'] ?? null) ? count($documento['rows']) : 0;
+        $contenidoPesado = strlen($contenido) > 1_500_000 || $rowCount > 1200;
+
+        if ($this->dompdfDisponible() && !$contenidoPesado) {
+            @ini_set('memory_limit', '1024M');
             $this->asegurarDirectoriosDompdf();
 
             $options = new Options();
@@ -42,6 +46,8 @@ class PdfService
             $options->set('tempDir', $this->dompdfCacheDir());
             $options->set('fontDir', $this->dompdfFontsDir());
             $options->set('fontCache', $this->dompdfFontsDir());
+            $options->set('isHtml5ParserEnabled', true);
+            $options->set('enable_font_subsetting', true);
 
             $dompdf = new Dompdf($options);
             $dompdf->loadHtml($contenido);

@@ -12,6 +12,9 @@ $formDisabled = false;
 $mostrarAdvertenciaContexto = empty($colegios) || empty($sedes);
 include __DIR__ . '/../../_partials/header.php';
 ?>
+<div class="actions" style="justify-content:flex-end;margin-bottom:12px;">
+    <a class="btn primary" href="#form-usuario">+ Nuevo usuario</a>
+</div>
 <div class="grid" style="grid-template-columns:2fr 1fr;align-items:start;gap:20px;">
     <div class="card">
         <h3>Usuarios del sistema</h3>
@@ -60,7 +63,7 @@ include __DIR__ . '/../../_partials/header.php';
             </tbody>
         </table>
     </div>
-    <div class="card" style="position:sticky;top:10px;">
+    <div class="card" id="form-usuario" style="position:sticky;top:10px;">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
             <div>
                 <h3 style="margin:0;">Crear usuario</h3>
