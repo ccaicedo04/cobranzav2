@@ -129,12 +129,6 @@ class CargaPhidiasService
                     $estudiantesProcesados++;
                 }
 
-                $valorFormulario = $this->normalizarNumero($fila[10] ?? null);
-                if ($valorFormulario > 0) {
-                    $this->registrarDeuda($idColegio, $idSede, $contexto['id_estudiante'], 'Formulario', $anio, 7, $valorFormulario);
-                    $deudasRegistradas++;
-                    $valorTotal += $valorFormulario;
-                }
                 continue;
             }
 
