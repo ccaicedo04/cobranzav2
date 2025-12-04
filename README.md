@@ -11,7 +11,7 @@ Implementación MVC nativa en PHP 8.2 para la gestión integral de cartera multi
 
 ## Instalación rápida
 1. Copia el proyecto en tu carpeta web (`htdocs` en XAMPP).
-2. Importa `database/cobranza_escolar.sql` en tu motor de base de datos.
+2. Importa `database/cobranza_escolar.sql` en tu motor de base de datos (el volcado incluido trae la estructura completa y datos demo para que todas las pantallas funcionen al abrir el proyecto).
 3. Ajusta credenciales en `config/config.php` si es necesario. El sistema detecta la ruta base automáticamente desde `public/index.php`, pero puedes definir `app.base_url` si despliegas en un subdominio o carpeta distinta.
 4. Accede a `http://localhost/cobranzav2/public/index.php` y utiliza las credenciales demo descritas en `docs/README.txt`.
 

@@ -5,6 +5,12 @@ $breadcrumbs = 'Cobranzas / Carga masiva';
 include __DIR__ . '/../_partials/header.php';
 
 $ventana = $ventana ?? [];
+$colegios = $colegios ?? [];
+$sedes = $sedes ?? [];
+$contexto = \Core\Session::get('context') ?? [];
+$colegioSeleccionado = $contexto['id_colegio'] ?? ($colegios[0]['id_colegio'] ?? '');
+$sedeSeleccionada = $contexto['id_sede'] ?? ($sedes[0]['id_sede'] ?? '');
+$anioSugerido = date('Y');
 $ultima = $ventana['ultima'] ?? null;
 $ultimaFecha = $ultima && !empty($ultima['fecha_registro']) ? date('Y-m-d H:i', strtotime((string) $ultima['fecha_registro'])) : 'Sin registros previos';
 $ultimaArchivo = $ultima['archivo_original'] ?? 'N/D';
@@ -102,9 +108,38 @@ $mapResultado = static function (string $estado): array {
         </p>
         <form method="post" action="index.php?route=carga-masiva/store" enctype="multipart/form-data" data-confirm="¿Deseas iniciar el proceso de carga masiva con el archivo seleccionado?" style="display:flex;flex-direction:column;gap:14px;">
             <input type="hidden" name="_token" value="<?= htmlspecialchars($token) ?>">
+            <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;">
+                <div>
+                    <label for="colegioCarga">Colegio</label>
+                    <select id="colegioCarga" name="id_colegio" required>
+                        <option value="">Seleccione</option>
+                        <?php foreach ($colegios as $colegio): ?>
+                            <option value="<?= htmlspecialchars($colegio['id_colegio']) ?>" <?= (string) $colegioSeleccionado === (string) ($colegio['id_colegio'] ?? '') ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($colegio['nombre'] ?? 'Colegio') ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div>
+                    <label for="sedeCarga">Sede</label>
+                    <select id="sedeCarga" name="id_sede" required>
+                        <option value="">Seleccione</option>
+                        <?php foreach ($sedes as $sede): ?>
+                            <option value="<?= htmlspecialchars($sede['id_sede']) ?>" <?= (string) $sedeSeleccionada === (string) ($sede['id_sede'] ?? '') ? 'selected' : '' ?>>
+                                <?= htmlspecialchars(($sede['colegio_nombre'] ?? '') . ' - ' . ($sede['nombre'] ?? 'Sede')) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div>
+                    <label for="anioCarga">Año</label>
+                    <input id="anioCarga" type="number" name="anio" min="2000" max="2100" value="<?= htmlspecialchars($anioSugerido) ?>" required>
+                </div>
+            </div>
             <div>
                 <label for="archivoCarga">Archivo Excel (.xlsx)</label>
                 <input id="archivoCarga" type="file" name="archivo" accept=".xlsx" required>
+                <p class="small" style="margin:4px 0 0;">Extensión permitida .xlsx | Tamaño máximo 10 MB.</p>
             </div>
             <div>
                 <label for="notasCarga">Notas internas (opcional)</label>

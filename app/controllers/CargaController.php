@@ -5,6 +5,9 @@ namespace App\Controllers;
 use App\Models\CargaMasivaModel;
 use App\Models\ComunicacionModel;
 use App\Models\ReporteModel;
+use App\Models\SedeModel;
+use App\Models\ColegioModel;
+use App\Services\CargaPhidiasService;
 use Core\Controller;
 use Core\Helpers;
 use Core\Session;
@@ -17,6 +20,12 @@ class CargaController extends Controller
     private $reportes;
     /** @var ComunicacionModel */
     private $comunicaciones;
+    /** @var CargaPhidiasService */
+    private $cargador;
+    /** @var SedeModel */
+    private $sedes;
+    /** @var ColegioModel */
+    private $colegios;
 
     public function __construct()
     {
@@ -29,6 +38,9 @@ class CargaController extends Controller
         $this->cargas = new CargaMasivaModel();
         $this->reportes = new ReporteModel();
         $this->comunicaciones = new ComunicacionModel();
+        $this->cargador = new CargaPhidiasService();
+        $this->sedes = new SedeModel();
+        $this->colegios = new ColegioModel();
     }
 
     public function index()
@@ -39,6 +51,8 @@ class CargaController extends Controller
             'cargas' => $cargas,
             'ventana' => $this->resumenVentana($cargas),
             'token' => Helpers::csrfToken(),
+            'colegios' => $this->colegiosDisponibles(),
+            'sedes' => $this->sedesDisponibles(),
         ]);
     }
 
@@ -50,19 +64,60 @@ class CargaController extends Controller
 
         $usuario = Session::get('user');
         $tenant = Helpers::tenantContext();
+        $idColegio = (int) ($_POST['id_colegio'] ?? ($tenant['id_colegio'] ?? 0));
+        $idSede = (int) ($_POST['id_sede'] ?? ($tenant['id_sede'] ?? 0));
+        $anio = (int) ($_POST['anio'] ?? date('Y'));
         $notas = trim((string) ($_POST['notas'] ?? ''));
-        $this->cargas->create([
-            'id_colegio' => $tenant['id_colegio'],
-            'id_sede' => $tenant['id_sede'],
+
+        if ($idColegio <= 0 || $idSede <= 0) {
+            Helpers::redirect('index.php?route=carga-masiva');
+        }
+
+        if (!isset($_FILES['archivo']) || ($_FILES['archivo']['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+            Helpers::redirect('index.php?route=carga-masiva');
+        }
+
+        $archivo = $_FILES['archivo'];
+        $ext = strtolower(pathinfo($archivo['name'] ?? 'carga.xlsx', PATHINFO_EXTENSION));
+        if ($ext !== 'xlsx' || ($archivo['size'] ?? 0) > 10 * 1024 * 1024) {
+            Helpers::redirect('index.php?route=carga-masiva');
+        }
+
+        $cargaId = $this->cargas->create([
+            'id_colegio' => $idColegio,
+            'id_sede' => $idSede,
             'tipo_archivo' => 'xlsx',
-            'archivo_original' => $_FILES['archivo']['name'] ?? 'carga.xlsx',
+            'archivo_original' => $archivo['name'] ?? 'carga.xlsx',
             'archivo_procesado' => null,
             'total_registros' => 0,
             'total_errores' => 0,
             'resultado' => 'Pendiente',
-            'mensaje' => $notas !== '' ? $notas : 'Carga simulada en entorno demo',
+            'mensaje' => $notas !== '' ? $notas : 'Carga recibida',
             'usuario_registro' => $usuario['id_usuario'],
         ]);
+
+        try {
+            $resultado = $this->cargador->procesar($archivo['tmp_name'], $idColegio, $idSede, $anio);
+            $errores = $resultado['errores'];
+            $mensaje = $notas !== '' ? $notas : 'Carga procesada correctamente';
+            if ($errores) {
+                $mensaje .= ' | Errores: ' . count($errores);
+            }
+
+            $this->cargas->update($cargaId, [
+                'total_registros' => $resultado['deudas'],
+                'total_errores' => count($errores),
+                'resultado' => $errores ? 'Parcial' : 'Exitoso',
+                'mensaje' => $mensaje,
+            ]);
+        } catch (\Throwable $exception) {
+            $this->cargas->update($cargaId, [
+                'total_registros' => 0,
+                'total_errores' => 1,
+                'resultado' => 'Error',
+                'mensaje' => $exception->getMessage(),
+            ]);
+        }
 
         Helpers::redirect('index.php?route=carga-masiva');
     }
@@ -89,5 +144,29 @@ class CargaController extends Controller
             'gestiones_mes' => $gestionesMes,
             'recaudo_mes' => $recaudoMes,
         ];
+    }
+
+    private function colegiosDisponibles(): array
+    {
+        $usuario = Session::get('user');
+        if ($usuario['rol'] === 'admin_global') {
+            return $this->colegios->all(['eliminado' => 0], ['order' => 'nombre']);
+        }
+
+        return $this->colegios->all([
+            'id_colegio' => $usuario['id_colegio'] ?? null,
+            'eliminado' => 0,
+        ], ['order' => 'nombre']);
+    }
+
+    private function sedesDisponibles(): array
+    {
+        $usuario = Session::get('user');
+        $filtro = ['eliminado' => 0];
+        if ($usuario['rol'] !== 'admin_global' && !empty($usuario['id_colegio'])) {
+            $filtro['id_colegio'] = $usuario['id_colegio'];
+        }
+
+        return $this->sedes->conColegio($filtro);
     }
 }
