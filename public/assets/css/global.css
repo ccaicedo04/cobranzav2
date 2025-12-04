@@ -180,12 +180,34 @@ footer{margin:24px 0 40px 0;color:#4b5563;font-size:13px;text-align:center}
 h2.section{margin:6px 0 14px 0;font-size:20px;letter-spacing:.2px}
 
 /* Login */
-.login-page{min-height:100vh;background:#eef3f9}
-.login-wrap{display:grid;grid-template-columns:1fr 1fr;min-height:520px;background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 10px 30px rgba(2,23,42,.08);margin:40px auto;max-width:980px}
-.login-left{padding:40px}
-.login-right{background:var(--nav);color:#fff;display:flex;align-items:center;justify-content:center}
-.login-title{margin:0 0 12px 0;color:#0d2747;letter-spacing:.3px; text-align: center}
-@media(max-width:1024px){ .login-wrap{grid-template-columns:1fr} .login-right{display:none} }
+.login-page{min-height:100vh;background:radial-gradient(circle at 10% 20%, rgba(15,72,146,.12), transparent 25%),radial-gradient(circle at 80% 0%, rgba(15,47,90,.18), transparent 28%),#eef3f9;display:flex;align-items:center;justify-content:center;padding:40px 16px}
+.login-shell{width:100%;max-width:1100px;display:grid;grid-template-columns:1.05fr .95fr;background:#fff;border-radius:24px;overflow:hidden;box-shadow:0 20px 50px rgba(2,23,42,.15);border:1px solid #e2e8f0}
+.login-hero{background:linear-gradient(135deg,#0f325d,#0d2747 55%,#0a1d36);color:#e8f1ff;padding:40px;display:flex;align-items:center}
+.login-hero-content{display:flex;flex-direction:column;gap:14px;max-width:520px}
+.login-hero-content h1{margin:4px 0;font-size:28px;letter-spacing:.2px}
+.login-hero-content p{margin:0;font-size:15px;line-height:1.7;color:rgba(232,241,255,.92)}
+.login-hero-content ul{margin:10px 0 0 18px;color:rgba(232,241,255,.92);display:flex;flex-direction:column;gap:6px;padding-left:10px}
+.brand-mark{display:flex;align-items:center;gap:10px}
+.brand-logo{width:54px;height:54px;object-fit:contain;background:#fff;border-radius:14px;padding:8px;box-shadow:0 10px 20px rgba(0,0,0,.16)}
+.brand-mark strong{display:block;font-size:18px;color:#fff}
+.brand-mark span{display:block;font-size:12px;color:rgba(232,241,255,.72);margin-top:2px}
+.login-card{padding:42px 44px;display:flex;flex-direction:column;gap:16px;background:#fff}
+.login-card-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.login-card-header h2{margin:4px 0;font-size:24px;color:#0f172a}
+.eyebrow{margin:0;color:#475569;text-transform:uppercase;letter-spacing:.4px;font-size:12px;font-weight:700}
+.subtext{margin:4px 0 0 0;color:#6b7280;font-size:13px}
+.login-form{display:flex;flex-direction:column;gap:12px}
+.login-form-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:4px}
+.checkbox-inline{display:flex;align-items:center;gap:8px;font-size:13px;color:#374151}
+.checkbox-inline input{width:auto;margin:0}
+.muted{color:#475569;text-decoration:none;font-size:13px}
+.muted:hover{text-decoration:underline}
+.tag{background:#e0f2fe;color:#0f4c92;border-radius:12px;padding:6px 12px;font-weight:700;font-size:12px;align-self:flex-start}
+@media(max-width:1024px){
+  .login-shell{grid-template-columns:1fr}
+  .login-hero{display:none}
+  .login-shell{max-width:560px}
+}
 
 /* fix8 header spacing */
 .appbar .container{gap:12px}
