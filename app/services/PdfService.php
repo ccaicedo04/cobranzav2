@@ -34,11 +34,11 @@ class PdfService
         }
 
         $rowCount = is_array($documento['rows'] ?? null) ? count($documento['rows']) : 0;
-        $contenidoPesado = strlen($contenido) > 1_500_000 || $rowCount > 1200;
+        $contenidoPesado = strlen($contenido) > 1_200_000 || $rowCount > 600;
 
         if ($this->dompdfDisponible() && !$contenidoPesado) {
             try {
-                @ini_set('memory_limit', '1024M');
+                @ini_set('memory_limit', '1536M');
                 $this->asegurarDirectoriosDompdf();
 
                 $options = new Options();

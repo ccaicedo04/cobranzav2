@@ -31,8 +31,12 @@ class EstudianteModel extends BaseModel
         $where[] = 'e.eliminado = 0';
 
         if ($busqueda !== '') {
-            $where[] = '(e.codigo_estudiante LIKE :busqueda OR e.nombre_completo LIKE :busqueda OR r.nombre_completo LIKE :busqueda)';
-            $params[':busqueda'] = '%' . $busqueda . '%';
+            $where[] = '(
+                e.codigo_estudiante LIKE :q_busqueda OR
+                e.nombre_completo LIKE :q_busqueda OR
+                r.nombre_completo LIKE :q_busqueda
+            )';
+            $params[':q_busqueda'] = '%' . $busqueda . '%';
         }
 
         $sql = 'SELECT e.*, c.nombre AS colegio_nombre, s.nombre AS sede_nombre, r.nombre_completo AS responsable_nombre'
@@ -46,7 +50,10 @@ class EstudianteModel extends BaseModel
         $sql .= ' ORDER BY c.nombre, s.nombre, e.nombre_completo';
 
         $stmt = $this->db->prepare($sql);
-        $stmt->execute($params);
+        foreach ($params as $placeholder => $value) {
+            $stmt->bindValue($placeholder, $value);
+        }
+        $stmt->execute();
 
         return $stmt->fetchAll();
     }
