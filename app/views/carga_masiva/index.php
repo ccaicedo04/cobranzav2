@@ -45,11 +45,6 @@ $mapResultado = static function (string $estado): array {
             <span class="tag <?= $mapResultado($ultimaResultado)['class'] ?>" style="margin-top:6px;display:inline-flex;">Estado: <?= htmlspecialchars($mapResultado($ultimaResultado)['label']) ?></span>
         </div>
         <div>
-            <span>Valor acumulado cargado</span>
-            <strong>$ <?= number_format((float) ($ventana['total_registros'] ?? 0), 0, ',', '.') ?></strong>
-            <p class="small" style="margin:4px 0 0;">Suma total de valores ingresados en los cargues históricos.</p>
-        </div>
-        <div>
             <span>Errores detectados</span>
             <strong><?= number_format((int) ($ventana['total_errores'] ?? 0), 0, ',', '.') ?></strong>
             <p class="small" style="margin:4px 0 0;">Casos que requieren ajustes antes del siguiente ciclo.</p>

@@ -34,11 +34,12 @@ class PdfService
         }
 
         $rowCount = is_array($documento['rows'] ?? null) ? count($documento['rows']) : 0;
-        $contenidoPesado = strlen($contenido) > 1_200_000 || $rowCount > 600;
+        $rowCountHtml = $this->contarFilasHtml($contenido);
+        $contenidoPesado = strlen($contenido) > 900_000 || $rowCount > 600 || $rowCountHtml > 800;
 
         if ($this->dompdfDisponible() && !$contenidoPesado) {
             try {
-                @ini_set('memory_limit', '1536M');
+                @ini_set('memory_limit', '2048M');
                 $this->asegurarDirectoriosDompdf();
 
                 $options = new Options();
@@ -207,5 +208,14 @@ class PdfService
     private function dompdfCacheDir(): string
     {
         return dirname(__DIR__, 1) . '/libraries/dompdf/lib/cache';
+    }
+
+    private function contarFilasHtml(string $html): int
+    {
+        if ($html === '') {
+            return 0;
+        }
+
+        return substr_count(strtolower($html), '<tr');
     }
 }
