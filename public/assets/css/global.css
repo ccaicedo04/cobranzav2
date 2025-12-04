@@ -154,21 +154,21 @@ footer{margin:24px 0 40px 0;color:#4b5563;font-size:13px;text-align:center}
 
 /* Header single-row */
 .appbar{background:linear-gradient(0deg,var(--nav-2),var(--nav));color:var(--nav-txt);padding:10px 12px;box-shadow:0 4px 16px rgba(2,23,42,.18);position:sticky;top:0;z-index:1000}
-.appbar .container{display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap;position:relative}
-.brand-link{display:flex;align-items:center;gap:8px;text-decoration:none;color:inherit;font-weight:600}
+.appbar .container{display:flex;align-items:center;gap:14px;flex-wrap:nowrap;position:relative}
+.brand-link{display:flex;align-items:center;gap:8px;text-decoration:none;color:inherit;font-weight:600;flex-shrink:0}
 .brand-link img{height:36px;width:auto}
-.nav{flex:1 1 520px;min-width:320px;display:flex;gap:8px;align-items:center;justify-content:flex-start;flex-wrap:wrap}
+.nav{flex:1 1 520px;min-width:320px;display:flex;gap:8px;align-items:center;justify-content:flex-end;flex-wrap:wrap}
 .nav .group{position:relative}
 .nav .nav-toggle,.nav a.link{background:transparent;color:var(--nav-txt);border:none;padding:8px 10px;border-radius:10px;cursor:pointer;text-decoration:none;font-weight:600;white-space:nowrap;display:inline-flex;align-items:center;gap:4px}
 .nav .nav-toggle:hover,.nav a.link:hover{background:rgba(255,255,255,.08)}
 .dropdown{position:absolute;top:40px;left:0;background:#0f325d;border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:8px;display:none;min-width:220px;z-index:1200;flex-direction:column;gap:4px;max-height:340px;overflow-y:auto}
 .dropdown a{display:block;color:#e8f1ff;padding:9px 12px;border-radius:10px;text-decoration:none}.dropdown a:hover{background:rgba(255,255,255,.1)}
-.tenant{display:flex;align-items:flex-end;gap:10px;padding:0;margin-left:auto;flex-shrink:0;flex:0 1 340px;min-width:280px}
+.tenant{display:flex;align-items:flex-end;gap:10px;padding:0;margin-left:0;flex-shrink:0;flex:0 1 420px;min-width:320px}
 .tenant-field{display:flex;flex-direction:column;gap:4px;min-width:160px}
 .tenant-field-label{font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:rgba(207,224,255,.72)}
 .tenant select{appearance:none;background:rgba(15,50,93,.88);border:1px solid rgba(255,255,255,.18);color:#f8fbff;border-radius:10px;padding:6px 10px;font-size:13px;min-width:160px;cursor:pointer}
 .tenant select:focus{outline:2px solid rgba(147,197,253,.4)}
-.userbox{flex-shrink:0;position:relative;margin-left:auto;align-self:center}
+.userbox{flex-shrink:0;position:relative;margin-left:12px;align-self:center}
 .userbox .user-toggle{background:#0f325d;color:#e8f1ff;border:1px solid rgba(255,255,255,.15);padding:6px 10px;border-radius:10px;cursor:pointer}
 .userbox .menu{position:absolute;right:0;left:auto;top:40px;background:#0f325d;border:1px solid rgba(255,255,255,.22);border-radius:12px;padding:8px;display:none;min-width:220px;z-index:1300;box-shadow:0 12px 30px rgba(0,0,0,.25)}
 .userbox .menu a{display:block;color:#e8f1ff;text-decoration:none;padding:8px 10px;border-radius:8px}
@@ -200,13 +200,12 @@ h2.section{margin:6px 0 14px 0;font-size:20px;letter-spacing:.2px}
 /* fix9 spacing */
 
 /* Navbar responsive layout tweaks */
-.appbar .container{align-items:center;flex-wrap:wrap}
-.tenant{flex:1 1 320px;margin-left:0}
-.nav{flex:2 1 520px}
-.userbox{flex:0 0 auto;margin-left:auto;align-self:center}
+.tenant{flex:0 1 420px;margin-left:0}
+.nav{flex:1 1 520px}
+.userbox{flex:0 0 auto;margin-left:12px;align-self:center}
 
 @media(max-width:1180px){
-  .appbar .container{flex-direction:column;align-items:stretch}
+  .appbar .container{flex-direction:column;align-items:stretch;flex-wrap:wrap}
   .brand-link{order:1}
   .tenant{order:2;width:100%;display:flex;flex-wrap:wrap;gap:12px}
   .nav{order:3;width:100%;justify-content:flex-start}
@@ -227,6 +226,7 @@ h3{margin:0 0 12px 0}
 @media(max-width:720px){.two{grid-template-columns:1fr}.resume{grid-template-columns:1fr}}
 
 @media(max-width:1280px){
+  .appbar .container{flex-wrap:wrap}
   .nav{order:3;width:100%;justify-content:flex-start}
   .tenant{order:2;margin-left:0;flex:1 1 100%;width:100%}
   .userbox{order:4;margin-left:0;align-self:flex-end}
