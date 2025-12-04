@@ -23,21 +23,9 @@ class EstudianteModel extends BaseModel
 
     public function conContexto(array $filtros = []): array
     {
-        $busqueda = trim($filtros['busqueda'] ?? '');
-        unset($filtros['busqueda']);
-
         $filtros = $this->applyTenantFilters($filtros);
         [$where, $params] = $this->compileFilters($filtros, 'e');
         $where[] = 'e.eliminado = 0';
-
-        if ($busqueda !== '') {
-            $where[] = '(
-                e.codigo_estudiante LIKE :q_busqueda OR
-                e.nombre_completo LIKE :q_busqueda OR
-                r.nombre_completo LIKE :q_busqueda
-            )';
-            $params['q_busqueda'] = '%' . $busqueda . '%';
-        }
 
         $sql = 'SELECT e.*, c.nombre AS colegio_nombre, s.nombre AS sede_nombre, r.nombre_completo AS responsable_nombre'
             . ' FROM estudiante e'

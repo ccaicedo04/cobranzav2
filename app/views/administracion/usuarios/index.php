@@ -11,6 +11,7 @@ $modulosPorDefecto = $modulosPorDefecto ?? [];
 $mapColegios = $mapColegios ?? [];
 $mapSedes = $mapSedes ?? [];
 $mapModulos = $mapModulos ?? [];
+$filtros = $filtros ?? ['busqueda' => '', 'estado' => '', 'rol' => ''];
 $totalUsuarios = count($usuarios);
 $formDisabled = false;
 $mostrarAdvertenciaContexto = empty($colegios) || empty($sedes);
@@ -157,6 +158,22 @@ include __DIR__ . '/../../_partials/header.php';
         </div>
         <a class="btn secondary" href="#form-usuario">Ir a crear</a>
     </div>
+    <form class="toolbar" method="get" action="index.php" style="margin-top:12px;">
+        <input type="hidden" name="route" value="usuarios">
+        <input name="busqueda" style="max-width:240px" placeholder="Buscar por nombre, usuario o correo" value="<?= htmlspecialchars($filtros['busqueda'] ?? '') ?>">
+        <select name="rol">
+            <option value="">Todos los roles</option>
+            <option value="admin_global" <?= (($filtros['rol'] ?? '') === 'admin_global') ? 'selected' : '' ?>>Admin global</option>
+            <option value="admin_colegio" <?= (($filtros['rol'] ?? '') === 'admin_colegio') ? 'selected' : '' ?>>Admin colegio</option>
+            <option value="agente" <?= (($filtros['rol'] ?? '') === 'agente') ? 'selected' : '' ?>>Agente</option>
+        </select>
+        <select name="estado">
+            <option value="">Todos los estados</option>
+            <option value="activo" <?= (($filtros['estado'] ?? '') === 'activo') ? 'selected' : '' ?>>Activo</option>
+            <option value="inactivo" <?= (($filtros['estado'] ?? '') === 'inactivo') ? 'selected' : '' ?>>Inactivo</option>
+        </select>
+        <button class="btn secondary" type="submit">Filtrar</button>
+    </form>
     <table class="table" style="margin-top:10px;">
         <thead><tr><th>Nombre</th><th>Usuario</th><th>Rol</th><th>Colegios</th><th>Sedes</th><th>Módulos</th><th>Estado</th><th></th></tr></thead>
         <tbody>

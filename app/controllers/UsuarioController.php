@@ -47,7 +47,13 @@ class UsuarioController extends Controller
             $restricciones['colegios'] = $this->colegiosPermitidosSesion($usuario);
         }
 
-        $lista = $this->usuarios->listadoConContexto($restricciones);
+        $filtros = [
+            'busqueda' => $_GET['busqueda'] ?? '',
+            'estado' => $_GET['estado'] ?? '',
+            'rol' => $_GET['rol'] ?? '',
+        ];
+
+        $lista = $this->usuarios->listadoConContexto($restricciones, array_filter($filtros));
         if (($usuario['rol'] ?? null) === 'admin_colegio') {
             $lista = array_values(array_filter($lista, function (array $fila) use ($usuario): bool {
                 if ((int) ($fila['id_usuario'] ?? 0) === (int) ($usuario['id_usuario'] ?? 0)) {
@@ -97,6 +103,7 @@ class UsuarioController extends Controller
             'rolesDisponibles' => $this->rolesDisponibles(),
             'modulosPorDefecto' => $this->modulosPorDefecto((array) $usuario),
             'token' => Helpers::csrfToken(),
+            'filtros' => $filtros,
         ]);
     }
 
