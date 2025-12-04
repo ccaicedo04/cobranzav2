@@ -44,17 +44,22 @@ class CargaPhidiasService
         $sheetIndex = $this->buscarIndiceHoja($xlsx, 'Hoja1');
 
         $rows = $xlsx->rows($sheetIndex);
-        if (count($rows) < 6) {
+        if (count($rows) < 3) {
             throw new \RuntimeException('El archivo no contiene datos suficientes.');
         }
 
-        $this->validarEncabezado($rows[4] ?? []);
+        $indiceEncabezado = $this->buscarFilaEncabezado($rows);
+        if ($indiceEncabezado === null) {
+            throw new \RuntimeException('No se encontró la fila de encabezado con "Etiquetas de fila".');
+        }
+
+        $this->validarEncabezado($rows[$indiceEncabezado] ?? []);
 
         $errores = [];
         $responsablesProcesados = 0;
         $estudiantesProcesados = 0;
         $deudasRegistradas = 0;
-        $filaExcel = 6; // Inicio de datos reales
+        $filaExcel = $indiceEncabezado + 2; // Excel es 1-based
 
         $contexto = [
             'id_responsable' => null,
@@ -63,7 +68,7 @@ class CargaPhidiasService
             'estudiante' => null,
         ];
 
-        for ($i = 5; $i < count($rows); $i++, $filaExcel++) {
+        for ($i = $indiceEncabezado + 1; $i < count($rows); $i++, $filaExcel++) {
             $fila = $rows[$i];
             $colA = trim((string) ($fila[0] ?? ''));
             $colB = trim((string) ($fila[1] ?? ''));
@@ -106,6 +111,18 @@ class CargaPhidiasService
             'estudiantes' => $estudiantesProcesados,
             'errores' => $errores,
         ];
+    }
+
+    private function buscarFilaEncabezado(array $rows): ?int
+    {
+        foreach ($rows as $indice => $row) {
+            $columnaA = trim((string) ($row[0] ?? ''));
+            if ($columnaA === 'Etiquetas de fila') {
+                return $indice;
+            }
+        }
+
+        return null;
     }
 
     private function validarEncabezado(array $encabezado): void
