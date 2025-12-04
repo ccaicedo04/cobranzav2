@@ -8,18 +8,25 @@ $sedes = $sedes ?? [];
 $modulos = $modulos ?? [];
 $rolesDisponibles = $rolesDisponibles ?? ['agente' => 'Agente'];
 $modulosPorDefecto = $modulosPorDefecto ?? [];
+$mapColegios = $mapColegios ?? [];
+$mapSedes = $mapSedes ?? [];
+$mapModulos = $mapModulos ?? [];
+$totalUsuarios = count($usuarios);
 $formDisabled = false;
 $mostrarAdvertenciaContexto = empty($colegios) || empty($sedes);
 include __DIR__ . '/../../_partials/header.php';
 ?>
 <div class="card" id="form-usuario" style="margin-bottom:18px;">
     <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:14px;">
-        <div>
-            <h3 style="margin:0;">Crear usuario</h3>
-            <p class="small" style="margin:4px 0 0;max-width:760px;">Completa los datos básicos, asigna colegios y sedes, y define los módulos permitidos. Todos los campos con * son obligatorios.</p>
+        <div style="max-width:780px;">
+            <h3 style="margin:0;">Administrar usuarios</h3>
+            <p class="small" style="margin:4px 0 8px;">Primero crea o edita un usuario con su contexto y módulos; debajo verás el listado actualizado. Todos los campos con * son obligatorios.</p>
+            <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;">
+                <span class="tag">Formulario</span>
+                <span class="tag" style="background:#eef2ff;color:#312e81;">Usuarios registrados: <?= $totalUsuarios ?></span>
+            </div>
         </div>
         <div style="display:flex;align-items:center;gap:8px;">
-            <span class="tag">Nuevo</span>
             <button class="btn primary" form="formCrearUsuario" type="submit">Guardar usuario</button>
         </div>
     </div>
@@ -40,7 +47,7 @@ include __DIR__ . '/../../_partials/header.php';
     <form id="formCrearUsuario" method="post" action="index.php?route=usuarios/store" data-confirm="¿Deseas crear el nuevo usuario con los permisos seleccionados?" style="display:flex;flex-direction:column;gap:14px;" data-form-usuario onsubmit="return validarUsuario();">
         <input type="hidden" name="_token" value="<?= htmlspecialchars($token) ?>">
         <h4 style="margin:6px 0 0;">Datos básicos</h4>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;align-items:end;">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;align-items:end;">
             <div style="display:flex;flex-direction:column;gap:6px;">
                 <label>Nombre completo *</label>
                 <input name="nombre_completo" placeholder="Ej: Laura Gómez" <?= $formDisabled ? 'disabled' : '' ?> required>
@@ -81,51 +88,63 @@ include __DIR__ . '/../../_partials/header.php';
                 </select>
             </div>
         </div>
-        <h4 style="margin:6px 0 0;">Asignaciones</h4>
-        <div id="asignacionColegio" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;">
-            <div style="display:flex;flex-direction:column;gap:6px;">
-                <label>Colegios asignados</label>
-                <?php if (!empty($colegios)): ?>
-                    <select name="permisos_colegios[]" id="colegioSelector" onchange="filtrarSedes()" multiple size="5" <?= $formDisabled ? 'disabled' : '' ?> >
-                        <?php foreach ($colegios as $index => $colegio): ?>
-                            <option value="<?= $colegio['id_colegio'] ?>" <?= $index === 0 ? 'selected' : '' ?>><?= htmlspecialchars($colegio['nombre']) ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                <?php else: ?>
-                    <p class="small" style="margin:4px 0 0;">No hay colegios disponibles.</p>
-                <?php endif; ?>
+        <div class="card" style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:12px 14px;">
+            <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;">
+                <h4 style="margin:0;">Asignaciones</h4>
+                <small class="small" style="color:#475569;">Define el alcance del usuario antes de guardarlo.</small>
             </div>
-            <div style="display:flex;flex-direction:column;gap:6px;">
-                <label>Sedes asignadas</label>
-                <?php if (!empty($sedes)): ?>
-                    <select name="permisos_sedes[]" id="sedeSelector" multiple size="7" <?= $formDisabled ? 'disabled' : '' ?> >
-                        <?php foreach ($sedes as $index => $sede): ?>
-                            <option value="<?= $sede['id_sede'] ?>" data-colegio="<?= $sede['id_colegio'] ?>" <?= $index === 0 ? 'selected' : '' ?>><?= htmlspecialchars($sede['colegio_nombre'] . ' - ' . $sede['nombre']) ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                <?php else: ?>
-                    <p class="small" style="margin:4px 0 0;">No hay sedes disponibles.</p>
-                <?php endif; ?>
+            <div id="asignacionColegio" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-top:10px;">
+                <div style="display:flex;flex-direction:column;gap:6px;">
+                    <label>Colegios asignados</label>
+                    <?php if (!empty($colegios)): ?>
+                        <select name="permisos_colegios[]" id="colegioSelector" onchange="filtrarSedes()" multiple size="5" <?= $formDisabled ? 'disabled' : '' ?> >
+                            <?php foreach ($colegios as $index => $colegio): ?>
+                                <option value="<?= $colegio['id_colegio'] ?>" <?= $index === 0 ? 'selected' : '' ?>><?= htmlspecialchars($colegio['nombre']) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    <?php else: ?>
+                        <p class="small" style="margin:4px 0 0;">No hay colegios disponibles.</p>
+                    <?php endif; ?>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:6px;">
+                    <label>Sedes asignadas</label>
+                    <?php if (!empty($sedes)): ?>
+                        <select name="permisos_sedes[]" id="sedeSelector" multiple size="7" <?= $formDisabled ? 'disabled' : '' ?> >
+                            <?php foreach ($sedes as $index => $sede): ?>
+                                <option value="<?= $sede['id_sede'] ?>" data-colegio="<?= $sede['id_colegio'] ?>" <?= $index === 0 ? 'selected' : '' ?>><?= htmlspecialchars($sede['colegio_nombre'] . ' - ' . $sede['nombre']) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    <?php else: ?>
+                        <p class="small" style="margin:4px 0 0;">No hay sedes disponibles.</p>
+                    <?php endif; ?>
+                </div>
             </div>
+            <fieldset style="margin-top:14px;">
+                <legend style="font-weight:600;">Permisos por módulo</legend>
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;">
+                    <small class="small" style="color:#475569;">Activa los módulos a los que tendrá acceso.</small>
+                    <?php if (!empty($modulos)): ?>
+                        <button type="button" class="btn secondary" style="padding:4px 10px;font-size:12px;" onclick="seleccionarTodosModulos(true)">Seleccionar todos</button>
+                        <button type="button" class="btn ghost" style="padding:4px 10px;font-size:12px;" onclick="seleccionarTodosModulos(false)">Limpiar</button>
+                    <?php endif; ?>
+                </div>
+                <div class="chips" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;">
+                    <?php if (!empty($modulos)): ?>
+                        <?php foreach ($modulos as $modulo): ?>
+                            <label style="display:flex;align-items:center;gap:8px;padding:10px;border:1px solid var(--border);border-radius:10px;">
+                                <input type="checkbox" class="modulo-checkbox" name="permisos_modulos[]" value="<?= htmlspecialchars($modulo['codigo']) ?>" <?= in_array($modulo['codigo'], $modulosPorDefecto, true) ? 'checked' : '' ?> <?= $formDisabled ? 'disabled' : '' ?> >
+                                <span style="font-weight:600;"><?= htmlspecialchars($modulo['nombre']) ?></span>
+                            </label>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <input type="hidden" name="permisos_modulos[]" value="cobranzas">
+                        <p class="small" style="margin:0;">No hay módulos configurados aún. Se asignará <strong>Cobranzas</strong> por defecto hasta que actives más opciones en Parametrización.</p>
+                    <?php endif; ?>
+                </div>
+            </fieldset>
         </div>
-        <fieldset style="margin-top:4px;">
-            <legend>Permisos por módulo</legend>
-            <div class="chips" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;">
-                <?php if (!empty($modulos)): ?>
-                    <?php foreach ($modulos as $modulo): ?>
-                        <label style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--border);border-radius:10px;">
-                            <input type="checkbox" name="permisos_modulos[]" value="<?= htmlspecialchars($modulo['codigo']) ?>" <?= in_array($modulo['codigo'], $modulosPorDefecto, true) ? 'checked' : '' ?> <?= $formDisabled ? 'disabled' : '' ?> >
-                            <?= htmlspecialchars($modulo['nombre']) ?>
-                        </label>
-                    <?php endforeach; ?>
-                <?php else: ?>
-                    <input type="hidden" name="permisos_modulos[]" value="cobranzas">
-                    <p class="small" style="margin:0;">No hay módulos configurados aún. Se asignará <strong>Cobranzas</strong> por defecto hasta que actives más opciones en Parametrización.</p>
-                <?php endif; ?>
-            </div>
-        </fieldset>
         <div class="actions" style="display:flex;justify-content:flex-end;gap:10px;margin-top:6px;">
-            <button class="btn primary" type="submit" <?= $formDisabled ? 'disabled' : '' ?>>Crear usuario</button>
+            <button class="btn primary" type="submit" <?= $formDisabled ? 'disabled' : '' ?>>Guardar usuario</button>
         </div>
     </form>
 </div>
@@ -134,9 +153,9 @@ include __DIR__ . '/../../_partials/header.php';
     <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
         <div>
             <h3 style="margin:0;">Usuarios del sistema</h3>
-            <p class="small" style="margin:4px 0 0;">Consulta y navega por los usuarios creados, su rol y contexto.</p>
+            <p class="small" style="margin:4px 0 0;">Consulta los usuarios creados, sus asignaciones y módulos. Total: <?= $totalUsuarios ?></p>
         </div>
-        <a class="btn secondary" href="#form-usuario">Crear nuevo</a>
+        <a class="btn secondary" href="#form-usuario">Ir a crear</a>
     </div>
     <table class="table" style="margin-top:10px;">
         <thead><tr><th>Nombre</th><th>Usuario</th><th>Rol</th><th>Colegios</th><th>Sedes</th><th>Módulos</th><th>Estado</th><th></th></tr></thead>
@@ -216,6 +235,13 @@ function autoSeleccionInicial() {
 toggleAsignacion();
 autoSeleccionInicial();
 filtrarSedes();
+
+function seleccionarTodosModulos(checkAll) {
+    document.querySelectorAll('.modulo-checkbox').forEach((input) => {
+        if (input.disabled) return;
+        input.checked = !!checkAll;
+    });
+}
 
 function validarUsuario() {
     const form = document.querySelector('[data-form-usuario]');
