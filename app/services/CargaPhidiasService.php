@@ -41,10 +41,7 @@ class CargaPhidiasService
             throw new \RuntimeException('No se pudo leer el archivo XLSX proporcionado.');
         }
 
-        $sheetIndex = $xlsx->sheetIndex('Hoja1');
-        if ($sheetIndex === false) {
-            $sheetIndex = 0;
-        }
+        $sheetIndex = $this->buscarIndiceHoja($xlsx, 'Hoja1');
 
         $rows = $xlsx->rows($sheetIndex);
         if (count($rows) < 6) {
@@ -263,6 +260,19 @@ class CargaPhidiasService
             'estado' => 'activo',
             'eliminado' => 0,
         ]);
+    }
+
+    private function buscarIndiceHoja(SimpleXLSX $xlsx, string $nombreHoja): int
+    {
+        $sheetNames = $xlsx->sheetNames();
+        if (is_array($sheetNames)) {
+            $indice = array_search($nombreHoja, $sheetNames, true);
+            if ($indice !== false) {
+                return (int) $indice;
+            }
+        }
+
+        return 0; // Por defecto, la primera hoja
     }
 
     private function normalizarNumero($valor): float
