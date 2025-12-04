@@ -12,6 +12,15 @@ $mapColegios = $mapColegios ?? [];
 $mapSedes = $mapSedes ?? [];
 $mapModulos = $mapModulos ?? [];
 $filtros = $filtros ?? ['busqueda' => '', 'estado' => '', 'rol' => ''];
+$modulosDefaultVista = [
+    ['codigo' => 'cobranzas', 'nombre' => 'Cobranzas'],
+    ['codigo' => 'administracion', 'nombre' => 'Administración'],
+    ['codigo' => 'parametrizacion', 'nombre' => 'Parametrización'],
+];
+$modulosParaForm = !empty($modulos) ? $modulos : $modulosDefaultVista;
+if (empty($modulosPorDefecto) && !empty($modulosParaForm)) {
+    $modulosPorDefecto = array_column($modulosParaForm, 'codigo');
+}
 $totalUsuarios = count($usuarios);
 include __DIR__ . '/../../_partials/header.php';
 ?>
@@ -109,7 +118,10 @@ include __DIR__ . '/../../_partials/header.php';
             <h3 style="margin:0;">Crear nuevo usuario</h3>
             <p class="small" style="margin:4px 0 0;">Complete los datos y asigne los módulos permitidos.</p>
         </div>
-        <span class="tag" style="background:#eef2ff;color:#312e81;">Usuarios registrados: <?= $totalUsuarios ?></span>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <span class="tag" style="background:#eef2ff;color:#312e81;">Usuarios registrados: <?= $totalUsuarios ?></span>
+            <button class="btn primary" form="formCrearUsuario" type="submit">Crear usuario</button>
+        </div>
     </div>
     <form id="formCrearUsuario" method="post" action="index.php?route=usuarios/store" data-confirm="¿Deseas crear el nuevo usuario con los permisos seleccionados?" style="margin-top:12px;display:flex;flex-direction:column;gap:14px;" data-form-usuario>
         <input type="hidden" name="_token" value="<?= htmlspecialchars($token) ?>">
@@ -184,18 +196,16 @@ include __DIR__ . '/../../_partials/header.php';
                 <div>
                     <label>Módulos</label>
                     <div class="chips" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;">
-                        <?php if (!empty($modulos)): ?>
-                            <?php foreach ($modulos as $modulo): ?>
-                                <label style="display:flex;align-items:center;gap:8px;padding:10px;border:1px solid var(--border);border-radius:10px;">
-                                    <input type="checkbox" class="modulo-checkbox" name="permisos_modulos[]" value="<?= htmlspecialchars($modulo['codigo']) ?>" <?= in_array($modulo['codigo'], $modulosPorDefecto, true) ? 'checked' : '' ?>>
-                                    <span style="font-weight:600;"><?= htmlspecialchars($modulo['nombre']) ?></span>
-                                </label>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <input type="hidden" name="permisos_modulos[]" value="cobranzas">
-                            <p class="small" style="margin:0;">No hay módulos configurados. Se asignará Cobranzas por defecto.</p>
-                        <?php endif; ?>
+                        <?php foreach ($modulosParaForm as $modulo): ?>
+                            <label style="display:flex;align-items:center;gap:8px;padding:10px;border:1px solid var(--border);border-radius:10px;">
+                                <input type="checkbox" class="modulo-checkbox" name="permisos_modulos[]" value="<?= htmlspecialchars($modulo['codigo']) ?>" <?= in_array($modulo['codigo'], $modulosPorDefecto, true) ? 'checked' : '' ?>>
+                                <span style="font-weight:600;"><?= htmlspecialchars($modulo['nombre']) ?></span>
+                            </label>
+                        <?php endforeach; ?>
                     </div>
+                    <?php if (empty($modulos)): ?>
+                        <p class="small" style="margin:6px 0 0;color:#6b7280;">No hay módulos configurados en base de datos. Se muestran los módulos base para su selección.</p>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
