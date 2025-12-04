@@ -70,12 +70,12 @@ class CargaPhidiasService
 
         for ($i = $indiceEncabezado + 1; $i < count($rows); $i++, $filaExcel++) {
             $fila = $rows[$i];
-            $colA = trim((string) ($fila[0] ?? ''));
-            $colB = trim((string) ($fila[1] ?? ''));
-            $colC = trim((string) ($fila[2] ?? ''));
-            $colD = trim((string) ($fila[3] ?? ''));
-            $colE = trim((string) ($fila[4] ?? ''));
-            $colF = trim((string) ($fila[5] ?? ''));
+            $colA = $this->limpiarTexto($fila[0] ?? '');
+            $colB = $this->limpiarTexto($fila[1] ?? '');
+            $colC = $this->limpiarTexto($fila[2] ?? '');
+            $colD = $this->limpiarTexto($fila[3] ?? '');
+            $colE = $this->limpiarTexto($fila[4] ?? '');
+            $colF = $this->limpiarTexto($fila[5] ?? '');
 
             if ($colA !== '' && $colE !== '') {
                 if ($colB === '' || $colF === '') {
@@ -116,7 +116,7 @@ class CargaPhidiasService
     private function buscarFilaEncabezado(array $rows): ?int
     {
         foreach ($rows as $indice => $row) {
-            $columnaA = trim((string) ($row[0] ?? ''));
+            $columnaA = $this->limpiarTexto($row[0] ?? '');
             if ($columnaA === 'Etiquetas de fila') {
                 return $indice;
             }
@@ -137,11 +137,18 @@ class CargaPhidiasService
         ];
 
         foreach ($esperado as $indice => $texto) {
-            $actual = trim((string) ($encabezado[$indice] ?? ''));
+            $actual = $this->limpiarTexto($encabezado[$indice] ?? '');
             if ($actual !== $texto) {
                 throw new \RuntimeException('El encabezado de la columna ' . ($indice + 1) . ' no coincide con la plantilla esperada.');
             }
         }
+    }
+
+    private function limpiarTexto($valor): string
+    {
+        $texto = str_replace("\xC2\xA0", ' ', (string) $valor); // elimina NBSP
+
+        return trim($texto);
     }
 
     private function upsertResponsable(int $idColegio, int $idSede, string $documento, string $nombre, string $correo, string $telefono): int
