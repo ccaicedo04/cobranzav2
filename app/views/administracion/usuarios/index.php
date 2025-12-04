@@ -64,7 +64,7 @@ include __DIR__ . '/../../_partials/header.php';
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
             <div>
                 <h3 style="margin:0;">Crear usuario</h3>
-                <p class="small" style="margin:4px 0 0;">Completa los datos básicos, asigna colegios/sedes y el módulo que podrá usar.</p>
+                <p class="small" style="margin:4px 0 0;">Completa los datos básicos, asigna colegios/sedes y el módulo que podrá usar. Todos los campos marcados con * son obligatorios.</p>
             </div>
             <span class="tag" style="align-self:center;">Nuevo</span>
         </div>
@@ -82,17 +82,37 @@ include __DIR__ . '/../../_partials/header.php';
                 asignar el contexto desde esta misma pantalla.
             </div>
         <?php endif; ?>
-        <form method="post" action="index.php?route=usuarios/store" data-confirm="¿Deseas crear el nuevo usuario con los permisos seleccionados?" style="display:flex;flex-direction:column;gap:10px;">
+        <form method="post" action="index.php?route=usuarios/store" data-confirm="¿Deseas crear el nuevo usuario con los permisos seleccionados?" style="display:flex;flex-direction:column;gap:10px;" data-form-usuario onsubmit="return validarUsuario();">
             <input type="hidden" name="_token" value="<?= htmlspecialchars($token) ?>">
             <h4 style="margin:6px 0 0;">Datos básicos</h4>
-            <label>Nombre completo</label>
-            <input name="nombre_completo" placeholder="Ej: Laura Gómez" <?= $formDisabled ? 'disabled' : '' ?> required>
-            <label>Correo</label>
-            <input type="email" name="email" placeholder="correo@colegio.edu" <?= $formDisabled ? 'disabled' : '' ?> required>
-            <label>Usuario</label>
-            <input name="usuario" placeholder="lgomez" <?= $formDisabled ? 'disabled' : '' ?> required>
-            <label>Contraseña</label>
-            <input type="password" name="password" placeholder="Mínimo 6 caracteres" <?= $formDisabled ? 'disabled' : '' ?> required>
+            <div style="display:grid;grid-template-columns:1fr;gap:10px;">
+                <div style="display:flex;flex-direction:column;gap:6px;">
+                    <label>Nombre completo *</label>
+                    <input name="nombre_completo" placeholder="Ej: Laura Gómez" <?= $formDisabled ? 'disabled' : '' ?> required>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;">
+                    <div style="display:flex;flex-direction:column;gap:6px;">
+                        <label>Correo *</label>
+                        <input type="email" name="email" placeholder="correo@colegio.edu" <?= $formDisabled ? 'disabled' : '' ?> required>
+                    </div>
+                    <div style="display:flex;flex-direction:column;gap:6px;">
+                        <label>Usuario *</label>
+                        <input name="usuario" placeholder="lgomez" <?= $formDisabled ? 'disabled' : '' ?> required>
+                    </div>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;align-items:end;">
+                    <div style="display:flex;flex-direction:column;gap:6px;">
+                        <label>Contraseña *</label>
+                        <input type="password" name="password" placeholder="Mínimo 6 caracteres" <?= $formDisabled ? 'disabled' : '' ?>>
+                        <small class="small" style="color:#6b7280;">Si la dejas vacía se asignará 123456 automáticamente.</small>
+                    </div>
+                    <div style="display:flex;flex-direction:column;gap:6px;">
+                        <label>Confirmar contraseña *</label>
+                        <input type="password" name="password_confirm" placeholder="Repite la contraseña" <?= $formDisabled ? 'disabled' : '' ?>>
+                        <small class="small" style="color:#6b7280;">Debe coincidir con la contraseña o se completará con 123456.</small>
+                    </div>
+                </div>
+            </div>
             <label>Rol</label>
             <select name="rol" id="rolSelector" onchange="toggleAsignacion()" <?= $formDisabled ? 'disabled' : '' ?> >
                 <?php foreach ($rolesDisponibles as $claveRol => $nombreRol): ?>
@@ -182,5 +202,39 @@ function autoSeleccionInicial() {
 toggleAsignacion();
 autoSeleccionInicial();
 filtrarSedes();
+
+function validarUsuario() {
+    const form = document.querySelector('[data-form-usuario]');
+    if (!form) return true;
+    const pass = form.querySelector('input[name="password"]');
+    const confirm = form.querySelector('input[name="password_confirm"]');
+    if (!pass || !confirm) return true;
+    const passValue = pass.value.trim();
+    const confirmValue = confirm.value.trim();
+
+    if (passValue === '' && confirmValue === '') {
+        pass.value = '123456';
+        confirm.value = '123456';
+        return true;
+    }
+
+    if ((passValue === '' && confirmValue !== '') || (passValue !== '' && confirmValue === '')) {
+        alert('Completa ambos campos de contraseña.');
+        return false;
+    }
+
+    if (passValue.length < 6) {
+        alert('La contraseña debe tener al menos 6 caracteres.');
+        pass.focus();
+        return false;
+    }
+
+    if (passValue !== confirmValue) {
+        alert('Las contraseñas no coinciden.');
+        confirm.focus();
+        return false;
+    }
+    return true;
+}
 </script>
 <?php include __DIR__ . '/../../_partials/footer.php'; ?>

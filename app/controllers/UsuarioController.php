@@ -109,6 +109,18 @@ class UsuarioController extends Controller
         $permisosSede = array_values(array_unique(array_filter(array_map('intval', $_POST['permisos_sedes'] ?? []))));
         $permisosModulo = array_values(array_unique(array_filter($_POST['permisos_modulos'] ?? [])));
 
+        $passwordPlano = $_POST['password'] ?? '';
+        $passwordConfirmacion = $_POST['password_confirm'] ?? '';
+        if ($passwordPlano === '' && $passwordConfirmacion === '') {
+            $passwordPlano = '123456';
+        } elseif ($passwordConfirmacion !== '' && $passwordPlano !== $passwordConfirmacion) {
+            Helpers::redirect('index.php?route=usuarios');
+        }
+
+        if (strlen($passwordPlano) < 6) {
+            $passwordPlano = '123456';
+        }
+
         $permisosColegio = $this->limitarColegiosPorSesion($permisosColegio, $usuarioSesion, $rol);
         $permisosSede = $this->limitarSedesPorSesion($permisosSede, $usuarioSesion, $permisosColegio, $rol);
         $permisosModulo = $this->limitarModulosPorSesion($permisosModulo, $usuarioSesion, $rol);
@@ -150,7 +162,7 @@ class UsuarioController extends Controller
             'nombre_completo' => $_POST['nombre_completo'] ?? '',
             'email' => $_POST['email'] ?? '',
             'usuario' => $_POST['usuario'] ?? '',
-            'password_hash' => password_hash($_POST['password'] ?? '123456', PASSWORD_DEFAULT),
+            'password_hash' => password_hash($passwordPlano, PASSWORD_DEFAULT),
             'rol' => $rol,
             'estado' => $_POST['estado'] ?? 'activo',
         ];

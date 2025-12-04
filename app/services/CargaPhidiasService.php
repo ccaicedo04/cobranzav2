@@ -94,6 +94,18 @@ class CargaPhidiasService
                 continue;
             }
 
+            if ($colA === '' && $colE !== '' && $colF !== '' && $contexto['id_responsable']) {
+                $contexto['id_estudiante'] = $this->upsertEstudiante($idColegio, $idSede, $contexto['id_responsable'], $colE, $colF);
+                $contexto['estudiante'] = $colF;
+                $estudiantesProcesados++;
+                continue;
+            }
+
+            if ($colA === '' && $colE !== '' && $colF !== '' && !$contexto['id_responsable']) {
+                $errores[] = ['fila' => $filaExcel, 'mensaje' => 'Estudiante sin responsable previo'];
+                continue;
+            }
+
             if ($colA === '' && $colE === '' && $colF !== '' && $contexto['id_estudiante']) {
                 $deudasRegistradas += $this->procesarDetalleConcepto($fila, $contexto, $idColegio, $idSede, $anio, $filaExcel);
                 continue;
