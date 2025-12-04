@@ -37,9 +37,14 @@ class PdfService
         $rowCountHtml = $this->contarFilasHtml($contenido);
         $contenidoPesado = strlen($contenido) > 900_000 || $rowCount > 600 || $rowCountHtml > 800;
 
-        if ($this->dompdfDisponible() && !$contenidoPesado) {
+        if ($this->dompdfDisponible()) {
             try {
-                @ini_set('memory_limit', '2048M');
+                // Permitimos más memoria y tiempo en listados grandes antes de caer al fallback.
+                @ini_set('memory_limit', $contenidoPesado ? '4096M' : '2048M');
+                if (function_exists('set_time_limit')) {
+                    @set_time_limit($contenidoPesado ? 180 : 90);
+                }
+
                 $this->asegurarDirectoriosDompdf();
 
                 $options = new Options();
@@ -50,6 +55,12 @@ class PdfService
                 $options->set('fontCache', $this->dompdfFontsDir());
                 $options->set('isHtml5ParserEnabled', true);
                 $options->set('enable_font_subsetting', true);
+                if ($contenidoPesado) {
+                    // Reducir carga de estilos complejos en listados enormes.
+                    $options->set('debugCss', false);
+                    $options->set('debugLayout', false);
+                    $options->set('debugPng', false);
+                }
 
                 $dompdf = new Dompdf($options);
                 $dompdf->loadHtml($contenido, 'UTF-8');
