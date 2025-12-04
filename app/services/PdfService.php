@@ -54,7 +54,17 @@ class PdfService
                 $dompdf->loadHtml($contenido, 'UTF-8');
                 $dompdf->setPaper('A4', $orientacion);
                 $dompdf->render();
-                $dompdf->stream($nombre, ['Attachment' => !$inline]);
+                $output = $dompdf->output();
+
+                // Si DOMPDF no generó contenido, forzamos fallback para evitar PDFs en blanco.
+                if (trim((string) $output) === '') {
+                    throw new \RuntimeException('DOMPDF devolvió un PDF vacío');
+                }
+
+                header('Content-Type: application/pdf');
+                header(($inline ? 'Content-Disposition: inline; filename="' : 'Content-Disposition: attachment; filename="') . $nombre . '"');
+                header('Content-Length: ' . strlen($output));
+                echo $output;
                 exit;
             } catch (Throwable $e) {
                 // Fallback silencioso a SimplePdf si DOMPDF falla en renderizar
