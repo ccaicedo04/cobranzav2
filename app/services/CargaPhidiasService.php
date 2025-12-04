@@ -81,7 +81,8 @@ class CargaPhidiasService
             $colE = $this->limpiarTexto($fila[4] ?? '');
             $colF = $this->limpiarTexto($fila[5] ?? '');
 
-            if ($colA !== '' && $colE !== '') {
+            if ($colA !== '' && $colF !== '') {
+                $codigoAlumno = $colE !== '' ? $colE : $this->generarCodigoTemporal($colA, $colF, $filaExcel);
                 if ($colB === '' || $colF === '') {
                     $errores[] = ['fila' => $filaExcel, 'mensaje' => 'Cabecera inválida: faltan nombres'];
                     $contexto = ['id_responsable' => null, 'id_estudiante' => null, 'responsable' => null, 'estudiante' => null];
@@ -90,16 +91,23 @@ class CargaPhidiasService
 
                 $contexto['id_responsable'] = $this->upsertResponsable($idColegio, $idSede, $colA, $colB, $colC, $colD);
                 $contexto['responsable'] = $colB;
-                $contexto['id_estudiante'] = $this->upsertEstudiante($idColegio, $idSede, $contexto['id_responsable'], $colE, $colF);
+                $contexto['id_estudiante'] = $this->upsertEstudiante($idColegio, $idSede, $contexto['id_responsable'], $codigoAlumno, $colF);
                 $contexto['estudiante'] = $colF;
 
                 if (!in_array($colA, $responsablesVistos, true)) {
                     $responsablesVistos[] = $colA;
                     $responsablesProcesados++;
                 }
-                if (!in_array($colE, $estudiantesVistos, true)) {
-                    $estudiantesVistos[] = $colE;
+                if (!in_array($codigoAlumno, $estudiantesVistos, true)) {
+                    $estudiantesVistos[] = $codigoAlumno;
                     $estudiantesProcesados++;
+                }
+
+                $valorFormulario = $this->normalizarNumero($fila[10] ?? null);
+                if ($valorFormulario > 0) {
+                    $this->registrarDeuda($idColegio, $idSede, $contexto['id_estudiante'], 'Formulario', $anio, 7, $valorFormulario);
+                    $deudasRegistradas++;
+                    $valorTotal += $valorFormulario;
                 }
                 continue;
             }
@@ -110,6 +118,23 @@ class CargaPhidiasService
                 if (!in_array($colE, $estudiantesVistos, true)) {
                     $estudiantesVistos[] = $colE;
                     $estudiantesProcesados++;
+                }
+                continue;
+            }
+
+            if ($colA === '' && $colE === '' && $colF !== '' && $contexto['id_responsable']) {
+                $codigoAlumno = $this->generarCodigoTemporal($contexto['responsable'] ?? 'RESP', $colF, $filaExcel);
+                $contexto['id_estudiante'] = $this->upsertEstudiante($idColegio, $idSede, $contexto['id_responsable'], $codigoAlumno, $colF);
+                $contexto['estudiante'] = $colF;
+                if (!in_array($codigoAlumno, $estudiantesVistos, true)) {
+                    $estudiantesVistos[] = $codigoAlumno;
+                    $estudiantesProcesados++;
+                }
+                $valorFormulario = $this->normalizarNumero($fila[10] ?? null);
+                if ($valorFormulario > 0) {
+                    $this->registrarDeuda($idColegio, $idSede, $contexto['id_estudiante'], 'Formulario', $anio, 7, $valorFormulario);
+                    $deudasRegistradas++;
+                    $valorTotal += $valorFormulario;
                 }
                 continue;
             }
@@ -256,6 +281,14 @@ class CargaPhidiasService
             $totalValor += $valor;
         }
 
+        $valorFormulario = $this->normalizarNumero($fila[10] ?? null);
+        if ($valorFormulario > 0) {
+            $conceptoFormulario = stripos($concepto, 'formulario') !== false ? $concepto : 'Formulario';
+            $this->registrarDeuda($idColegio, $idSede, $contexto['id_estudiante'], $conceptoFormulario, $anio, 7, $valorFormulario);
+            $totalDeudas++;
+            $totalValor += $valorFormulario;
+        }
+
         return [$totalDeudas, $totalValor];
     }
 
@@ -343,5 +376,13 @@ class CargaPhidiasService
         $numero = str_replace(',', '', $numero);
 
         return (float) $numero;
+    }
+
+    private function generarCodigoTemporal(string $referencia, string $nombreEstudiante, int $filaExcel): string
+    {
+        $prefijo = preg_replace('/[^A-Z0-9]/i', '', strtoupper(substr($referencia, 0, 6)));
+        $nombre = preg_replace('/[^A-Z0-9]/i', '', strtoupper(substr($nombreEstudiante, 0, 6)));
+
+        return sprintf('TMP-%s-%s-%d', $prefijo ?: 'RESP', $nombre ?: 'ALU', $filaExcel);
     }
 }
