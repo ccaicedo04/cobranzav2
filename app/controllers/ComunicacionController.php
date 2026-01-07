@@ -807,6 +807,9 @@ class ComunicacionController extends Controller
         if ($fechaVencimiento === '' && $proximoVencimiento) {
             $fechaVencimiento = $proximoVencimiento;
         }
+        if ($fechaVencimiento === '') {
+            $fechaVencimiento = 'Sin fecha';
+        }
 
         $telefonoContacto = $sede['telefono'] ?? ($colegio['telefono'] ?? '');
         $correoContacto = $sede['correo'] ?? ($colegio['correo'] ?? '');
