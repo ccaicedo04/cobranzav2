@@ -54,6 +54,10 @@ include __DIR__ . '/../_partials/header.php';
                     <input name="twilio_whatsapp_from" value="<?= htmlspecialchars($configuracion['twilio_whatsapp_from'] ?? '') ?>" placeholder="+12566374335">
                 </label>
                 <label>
+                    <span>Content SID plantilla WhatsApp</span>
+                    <input name="twilio_whatsapp_template_sid" value="<?= htmlspecialchars($configuracion['twilio_whatsapp_template_sid'] ?? '') ?>" placeholder="HXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">
+                </label>
+                <label>
                     <span>Número SMS remitente</span>
                     <input name="twilio_sms_from" value="<?= htmlspecialchars($configuracion['twilio_sms_from'] ?? '') ?>" placeholder="+12566374335">
                 </label>

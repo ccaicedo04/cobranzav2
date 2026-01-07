@@ -55,6 +55,7 @@ class ConfiguracionController extends Controller
             'twilio_account_sid' => trim((string) ($_POST['twilio_account_sid'] ?? '')),
             'twilio_auth_token' => trim((string) ($_POST['twilio_auth_token'] ?? '')),
             'twilio_whatsapp_from' => trim((string) ($_POST['twilio_whatsapp_from'] ?? '')),
+            'twilio_whatsapp_template_sid' => trim((string) ($_POST['twilio_whatsapp_template_sid'] ?? '')),
             'twilio_sms_from' => trim((string) ($_POST['twilio_sms_from'] ?? '')),
             'twilio_default_country' => trim((string) ($_POST['twilio_default_country'] ?? '+57')) ?: '+57',
             'twilio_status_callback' => trim((string) ($_POST['twilio_status_callback'] ?? '')),
