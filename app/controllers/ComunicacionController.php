@@ -287,10 +287,38 @@ class ComunicacionController extends Controller
                         '4' => (string) ($placeholders['saldo_pendiente'] ?? ''),
                         '5' => (string) ($placeholders['fecha_vencimiento'] ?? ''),
                     ];
-                    foreach ($templateVariables as $key => $value) {
+                    $faltanDatos = false;
+                    foreach ($templateVariables as $value) {
                         if (trim($value) === '') {
-                            throw new RuntimeException('Faltan datos para completar la plantilla de WhatsApp. Verifica responsable, colegio, estudiante, saldo y fecha de vencimiento.');
+                            $faltanDatos = true;
+                            break;
                         }
+                    }
+
+                    if ($faltanDatos) {
+                        $pattern = '/^Hola\s+(.+?),\s+te escribimos del\s+(.+?)\.\s*'
+                            . 'El saldo pendiente de\s+(.+?)\s+es de\s+(.+?)\s+con vencimiento\s+(.+?)\.\s*'
+                            . 'Si ya realizaste el pago, por favor ignora este mensaje\.$/s';
+                        if (preg_match($pattern, $mensajePlano, $matches)) {
+                            $templateVariables = [
+                                '1' => trim($matches[1]),
+                                '2' => trim($matches[2]),
+                                '3' => trim($matches[3]),
+                                '4' => trim($matches[4]),
+                                '5' => trim($matches[5]),
+                            ];
+                            $faltanDatos = false;
+                            foreach ($templateVariables as $value) {
+                                if (trim($value) === '') {
+                                    $faltanDatos = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    if ($faltanDatos) {
+                        throw new RuntimeException('Faltan datos para completar la plantilla de WhatsApp. Verifica responsable, colegio, estudiante, saldo y fecha de vencimiento.');
                     }
 
                     try {
