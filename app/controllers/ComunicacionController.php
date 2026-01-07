@@ -287,6 +287,11 @@ class ComunicacionController extends Controller
                         '4' => (string) ($placeholders['saldo_pendiente'] ?? ''),
                         '5' => (string) ($placeholders['fecha_vencimiento'] ?? ''),
                     ];
+                    foreach ($templateVariables as $key => $value) {
+                        if (trim($value) === '') {
+                            throw new RuntimeException('Faltan datos para completar la plantilla de WhatsApp. Verifica responsable, colegio, estudiante, saldo y fecha de vencimiento.');
+                        }
+                    }
 
                     try {
                         $ultimaEntrada = $this->comunicaciones->ultimaEntradaPorResponsable($idResponsable, 'whatsapp');
