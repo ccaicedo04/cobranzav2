@@ -65,29 +65,66 @@ class CargaController extends Controller
         $usuario = Session::get('user');
         $tenant = Helpers::tenantContext();
         $idColegio = (int) ($_POST['id_colegio'] ?? ($tenant['id_colegio'] ?? 0));
-        $idSede = (int) ($_POST['id_sede'] ?? ($tenant['id_sede'] ?? 0));
         $anio = (int) ($_POST['anio'] ?? date('Y'));
         $notas = trim((string) ($_POST['notas'] ?? ''));
+        $modo = (string) ($_POST['modo'] ?? 'guardar');
 
-        if ($idColegio <= 0 || $idSede <= 0) {
+        if ($idColegio <= 0) {
             Helpers::redirect('index.php?route=carga-masiva');
         }
 
-        if (!isset($_FILES['archivo']) || ($_FILES['archivo']['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
-            Helpers::redirect('index.php?route=carga-masiva');
+        $archivoTemporal = '';
+        $archivoNombre = '';
+        $ext = 'xlsx';
+        if ($modo === 'confirmar') {
+            $archivoTemporal = (string) ($_POST['archivo_temporal'] ?? '');
+            $archivoNombre = (string) ($_POST['archivo_nombre'] ?? '');
+            $ext = strtolower(pathinfo($archivoNombre ?: 'carga.xlsx', PATHINFO_EXTENSION)) ?: 'xlsx';
+            if ($archivoTemporal === '' || !is_file($archivoTemporal)) {
+                Helpers::redirect('index.php?route=carga-masiva');
+            }
+        } else {
+            if (!isset($_FILES['archivo']) || ($_FILES['archivo']['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+                Helpers::redirect('index.php?route=carga-masiva');
+            }
+            $archivo = $_FILES['archivo'];
+            $archivoNombre = (string) ($archivo['name'] ?? 'carga.xlsx');
+            $ext = strtolower(pathinfo($archivoNombre, PATHINFO_EXTENSION));
+            if (!in_array($ext, ['xlsx', 'xlsm'], true) || ($archivo['size'] ?? 0) > 10 * 1024 * 1024) {
+                Helpers::redirect('index.php?route=carga-masiva');
+            }
+
+            $destinoBase = dirname(__DIR__, 2) . '/uploads/cargas_masivas';
+            if (!is_dir($destinoBase)) {
+                mkdir($destinoBase, 0775, true);
+            }
+            $archivoTemporal = $destinoBase . '/preview-' . uniqid('', true) . '.' . $ext;
+            if (!move_uploaded_file($archivo['tmp_name'], $archivoTemporal)) {
+                Helpers::redirect('index.php?route=carga-masiva');
+            }
         }
 
-        $archivo = $_FILES['archivo'];
-        $ext = strtolower(pathinfo($archivo['name'] ?? 'carga.xlsx', PATHINFO_EXTENSION));
-        if ($ext !== 'xlsx' || ($archivo['size'] ?? 0) > 10 * 1024 * 1024) {
-            Helpers::redirect('index.php?route=carga-masiva');
+        if ($modo === 'preview') {
+            try {
+                $resultado = $this->cargador->procesar($archivoTemporal, $idColegio, $anio, false);
+                $this->renderCargaPreview($resultado, $archivoTemporal, $archivoNombre, $idColegio, $anio, $notas);
+                return;
+            } catch (\Throwable $exception) {
+                if (is_file($archivoTemporal)) {
+                    unlink($archivoTemporal);
+                }
+                Helpers::redirect('index.php?route=carga-masiva');
+            }
         }
+
+        $sedeDefault = $this->sedesDisponibles();
+        $idSedeRegistro = (int) ($sedeDefault[0]['id_sede'] ?? ($tenant['id_sede'] ?? 0));
 
         $cargaId = $this->cargas->create([
             'id_colegio' => $idColegio,
-            'id_sede' => $idSede,
-            'tipo_archivo' => 'xlsx',
-            'archivo_original' => $archivo['name'] ?? 'carga.xlsx',
+            'id_sede' => $idSedeRegistro ?: 1,
+            'tipo_archivo' => $ext ?: 'xlsx',
+            'archivo_original' => $archivoNombre ?: 'carga.xlsx',
             'archivo_procesado' => null,
             'total_registros' => 0,
             'total_errores' => 0,
@@ -97,7 +134,7 @@ class CargaController extends Controller
         ]);
 
         try {
-            $resultado = $this->cargador->procesar($archivo['tmp_name'], $idColegio, $idSede, $anio);
+            $resultado = $this->cargador->procesar($archivoTemporal, $idColegio, $anio, true);
             $errores = $resultado['errores'];
             $mensaje = $notas !== '' ? $notas : 'Carga procesada correctamente';
             $mensaje .= ' | Deudas creadas/actualizadas: ' . number_format((int) ($resultado['deudas'] ?? 0), 0, ',', '.');
@@ -121,7 +158,31 @@ class CargaController extends Controller
             ]);
         }
 
+        if (is_file($archivoTemporal)) {
+            unlink($archivoTemporal);
+        }
+
         Helpers::redirect('index.php?route=carga-masiva');
+    }
+
+    private function renderCargaPreview(array $resultado, string $archivoTemporal, string $archivoNombre, int $idColegio, int $anio, string $notas): void
+    {
+        $cargas = $this->cargas->all([], ['order' => 'fecha_registro DESC']);
+        $this->view('carga_masiva/index', [
+            'cargas' => $cargas,
+            'ventana' => $this->resumenVentana($cargas),
+            'token' => Helpers::csrfToken(),
+            'colegios' => $this->colegiosDisponibles(),
+            'sedes' => $this->sedesDisponibles(),
+            'preview' => [
+                'resultado' => $resultado,
+                'archivo_temporal' => $archivoTemporal,
+                'archivo_nombre' => $archivoNombre,
+                'id_colegio' => $idColegio,
+                'anio' => $anio,
+                'notas' => $notas,
+            ],
+        ]);
     }
 
     private function resumenVentana(array $cargas): array

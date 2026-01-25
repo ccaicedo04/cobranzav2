@@ -6,10 +6,8 @@ include __DIR__ . '/../_partials/header.php';
 
 $ventana = $ventana ?? [];
 $colegios = $colegios ?? [];
-$sedes = $sedes ?? [];
 $contexto = \Core\Session::get('context') ?? [];
 $colegioSeleccionado = $contexto['id_colegio'] ?? ($colegios[0]['id_colegio'] ?? '');
-$sedeSeleccionada = $contexto['id_sede'] ?? ($sedes[0]['id_sede'] ?? '');
 $anioSugerido = date('Y');
 $ultima = $ventana['ultima'] ?? null;
 $ultimaFecha = $ultima && !empty($ultima['fecha_registro']) ? date('Y-m-d H:i', strtotime((string) $ultima['fecha_registro'])) : 'Sin registros previos';
@@ -99,7 +97,7 @@ $mapResultado = static function (string $estado): array {
     <div class="card">
         <h3>Subir nueva base</h3>
         <p class="small" style="margin:4px 0 12px;">
-            Selecciona el archivo en formato XLSX que corresponde al ciclo actual. El cargue validará la estructura y registrará un histórico para referencia futura.
+            Selecciona el archivo en formato XLSX o XLSM que corresponde al ciclo actual. El cargue validará la estructura y mostrará una previsualización antes de guardar.
         </p>
         <form method="post" action="index.php?route=carga-masiva/store" enctype="multipart/form-data" data-confirm="¿Deseas iniciar el proceso de carga masiva con el archivo seleccionado?" style="display:flex;flex-direction:column;gap:14px;">
             <input type="hidden" name="_token" value="<?= htmlspecialchars($token) ?>">
@@ -116,25 +114,14 @@ $mapResultado = static function (string $estado): array {
                     </select>
                 </div>
                 <div>
-                    <label for="sedeCarga">Sede</label>
-                    <select id="sedeCarga" name="id_sede" required>
-                        <option value="">Seleccione</option>
-                        <?php foreach ($sedes as $sede): ?>
-                            <option value="<?= htmlspecialchars($sede['id_sede']) ?>" <?= (string) $sedeSeleccionada === (string) ($sede['id_sede'] ?? '') ? 'selected' : '' ?>>
-                                <?= htmlspecialchars(($sede['colegio_nombre'] ?? '') . ' - ' . ($sede['nombre'] ?? 'Sede')) ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-                <div>
                     <label for="anioCarga">Año</label>
                     <input id="anioCarga" type="number" name="anio" min="2000" max="2100" value="<?= htmlspecialchars($anioSugerido) ?>" required>
                 </div>
             </div>
             <div>
-                <label for="archivoCarga">Archivo Excel (.xlsx)</label>
-                <input id="archivoCarga" type="file" name="archivo" accept=".xlsx" required>
-                <p class="small" style="margin:4px 0 0;">Extensión permitida .xlsx | Tamaño máximo 10 MB.</p>
+                <label for="archivoCarga">Archivo Excel (.xlsx, .xlsm)</label>
+                <input id="archivoCarga" type="file" name="archivo" accept=".xlsx,.xlsm" required>
+                <p class="small" style="margin:4px 0 0;">Extensiones permitidas .xlsx, .xlsm | Tamaño máximo 10 MB.</p>
             </div>
             <div>
                 <label for="notasCarga">Notas internas (opcional)</label>
@@ -142,19 +129,103 @@ $mapResultado = static function (string $estado): array {
             </div>
             <div class="actions" style="display:flex;justify-content:flex-end;gap:10px;">
                 <a class="btn secondary" href="plantillas/plantilla_carga_masiva.php">Descargar plantilla</a>
-                <button class="btn" type="submit">Registrar carga</button>
+                <button class="btn" type="submit" name="modo" value="preview">Previsualizar carga</button>
             </div>
         </form>
         <div style="margin-top:16px;padding:14px;border-radius:12px;background:#f1f5f9;">
             <strong style="display:block;font-size:13px;margin-bottom:6px;">Recomendaciones</strong>
             <ul class="small" style="margin:0;padding-left:18px;line-height:1.6;">
                 <li>Incluye únicamente los responsables y estudiantes activos del ciclo.</li>
+                <li>La sede se asigna automáticamente según el código del estudiante (5 dígitos Bogotá, 4 dígitos Cota).</li>
                 <li>Verifica que las columnas de valores no contengan caracteres especiales.</li>
                 <li>Si existe un ajuste o novedad, regístralo en las notas para facilitar el seguimiento.</li>
             </ul>
         </div>
     </div>
 </div>
+
+<?php if (!empty($preview)): ?>
+    <?php
+    $resumen = $preview['resultado'] ?? [];
+    $errores = $resumen['errores'] ?? [];
+    $totalesMeses = $resumen['totales_meses'] ?? [];
+    ksort($totalesMeses);
+    ?>
+    <div class="card" style="margin-top:20px;">
+        <h3>Previsualización del cargue</h3>
+        <p class="small" style="margin:6px 0 12px;">Revisa los totales y errores antes de guardar la información en el sistema.</p>
+        <div class="resume" style="margin-bottom:12px;">
+            <div>
+                <span>Responsables detectados</span>
+                <strong><?= number_format((int) ($resumen['responsables'] ?? 0), 0, ',', '.') ?></strong>
+            </div>
+            <div>
+                <span>Estudiantes detectados</span>
+                <strong><?= number_format((int) ($resumen['estudiantes'] ?? 0), 0, ',', '.') ?></strong>
+            </div>
+            <div>
+                <span>Deudas a registrar</span>
+                <strong><?= number_format((int) ($resumen['deudas'] ?? 0), 0, ',', '.') ?></strong>
+            </div>
+            <div>
+                <span>Valor total del archivo</span>
+                <strong>$ <?= number_format((float) ($resumen['valor_total'] ?? 0), 0, ',', '.') ?></strong>
+            </div>
+        </div>
+        <div class="table-scroll" style="max-height:260px;margin-bottom:16px;">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Mes</th>
+                        <th>Valor total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($totalesMeses as $mes => $valor): ?>
+                        <tr>
+                            <td><?= htmlspecialchars(str_pad((string) $mes, 2, '0', STR_PAD_LEFT)) ?></td>
+                            <td>$ <?= number_format((float) $valor, 0, ',', '.') ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                    <?php if (empty($totalesMeses)): ?>
+                        <tr><td colspan="2">Sin valores monetarios detectados.</td></tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+        <div class="table-scroll" style="max-height:220px;">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Fila</th>
+                        <th>Error</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($errores as $error): ?>
+                        <tr>
+                            <td><?= htmlspecialchars($error['fila'] ?? '') ?></td>
+                            <td><?= htmlspecialchars($error['mensaje'] ?? '') ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                    <?php if (empty($errores)): ?>
+                        <tr><td colspan="2">No se encontraron errores en la previsualización.</td></tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+        <form method="post" action="index.php?route=carga-masiva/store" style="margin-top:16px;display:flex;justify-content:flex-end;gap:10px;">
+            <input type="hidden" name="_token" value="<?= htmlspecialchars($token) ?>">
+            <input type="hidden" name="modo" value="confirmar">
+            <input type="hidden" name="archivo_temporal" value="<?= htmlspecialchars($preview['archivo_temporal'] ?? '') ?>">
+            <input type="hidden" name="archivo_nombre" value="<?= htmlspecialchars($preview['archivo_nombre'] ?? '') ?>">
+            <input type="hidden" name="id_colegio" value="<?= htmlspecialchars($preview['id_colegio'] ?? '') ?>">
+            <input type="hidden" name="anio" value="<?= htmlspecialchars($preview['anio'] ?? '') ?>">
+            <input type="hidden" name="notas" value="<?= htmlspecialchars($preview['notas'] ?? '') ?>">
+            <button class="btn" type="submit">Guardar cargue</button>
+        </form>
+    </div>
+<?php endif; ?>
 
 <div class="card" style="margin-top:20px;">
     <h3>Historial consolidado</h3>
