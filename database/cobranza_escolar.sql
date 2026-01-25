@@ -365,10 +365,13 @@ CREATE TABLE `configuracion_colegio` (
   `twilio_account_sid` varchar(64) DEFAULT NULL,
   `twilio_auth_token` varchar(128) DEFAULT NULL,
   `twilio_whatsapp_from` varchar(32) DEFAULT NULL,
+  `twilio_whatsapp_template_sid` varchar(64) DEFAULT NULL,
   `twilio_sms_from` varchar(32) DEFAULT NULL,
   `twilio_default_country` varchar(8) DEFAULT NULL,
   `twilio_status_callback` varchar(255) DEFAULT NULL,
   `twilio_incoming_webhook` varchar(255) DEFAULT NULL,
+  `dashboard_top_responsables` int(11) DEFAULT 5,
+  `dashboard_meses_cartera` int(11) DEFAULT 6,
   `logo_path` varchar(255) DEFAULT NULL,
   `actualizado_por` int(11) DEFAULT NULL,
   `fecha_actualizacion` datetime DEFAULT NULL
@@ -378,8 +381,8 @@ CREATE TABLE `configuracion_colegio` (
 -- Volcado de datos para la tabla `configuracion_colegio`
 --
 
-INSERT INTO `configuracion_colegio` (`id_configuracion`, `id_colegio`, `smtp_host`, `smtp_puerto`, `smtp_usuario`, `smtp_password`, `whatsapp_api_key`, `whatsapp_endpoint`, `sms_api_key`, `sms_endpoint`, `twilio_account_sid`, `twilio_auth_token`, `twilio_whatsapp_from`, `twilio_sms_from`, `twilio_default_country`, `twilio_status_callback`, `twilio_incoming_webhook`, `logo_path`, `actualizado_por`, `fecha_actualizacion`) VALUES
-(1, 1, 'smtp.gmail.com', '587', 'carlos.quinones@lm-technology.com.co', 'ahiu codf pjlb dcra', '', '', '', '', 'AC20721067f213f23d24dc2e550556fb52', 'e6effe03a14ad5a0efa88784a3c9c37f', '+1 4155238886', '+12566374335', '+57', '', 'https://timberwolf-mastiff-9776.twil.io/demo-reply', NULL, 1, '2025-11-23 20:52:43');
+INSERT INTO `configuracion_colegio` (`id_configuracion`, `id_colegio`, `smtp_host`, `smtp_puerto`, `smtp_usuario`, `smtp_password`, `whatsapp_api_key`, `whatsapp_endpoint`, `sms_api_key`, `sms_endpoint`, `twilio_account_sid`, `twilio_auth_token`, `twilio_whatsapp_from`, `twilio_whatsapp_template_sid`, `twilio_sms_from`, `twilio_default_country`, `twilio_status_callback`, `twilio_incoming_webhook`, `dashboard_top_responsables`, `dashboard_meses_cartera`, `logo_path`, `actualizado_por`, `fecha_actualizacion`) VALUES
+(1, 1, 'smtp.gmail.com', '587', 'carlos.quinones@lm-technology.com.co', 'ahiu codf pjlb dcra', '', '', '', '', 'AC20721067f213f23d24dc2e550556fb52', 'e6effe03a14ad5a0efa88784a3c9c37f', '+1 4155238886', '', '+12566374335', '+57', '', 'https://timberwolf-mastiff-9776.twil.io/demo-reply', 5, 6, NULL, 1, '2025-11-23 20:52:43');
 
 -- --------------------------------------------------------
 
@@ -620,7 +623,7 @@ CREATE TABLE `plantilla_comunicacion` (
 
 INSERT INTO `plantilla_comunicacion` (`id_plantilla`, `id_colegio`, `nombre`, `canal`, `descripcion`, `asunto_default`, `cuerpo_html`, `variables`, `estado`, `eliminado`, `creado_por`, `actualizado_por`, `fecha_actualizacion`, `creado_en`) VALUES
 (1, 1, 'Recordatorio de pago pendiente', 'email', 'Correo formal recordando el saldo pendiente y fecha de vencimiento.', 'Recordatorio de pago — {{estudiante_nombre}}', '<p>Estimado(a) {{responsable_nombre}},</p>\n        <p>De manera atenta le informamos que el saldo pendiente de {{estudiante_nombre}} corresponde a <strong>{{saldo_pendiente}}</strong> con vencimiento el <strong>{{fecha_vencimiento}}</strong>.</p>\n        <p>Le invitamos a realizar el pago oportunamente para mantener los beneficios académicos activos. Puede comunicarse con nosotros al {{telefono_contacto}} para ampliar la información.</p>\n        <p>Atentamente,<br><strong>{{colegio_nombre}}</strong><br>Sede {{sede_nombre}}</p>', 'responsable_nombre,estudiante_nombre,saldo_pendiente,fecha_vencimiento,colegio_nombre,sede_nombre,telefono_contacto', 'activo', 0, 2, NULL, NULL, '2025-11-24 00:43:29'),
-(2, 1, 'Mensaje corto WhatsApp', 'whatsapp', 'Plantilla corta para contacto inmediato por WhatsApp.', NULL, 'Hola {{responsable_nombre}}, te contactamos de {{colegio_nombre}}. El saldo de {{estudiante_nombre}} es {{saldo_pendiente}} con vencimiento {{fecha_vencimiento}}. ¿Te apoyamos con algún detalle?', 'responsable_nombre,estudiante_nombre,saldo_pendiente,fecha_vencimiento', 'activo', 0, 2, NULL, NULL, '2025-11-24 00:43:29'),
+(2, 1, 'Mensaje corto WhatsApp', 'whatsapp', 'Plantilla corta para contacto inmediato por WhatsApp.', NULL, 'Hola {{responsable_nombre}}, te escribimos del {{colegio_nombre}}.\nEl saldo pendiente de {{estudiante_nombre}} es de {{saldo_pendiente}} con vencimiento {{fecha_vencimiento}}.\nSi ya realizaste el pago, por favor ignora este mensaje.', 'responsable_nombre,colegio_nombre,estudiante_nombre,saldo_pendiente,fecha_vencimiento', 'activo', 0, 2, NULL, NULL, '2025-11-24 00:43:29'),
 (3, 1, 'Seguimiento compromiso de pago', 'email', 'Correo de seguimiento cuando existe un compromiso registrado.', 'Seguimiento compromiso {{estudiante_nombre}}', '<p>Buen día {{responsable_nombre}},</p>\n        <p>Confirmamos el compromiso de pago asociado a {{estudiante_nombre}} con fecha objetivo {{fecha_vencimiento}}. Este mensaje busca acompañar el cumplimiento del acuerdo registrado.</p>\n        <p>Si requieres modificar la fecha o el valor acordado, responde a este correo o comunícate con el área financiera.</p>\n        <p>Equipo de cartera — {{colegio_nombre}} ({{sede_nombre}})</p>', 'responsable_nombre,estudiante_nombre,fecha_vencimiento,colegio_nombre,sede_nombre', 'activo', 0, 2, NULL, NULL, '2025-11-24 00:43:29'),
 (4, 1, 'WhatsApp seguimiento compromiso', 'whatsapp', 'Mensaje cordial para confirmar compromisos previos.', NULL, 'Hola {{responsable_nombre}}, esperamos que estés bien. Te recordamos el compromiso de pago para {{estudiante_nombre}} con fecha {{fecha_vencimiento}}. Si necesitas apoyo contáctanos al {{telefono_contacto}}.', 'responsable_nombre,estudiante_nombre,fecha_vencimiento,telefono_contacto', 'activo', 0, 2, NULL, NULL, '2025-11-24 00:43:29'),
 (5, 1, 'SMS alerta vencimiento', 'sms', 'Texto corto para vencimientos inmediatos.', NULL, '{{responsable_nombre}}: saldo {{saldo_pendiente}} de {{estudiante_nombre}} vence {{fecha_vencimiento}}. Escríbenos al {{telefono_contacto}}.', 'responsable_nombre,saldo_pendiente,estudiante_nombre,fecha_vencimiento,telefono_contacto', 'activo', 0, 2, NULL, NULL, '2025-11-24 00:43:29'),

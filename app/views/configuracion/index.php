@@ -54,6 +54,10 @@ include __DIR__ . '/../_partials/header.php';
                     <input name="twilio_whatsapp_from" value="<?= htmlspecialchars($configuracion['twilio_whatsapp_from'] ?? '') ?>" placeholder="+12566374335">
                 </label>
                 <label>
+                    <span>Content SID plantilla WhatsApp</span>
+                    <input name="twilio_whatsapp_template_sid" value="<?= htmlspecialchars($configuracion['twilio_whatsapp_template_sid'] ?? '') ?>" placeholder="HXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">
+                </label>
+                <label>
                     <span>Número SMS remitente</span>
                     <input name="twilio_sms_from" value="<?= htmlspecialchars($configuracion['twilio_sms_from'] ?? '') ?>" placeholder="+12566374335">
                 </label>
@@ -71,6 +75,23 @@ include __DIR__ . '/../_partials/header.php';
                 </label>
             </div>
             <p class="helper">Recuerda activar el sandbox de WhatsApp en Twilio y apuntar la URL <code><?= htmlspecialchars(Helpers::baseUrl('index.php?route=/webhooks/twilio')) ?></code> en la configuración de mensajes entrantes.</p>
+        </section>
+
+        <section class="config-block">
+            <header>
+                <h2>Dashboard y analítica</h2>
+                <p>Personaliza la cantidad de registros y el rango de meses visibles en el tablero principal.</p>
+            </header>
+            <div class="grid">
+                <label>
+                    <span>Top responsables en dashboard</span>
+                    <input name="dashboard_top_responsables" type="number" min="3" max="15" value="<?= htmlspecialchars($configuracion['dashboard_top_responsables'] ?? 5) ?>">
+                </label>
+                <label>
+                    <span>Meses de cartera pendiente</span>
+                    <input name="dashboard_meses_cartera" type="number" min="3" max="12" value="<?= htmlspecialchars($configuracion['dashboard_meses_cartera'] ?? 6) ?>">
+                </label>
+            </div>
         </section>
 
         <section class="config-block">

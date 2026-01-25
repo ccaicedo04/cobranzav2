@@ -8,6 +8,8 @@ use App\Models\ConfiguracionModel;
 use App\Models\ResponsableModel;
 use App\Services\TwilioService;
 use Core\Controller;
+use Core\Helpers;
+use Core\Mailer;
 
 class TwilioWebhookController extends Controller
 {
@@ -84,6 +86,8 @@ class TwilioWebhookController extends Controller
             'eliminado' => 0,
         ]);
 
+        $this->notificarMensajeEntrante($responsable, $mensaje, $canal);
+
         $twilio = $this->crearServicioTwilio((int) ($responsable['id_colegio'] ?? 0));
 
         if ($numMedia > 0 && $twilio->ready()) {
@@ -91,6 +95,58 @@ class TwilioWebhookController extends Controller
         }
 
         $this->respondXml();
+    }
+
+    private function notificarMensajeEntrante(array $responsable, string $mensaje, string $canal): void
+    {
+        if ($canal !== 'whatsapp') {
+            return;
+        }
+
+        $config = $this->configuracion->porColegio((int) ($responsable['id_colegio'] ?? 0));
+        if (!$config) {
+            return;
+        }
+
+        $smtpHost = trim((string) ($config['smtp_host'] ?? ''));
+        $smtpUsuario = trim((string) ($config['smtp_usuario'] ?? ''));
+        $smtpPassword = (string) ($config['smtp_password'] ?? '');
+        if ($smtpHost === '' || $smtpUsuario === '' || $smtpPassword === '') {
+            return;
+        }
+
+        $nombreResponsable = $responsable['nombre_completo'] ?? 'Responsable';
+        $telefono = $responsable['telefono'] ?? '';
+        $correo = $responsable['correo'] ?? '';
+        $contacto = trim($telefono . ($correo ? ' • ' . $correo : ''));
+        $asunto = 'Nuevo mensaje de WhatsApp: ' . $nombreResponsable;
+        $url = Helpers::baseUrl('index.php?route=comunicaciones&responsable=' . (int) ($responsable['id_responsable'] ?? 0) . '&canal=whatsapp');
+        $contenido = sprintf(
+            '<p>Recibiste un nuevo mensaje de WhatsApp en el sistema de cobranzas.</p><p><strong>Responsable:</strong> %s</p><p><strong>Contacto:</strong> %s</p><p><strong>Mensaje:</strong><br>%s</p><p><a href="%s">Abrir conversación en Comunicaciones</a></p>',
+            htmlspecialchars($nombreResponsable, ENT_QUOTES, 'UTF-8'),
+            htmlspecialchars($contacto, ENT_QUOTES, 'UTF-8'),
+            nl2br(htmlspecialchars($mensaje, ENT_QUOTES, 'UTF-8')),
+            htmlspecialchars($url, ENT_QUOTES, 'UTF-8')
+        );
+
+        try {
+            Mailer::send([
+                'host' => $smtpHost,
+                'port' => (int) ($config['smtp_puerto'] ?? 587),
+                'username' => $smtpUsuario,
+                'password' => $smtpPassword,
+                'from_email' => $smtpUsuario,
+                'from_name' => $responsable['colegio_nombre'] ?? 'Sistema de cobranzas',
+            ], [
+                'to' => $smtpUsuario,
+                'to_name' => 'Notificaciones de cobranzas',
+                'subject' => $asunto,
+                'html' => $contenido,
+                'text' => strip_tags($contenido),
+            ]);
+        } catch (\Throwable $exception) {
+            return;
+        }
     }
 
     private function guardarAdjuntos(int $idComunicacion, int $numMedia, TwilioService $twilio)

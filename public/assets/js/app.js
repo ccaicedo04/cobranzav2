@@ -294,6 +294,7 @@
     const previewContainer = shell.querySelector('[data-preview]');
     const chatThread = shell.querySelector('[data-chat-thread]');
     const notificationsList = shell.querySelector('[data-chat-notifications]');
+    const notificationsCount = shell.querySelector('[data-chat-count]');
     const headerNombre = shell.querySelector('[data-chat-responsable]');
     const headerContacto = shell.querySelector('[data-chat-contact]');
     const clearButton = shell.querySelector('[data-clear-mensaje]');
@@ -457,6 +458,9 @@
       if (!notificationsList) {
         return;
       }
+      if (notificationsCount) {
+        notificationsCount.textContent = Array.isArray(list) ? String(list.length) : '0';
+      }
       notificationsList.innerHTML = '';
       if (!Array.isArray(list) || !list.length) {
         const empty = document.createElement('li');
@@ -476,12 +480,16 @@
 
         const head = document.createElement('div');
         head.className = 'chat-notification-head';
+        const dot = document.createElement('span');
+        dot.className = 'chat-notification-dot';
+        dot.setAttribute('aria-hidden', 'true');
         const nombre = document.createElement('span');
         nombre.className = 'chat-notification-name';
         nombre.textContent = item.responsable || ('Responsable #' + (item.id_responsable || ''));
         const hora = document.createElement('span');
         hora.className = 'chat-notification-time';
         hora.textContent = item.fecha_formateada || item.fecha || '';
+        head.appendChild(dot);
         head.appendChild(nombre);
         head.appendChild(hora);
         boton.appendChild(head);
@@ -594,6 +602,18 @@
       });
       if (shouldReset) {
         plantillaSelect.value = '';
+      }
+    }
+
+    function updateSubjectVisibility() {
+      if (!asuntoInput) {
+        return;
+      }
+      const subjectSection = asuntoInput.closest('.chat-section');
+      const isEmail = canalSelect.value === 'email';
+      asuntoInput.required = isEmail;
+      if (subjectSection) {
+        subjectSection.style.display = isEmail ? '' : 'none';
       }
     }
 
@@ -721,6 +741,7 @@
       renderConversation(Array.isArray(data.conversation) ? data.conversation : []);
       renderNotifications(Array.isArray(data.notifications) ? data.notifications : []);
       updateTemplateOptions();
+      updateSubjectVisibility();
       updateEstudiantes();
       updateResume();
       updateHeader();
@@ -744,6 +765,7 @@
 
     canalSelect.addEventListener('change', function () {
       updateTemplateOptions();
+      updateSubjectVisibility();
       updatePreview();
       fetchConversation();
     });

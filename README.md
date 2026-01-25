@@ -24,6 +24,17 @@ Implementación MVC nativa en PHP 8.2 para la gestión integral de cartera multi
 - `public/plantillas/`: script que genera la plantilla Excel sin almacenar binarios.
 - `docs/pdf-sin-composer.md`: guía detallada para integrar DOMPDF de forma manual (sin Composer) y evitar PDFs en blanco.
 
+## Configuración de mensajes entrantes de WhatsApp
+Para visualizar mensajes entrantes en el módulo de Comunicaciones y recibir notificaciones por correo:
+1. En Twilio activa el sandbox de WhatsApp o usa un número aprobado.
+2. En la consola de Twilio configura el **Webhook de mensajes entrantes** apuntando a:
+   `https://TU_DOMINIO/cobranzav2/public/index.php?route=/webhooks/twilio`
+3. En la sección **Configuración del colegio** completa:
+   - Account SID y Auth Token de Twilio.
+   - Número de WhatsApp remitente (formato E.164).
+   - Content SID de la plantilla aprobada.
+4. Configura un SMTP válido (host, usuario y contraseña). El sistema enviará un correo a ese usuario cada vez que llegue un mensaje entrante de WhatsApp.
+
 ## Licencia
 Uso interno educativo.
 

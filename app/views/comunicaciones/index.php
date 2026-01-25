@@ -63,9 +63,12 @@ $datasetJson = json_encode($dataset, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLA
         <input type="hidden" name="_token" value="<?= htmlspecialchars($token) ?>">
         <div class="chat-grid">
             <aside class="chat-panel chat-panel--notifications">
-                <header>
-                    <h4>Notificaciones entrantes</h4>
-                    <p class="small">Mensajes recibidos desde WhatsApp o SMS por los responsables.</p>
+                <header class="chat-notifications-header">
+                    <div>
+                        <h4>Chats recientes</h4>
+                        <p class="small">Conversaciones activas con responsables por WhatsApp o SMS.</p>
+                    </div>
+                    <span class="chat-notification-count" data-chat-count><?= count($notifications) ?></span>
                 </header>
                 <ul class="chat-notifications" data-chat-notifications>
                     <?php foreach ($notifications as $alerta): ?>
@@ -75,6 +78,7 @@ $datasetJson = json_encode($dataset, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLA
                                     data-responsable="<?= (int) $alerta['id_responsable'] ?>"
                                     data-canal="<?= htmlspecialchars($alerta['canal'] ?? 'whatsapp') ?>">
                                 <div class="chat-notification-head">
+                                    <span class="chat-notification-dot" aria-hidden="true"></span>
                                     <span class="chat-notification-name"><?= htmlspecialchars($alerta['responsable'] ?? ('Responsable #' . $alerta['id_responsable'])) ?></span>
                                     <span class="chat-notification-time"><?= htmlspecialchars($alerta['fecha_formateada'] ?: $alerta['fecha']) ?></span>
                                 </div>
@@ -227,8 +231,8 @@ $datasetJson = json_encode($dataset, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLA
                 </div>
 
                 <div class="chat-section chat-section--subject">
-                    <label for="commsAsunto">Asunto</label>
-                    <input id="commsAsunto" name="asunto" placeholder="Ej: Recordatorio de pago — {{estudiante_nombre}}" required>
+                    <label for="commsAsunto">Asunto (solo correo)</label>
+                    <input id="commsAsunto" name="asunto" placeholder="Ej: Recordatorio de pago — {{estudiante_nombre}}">
                 </div>
 
                 <div class="chat-section">

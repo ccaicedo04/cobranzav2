@@ -100,4 +100,34 @@ class ComunicacionModel extends BaseModel
 
         return $stmt->fetchAll();
     }
+
+    /**
+     * @return array|null
+     */
+    public function ultimaEntradaPorResponsable(int $responsableId, string $canal)
+    {
+        $filters = $this->applyTenantFilters([
+            'id_responsable' => $responsableId,
+            'canal' => $canal,
+            'tipo' => 'inbound',
+        ]);
+
+        [$where, $params] = $this->compileFilters($filters);
+        if ($this->softDelete && $this->softDeleteColumn && $this->tableHasColumn($this->softDeleteColumn)) {
+            $where[] = $this->softDeleteColumn . ' = 0';
+        }
+
+        $sql = 'SELECT * FROM ' . $this->table;
+        if ($where) {
+            $sql .= ' WHERE ' . implode(' AND ', $where);
+        }
+        $sql .= ' ORDER BY fecha_envio DESC, id_comunicacion DESC LIMIT 1';
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+
+        $registro = $stmt->fetch();
+
+        return $registro ?: null;
+    }
 }
