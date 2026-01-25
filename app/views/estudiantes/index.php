@@ -7,6 +7,7 @@ include __DIR__ . '/../_partials/header.php';
 <div class="card">
     <form class="toolbar" method="get" action="index.php">
         <input type="hidden" name="route" value="estudiantes">
+        <input type="search" name="busqueda" placeholder="Buscar por estudiante o código" value="<?= htmlspecialchars($filtros['busqueda'] ?? '') ?>">
         <select name="estado">
             <option value="">Todos los estados</option>
             <option value="activo" <?= (($filtros['estado'] ?? '') === 'activo') ? 'selected' : '' ?>>Activo</option>

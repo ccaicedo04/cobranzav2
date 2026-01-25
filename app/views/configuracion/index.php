@@ -79,6 +79,23 @@ include __DIR__ . '/../_partials/header.php';
 
         <section class="config-block">
             <header>
+                <h2>Dashboard y analítica</h2>
+                <p>Personaliza la cantidad de registros y el rango de meses visibles en el tablero principal.</p>
+            </header>
+            <div class="grid">
+                <label>
+                    <span>Top responsables en dashboard</span>
+                    <input name="dashboard_top_responsables" type="number" min="3" max="15" value="<?= htmlspecialchars($configuracion['dashboard_top_responsables'] ?? 5) ?>">
+                </label>
+                <label>
+                    <span>Meses de cartera pendiente</span>
+                    <input name="dashboard_meses_cartera" type="number" min="3" max="12" value="<?= htmlspecialchars($configuracion['dashboard_meses_cartera'] ?? 6) ?>">
+                </label>
+            </div>
+        </section>
+
+        <section class="config-block">
+            <header>
                 <h2>Integraciones heredadas (opcional)</h2>
                 <p>Estos campos permiten conservar integraciones anteriores basadas en API propias.</p>
             </header>

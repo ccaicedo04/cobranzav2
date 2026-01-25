@@ -370,6 +370,8 @@ CREATE TABLE `configuracion_colegio` (
   `twilio_default_country` varchar(8) DEFAULT NULL,
   `twilio_status_callback` varchar(255) DEFAULT NULL,
   `twilio_incoming_webhook` varchar(255) DEFAULT NULL,
+  `dashboard_top_responsables` int(11) DEFAULT 5,
+  `dashboard_meses_cartera` int(11) DEFAULT 6,
   `logo_path` varchar(255) DEFAULT NULL,
   `actualizado_por` int(11) DEFAULT NULL,
   `fecha_actualizacion` datetime DEFAULT NULL
@@ -379,8 +381,8 @@ CREATE TABLE `configuracion_colegio` (
 -- Volcado de datos para la tabla `configuracion_colegio`
 --
 
-INSERT INTO `configuracion_colegio` (`id_configuracion`, `id_colegio`, `smtp_host`, `smtp_puerto`, `smtp_usuario`, `smtp_password`, `whatsapp_api_key`, `whatsapp_endpoint`, `sms_api_key`, `sms_endpoint`, `twilio_account_sid`, `twilio_auth_token`, `twilio_whatsapp_from`, `twilio_whatsapp_template_sid`, `twilio_sms_from`, `twilio_default_country`, `twilio_status_callback`, `twilio_incoming_webhook`, `logo_path`, `actualizado_por`, `fecha_actualizacion`) VALUES
-(1, 1, 'smtp.gmail.com', '587', 'carlos.quinones@lm-technology.com.co', 'ahiu codf pjlb dcra', '', '', '', '', 'AC20721067f213f23d24dc2e550556fb52', 'e6effe03a14ad5a0efa88784a3c9c37f', '+1 4155238886', '', '+12566374335', '+57', '', 'https://timberwolf-mastiff-9776.twil.io/demo-reply', NULL, 1, '2025-11-23 20:52:43');
+INSERT INTO `configuracion_colegio` (`id_configuracion`, `id_colegio`, `smtp_host`, `smtp_puerto`, `smtp_usuario`, `smtp_password`, `whatsapp_api_key`, `whatsapp_endpoint`, `sms_api_key`, `sms_endpoint`, `twilio_account_sid`, `twilio_auth_token`, `twilio_whatsapp_from`, `twilio_whatsapp_template_sid`, `twilio_sms_from`, `twilio_default_country`, `twilio_status_callback`, `twilio_incoming_webhook`, `dashboard_top_responsables`, `dashboard_meses_cartera`, `logo_path`, `actualizado_por`, `fecha_actualizacion`) VALUES
+(1, 1, 'smtp.gmail.com', '587', 'carlos.quinones@lm-technology.com.co', 'ahiu codf pjlb dcra', '', '', '', '', 'AC20721067f213f23d24dc2e550556fb52', 'e6effe03a14ad5a0efa88784a3c9c37f', '+1 4155238886', '', '+12566374335', '+57', '', 'https://timberwolf-mastiff-9776.twil.io/demo-reply', 5, 6, NULL, 1, '2025-11-23 20:52:43');
 
 -- --------------------------------------------------------
 

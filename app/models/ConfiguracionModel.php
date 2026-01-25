@@ -29,6 +29,8 @@ class ConfiguracionModel extends BaseModel
         'twilio_default_country',
         'twilio_status_callback',
         'twilio_incoming_webhook',
+        'dashboard_top_responsables',
+        'dashboard_meses_cartera',
         'logo_path',
         'actualizado_por',
         'fecha_actualizacion',

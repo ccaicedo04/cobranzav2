@@ -51,6 +51,7 @@ class EstudianteController extends Controller
     {
         $filtros = [
             'estado' => $_GET['estado'] ?? null,
+            'busqueda' => trim((string) ($_GET['busqueda'] ?? '')),
         ];
 
         $estudiantes = $this->estudiantes->conContexto(array_filter($filtros));
