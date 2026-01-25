@@ -259,6 +259,9 @@ class ComunicacionController extends Controller
 
             $twilioConfig = $this->configuracion->obtenerTwilio($idColegio) ?? $this->twilioConfig;
             $twilioServicio = $this->crearServicioTwilio($twilioConfig);
+            $usarPlantillaWhatsapp = false;
+            $templateSid = '';
+            $templateVariables = [];
 
             try {
                 if (!$twilioServicio->configured()) {
@@ -274,12 +277,78 @@ class ComunicacionController extends Controller
                     throw new RuntimeException('El responsable no tiene un número telefónico registrado.');
                 }
 
-                $twilioRespuesta = $canal === 'whatsapp'
-                    ? $twilioServicio->sendWhatsApp($telefonoDestino, $mensajePlano)
-                    : $twilioServicio->sendSms($telefonoDestino, $mensajePlano);
+                if ($canal === 'whatsapp') {
+                    $usarPlantillaWhatsapp = true;
+                    $templateSid = trim((string) ($twilioConfig['whatsapp_template_sid'] ?? $twilioConfig['twilio_whatsapp_template_sid'] ?? getenv('TWILIO_WHATSAPP_TEMPLATE_SID') ?: ''));
+                    $templateVariables = [
+                        '1' => (string) ($placeholders['responsable_nombre'] ?? ''),
+                        '2' => (string) ($placeholders['colegio_nombre'] ?? ''),
+                        '3' => (string) ($placeholders['estudiante_nombre'] ?? ''),
+                        '4' => (string) ($placeholders['saldo_pendiente'] ?? ''),
+                        '5' => (string) ($placeholders['fecha_vencimiento'] ?? ''),
+                    ];
+                    $faltanDatos = false;
+                    foreach ($templateVariables as $value) {
+                        if (trim($value) === '') {
+                            $faltanDatos = true;
+                            break;
+                        }
+                    }
+
+                    if ($faltanDatos) {
+                        $pattern = '/^Hola\s+(.+?),\s+te escribimos del\s+(.+?)\.\s*'
+                            . 'El saldo pendiente de\s+(.+?)\s+es de\s+(.+?)\s+con vencimiento\s+(.+?)\.\s*'
+                            . 'Si ya realizaste el pago, por favor ignora este mensaje\.$/s';
+                        if (preg_match($pattern, $mensajePlano, $matches)) {
+                            $templateVariables = [
+                                '1' => trim($matches[1]),
+                                '2' => trim($matches[2]),
+                                '3' => trim($matches[3]),
+                                '4' => trim($matches[4]),
+                                '5' => trim($matches[5]),
+                            ];
+                            $faltanDatos = false;
+                            foreach ($templateVariables as $value) {
+                                if (trim($value) === '') {
+                                    $faltanDatos = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    if ($faltanDatos) {
+                        throw new RuntimeException('Faltan datos para completar la plantilla de WhatsApp. Verifica responsable, colegio, estudiante, saldo y fecha de vencimiento.');
+                    }
+
+                    try {
+                        $ultimaEntrada = $this->comunicaciones->ultimaEntradaPorResponsable($idResponsable, 'whatsapp');
+                        if (!empty($ultimaEntrada['fecha_envio'])) {
+                            $timestamp = strtotime((string) $ultimaEntrada['fecha_envio']);
+                            if ($timestamp !== false) {
+                                $usarPlantillaWhatsapp = (time() - $timestamp) > 86400;
+                            }
+                        }
+                    } catch (\Throwable $exception) {
+                        $usarPlantillaWhatsapp = true;
+                    }
+
+                    if ($usarPlantillaWhatsapp) {
+                        if ($templateSid === '') {
+                            throw new RuntimeException('Configura el Content SID de la plantilla aprobada de WhatsApp.');
+                        }
+                        $twilioRespuesta = $twilioServicio->sendWhatsAppTemplate($telefonoDestino, $templateSid, $templateVariables);
+                    } else {
+                        $twilioRespuesta = $twilioServicio->sendWhatsApp($telefonoDestino, $mensajePlano);
+                    }
+                } else {
+                    $twilioRespuesta = $twilioServicio->sendSms($telefonoDestino, $mensajePlano);
+                }
 
                 $estadoEnvio = 'enviado';
-                $detalleEnvio = 'Mensaje enviado por Twilio';
+                $detalleEnvio = $canal === 'whatsapp' && $usarPlantillaWhatsapp
+                    ? 'Mensaje enviado por Twilio (plantilla aprobada)'
+                    : 'Mensaje enviado por Twilio';
                 if (!empty($twilioRespuesta['sid'])) {
                     $detalleEnvio .= ' (SID ' . $twilioRespuesta['sid'] . ')';
                 }
@@ -737,6 +806,9 @@ class ComunicacionController extends Controller
         $fechaVencimiento = $estudiante['fecha_vencimiento'] ?? '';
         if ($fechaVencimiento === '' && $proximoVencimiento) {
             $fechaVencimiento = $proximoVencimiento;
+        }
+        if ($fechaVencimiento === '') {
+            $fechaVencimiento = 'Sin fecha';
         }
 
         $telefonoContacto = $sede['telefono'] ?? ($colegio['telefono'] ?? '');
