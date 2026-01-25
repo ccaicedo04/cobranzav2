@@ -40,7 +40,7 @@ class EstudianteModel extends BaseModel
             . ' INNER JOIN responsable_financiero r ON r.id_responsable = e.id_responsable';
         if ($busqueda !== '') {
             $where[] = '(e.nombre_completo LIKE :busqueda OR e.codigo_estudiante LIKE :busqueda)';
-            $params[':busqueda'] = '%' . $busqueda . '%';
+            $params['busqueda'] = '%' . $busqueda . '%';
         }
         if ($where) {
             $sql .= ' WHERE ' . implode(' AND ', $where);
