@@ -78,6 +78,7 @@ class CargaPhidiasService
         $deudasRegistradas = 0;
         $valorTotal = 0.0;
         $totalesMes = [];
+        $totalesSede = [];
         $filaExcel = $indiceEncabezado + 2; // Excel es 1-based
 
         $responsablesVistos = [];
@@ -102,7 +103,7 @@ class CargaPhidiasService
             $colF = $this->limpiarTexto($fila[5] ?? '');
 
             if ($colA !== '' && $colF !== '') {
-                $this->finalizarCabeceraSinDetalle($contexto, $idColegio, $anio, $deudasRegistradas, $valorTotal, $totalesMes, $guardar);
+                $this->finalizarCabeceraSinDetalle($contexto, $idColegio, $anio, $deudasRegistradas, $valorTotal, $totalesMes, $totalesSede, $guardar);
 
                 if ($colE === '') {
                     $errores[] = ['fila' => $filaExcel, 'mensaje' => 'Cabecera inválida: falta código de alumno'];
@@ -139,6 +140,7 @@ class CargaPhidiasService
                 $contexto['tiene_detalle'] = false;
                 $contexto['cabecera_montos'] = $this->montosCabecera($fila);
                 $contexto['id_sede'] = $sedeDestino;
+                $contexto['sede_nombre'] = $this->resolverNombreSede($idColegio, $sedeDestino);
 
                 if (!in_array($colA, $responsablesVistos, true)) {
                     $responsablesVistos[] = $colA;
@@ -153,7 +155,7 @@ class CargaPhidiasService
             }
 
             if ($colA === '' && $colE !== '' && $colF !== '' && $contexto['id_responsable']) {
-                $this->finalizarCabeceraSinDetalle($contexto, $idColegio, $anio, $deudasRegistradas, $valorTotal, $totalesMes, $guardar);
+                $this->finalizarCabeceraSinDetalle($contexto, $idColegio, $anio, $deudasRegistradas, $valorTotal, $totalesMes, $totalesSede, $guardar);
 
                 $sedeDestino = $this->resolverSedePorCodigo($idColegio, $colE);
                 $contexto['id_estudiante'] = $this->upsertEstudiante($idColegio, $sedeDestino, $contexto['id_responsable'], $colE, $colF, $guardar);
@@ -161,6 +163,7 @@ class CargaPhidiasService
                 $contexto['tiene_detalle'] = false;
                 $contexto['cabecera_montos'] = $this->montosCabecera($fila);
                 $contexto['id_sede'] = $sedeDestino;
+                $contexto['sede_nombre'] = $this->resolverNombreSede($idColegio, $sedeDestino);
                 if (!in_array($colE, $estudiantesVistos, true)) {
                     $estudiantesVistos[] = $colE;
                     $estudiantesProcesados++;
@@ -178,6 +181,11 @@ class CargaPhidiasService
                 $contexto['tiene_detalle'] = $contexto['tiene_detalle'] || $deudasSumadas > 0;
                 $deudasRegistradas += $deudasSumadas;
                 $valorTotal += $valorSumado;
+                $sedeNombre = (string) ($contexto['sede_nombre'] ?? 'Sede');
+                if (!isset($totalesSede[$sedeNombre])) {
+                    $totalesSede[$sedeNombre] = 0.0;
+                }
+                $totalesSede[$sedeNombre] += $valorSumado;
                 foreach ($totalesFila as $mes => $valor) {
                     if (!isset($totalesMes[$mes])) {
                         $totalesMes[$mes] = 0.0;
@@ -192,7 +200,7 @@ class CargaPhidiasService
             }
         }
 
-        $this->finalizarCabeceraSinDetalle($contexto, $idColegio, $anio, $deudasRegistradas, $valorTotal, $totalesMes, $guardar);
+        $this->finalizarCabeceraSinDetalle($contexto, $idColegio, $anio, $deudasRegistradas, $valorTotal, $totalesMes, $totalesSede, $guardar);
 
         return [
             'procesados' => $responsablesProcesados + $estudiantesProcesados,
@@ -202,6 +210,7 @@ class CargaPhidiasService
             'estudiantes' => $estudiantesProcesados,
             'errores' => $errores,
             'totales_meses' => $totalesMes,
+            'totales_sedes' => $totalesSede,
         ];
     }
 
@@ -357,7 +366,7 @@ class CargaPhidiasService
         return $montos;
     }
 
-    private function finalizarCabeceraSinDetalle(array &$contexto, int $idColegio, int $anio, int &$deudasRegistradas, float &$valorTotal, array &$totalesMes, bool $guardar): void
+    private function finalizarCabeceraSinDetalle(array &$contexto, int $idColegio, int $anio, int &$deudasRegistradas, float &$valorTotal, array &$totalesMes, array &$totalesSede, bool $guardar): void
     {
         if (!$contexto['id_estudiante'] || $contexto['tiene_detalle'] || empty($contexto['cabecera_montos'])) {
             return;
@@ -371,6 +380,8 @@ class CargaPhidiasService
             $valorTotal += $monto['valor'];
             $totalesMes[$monto['mes']] = ($totalesMes[$monto['mes']] ?? 0) + $monto['valor'];
         }
+        $sedeNombre = (string) ($contexto['sede_nombre'] ?? 'Sede');
+        $totalesSede[$sedeNombre] = ($totalesSede[$sedeNombre] ?? 0) + array_sum(array_column($contexto['cabecera_montos'], 'valor'));
 
         $contexto['cabecera_montos'] = [];
     }
@@ -405,6 +416,22 @@ class CargaPhidiasService
         }
 
         return $idSede;
+    }
+
+    private function resolverNombreSede(int $idColegio, int $idSede): string
+    {
+        if (!isset($this->sedesCache[$idColegio]['nombres'])) {
+            $this->sedesCache[$idColegio]['nombres'] = [];
+        }
+
+        if (!isset($this->sedesCache[$idColegio]['nombres'][$idSede])) {
+            $sedes = $this->sedes->conColegio(['id_colegio' => $idColegio, 'eliminado' => 0]);
+            foreach ($sedes as $sede) {
+                $this->sedesCache[$idColegio]['nombres'][(int) $sede['id_sede']] = (string) ($sede['nombre'] ?? 'Sede');
+            }
+        }
+
+        return (string) ($this->sedesCache[$idColegio]['nombres'][$idSede] ?? 'Sede');
     }
 
     private function registrarDeuda(int $idColegio, int $idSede, int $idEstudiante, string $concepto, int $anio, int $mes, float $valor): void

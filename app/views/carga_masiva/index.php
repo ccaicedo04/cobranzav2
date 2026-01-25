@@ -144,12 +144,21 @@ $mapResultado = static function (string $estado): array {
     </div>
 </div>
 
+<?php if (!empty($preview_error)): ?>
+    <div class="alert error" style="margin-top:20px;">
+        <strong>Error en la previsualización:</strong>
+        <span><?= htmlspecialchars($preview_error) ?></span>
+    </div>
+<?php endif; ?>
+
 <?php if (!empty($preview)): ?>
     <?php
     $resumen = $preview['resultado'] ?? [];
     $errores = $resumen['errores'] ?? [];
     $totalesMeses = $resumen['totales_meses'] ?? [];
+    $totalesSedes = $resumen['totales_sedes'] ?? [];
     ksort($totalesMeses);
+    arsort($totalesSedes);
     ?>
     <div class="card" style="margin-top:20px;">
         <h3>Previsualización del cargue</h3>
@@ -171,6 +180,27 @@ $mapResultado = static function (string $estado): array {
                 <span>Valor total del archivo</span>
                 <strong>$ <?= number_format((float) ($resumen['valor_total'] ?? 0), 0, ',', '.') ?></strong>
             </div>
+        </div>
+        <div class="table-scroll" style="max-height:220px;margin-bottom:16px;">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Sede</th>
+                        <th>Valor total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($totalesSedes as $sede => $valor): ?>
+                        <tr>
+                            <td><?= htmlspecialchars($sede) ?></td>
+                            <td>$ <?= number_format((float) $valor, 0, ',', '.') ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                    <?php if (empty($totalesSedes)): ?>
+                        <tr><td colspan="2">Sin valores por sede detectados.</td></tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
         </div>
         <div class="table-scroll" style="max-height:260px;margin-bottom:16px;">
             <table class="table">
@@ -222,6 +252,7 @@ $mapResultado = static function (string $estado): array {
             <input type="hidden" name="id_colegio" value="<?= htmlspecialchars($preview['id_colegio'] ?? '') ?>">
             <input type="hidden" name="anio" value="<?= htmlspecialchars($preview['anio'] ?? '') ?>">
             <input type="hidden" name="notas" value="<?= htmlspecialchars($preview['notas'] ?? '') ?>">
+            <a class="btn secondary" href="index.php?route=carga-masiva">Cancelar</a>
             <button class="btn" type="submit">Guardar cargue</button>
         </form>
     </div>

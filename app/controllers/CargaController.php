@@ -113,7 +113,8 @@ class CargaController extends Controller
                 if (is_file($archivoTemporal)) {
                     unlink($archivoTemporal);
                 }
-                Helpers::redirect('index.php?route=carga-masiva');
+                $this->renderCargaPreviewError($exception->getMessage(), $idColegio, $anio, $notas);
+                return;
             }
         }
 
@@ -178,6 +179,24 @@ class CargaController extends Controller
                 'resultado' => $resultado,
                 'archivo_temporal' => $archivoTemporal,
                 'archivo_nombre' => $archivoNombre,
+                'id_colegio' => $idColegio,
+                'anio' => $anio,
+                'notas' => $notas,
+            ],
+        ]);
+    }
+
+    private function renderCargaPreviewError(string $mensaje, int $idColegio, int $anio, string $notas): void
+    {
+        $cargas = $this->cargas->all([], ['order' => 'fecha_registro DESC']);
+        $this->view('carga_masiva/index', [
+            'cargas' => $cargas,
+            'ventana' => $this->resumenVentana($cargas),
+            'token' => Helpers::csrfToken(),
+            'colegios' => $this->colegiosDisponibles(),
+            'sedes' => $this->sedesDisponibles(),
+            'preview_error' => $mensaje,
+            'preview' => [
                 'id_colegio' => $idColegio,
                 'anio' => $anio,
                 'notas' => $notas,
