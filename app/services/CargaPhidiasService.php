@@ -44,7 +44,18 @@ class CargaPhidiasService
     {
         $xlsx = SimpleXLSX::parse($rutaTemporal);
         if (!$xlsx) {
-            throw new \RuntimeException('No se pudo leer el archivo XLSX proporcionado.');
+            $contenido = @file_get_contents($rutaTemporal);
+            if ($contenido !== false) {
+                $xlsx = SimpleXLSX::parseData($contenido);
+            }
+        }
+        if (!$xlsx) {
+            $detalle = SimpleXLSX::parseError();
+            $mensaje = 'No se pudo leer el archivo XLSX proporcionado.';
+            if ($detalle) {
+                $mensaje .= ' Detalle: ' . $detalle;
+            }
+            throw new \RuntimeException($mensaje);
         }
 
         $sheetIndex = $this->buscarIndiceHoja($xlsx, 'Hoja1');
