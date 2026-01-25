@@ -20,15 +20,15 @@ include __DIR__ . '/../_partials/header.php';
 </div>
 <div class="grid grid-3">
     <div class="card chart-card">
-        <h3>Top 5 responsables con mayor deuda</h3>
+        <h3>Top <?= (int) ($dashboardTopLimite ?? 5) ?> responsables con mayor deuda</h3>
         <canvas id="ch1" height="180"></canvas>
     </div>
     <div class="card chart-card">
-        <h3>Cartera reportada últimos 6 meses</h3>
+        <h3>Cartera reportada últimos <?= (int) ($dashboardMeses ?? 6) ?> meses</h3>
         <canvas id="ch2" height="180"></canvas>
     </div>
     <div class="card chart-card">
-        <h3>Tendencia de recaudo últimos 6 meses</h3>
+        <h3>Tendencia de recaudo últimos <?= (int) ($dashboardMeses ?? 6) ?> meses</h3>
         <canvas id="ch3" height="180"></canvas>
     </div>
 </div>

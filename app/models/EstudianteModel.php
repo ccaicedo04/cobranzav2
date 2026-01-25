@@ -23,6 +23,12 @@ class EstudianteModel extends BaseModel
 
     public function conContexto(array $filtros = []): array
     {
+        $busqueda = '';
+        if (!empty($filtros['busqueda'])) {
+            $busqueda = trim((string) $filtros['busqueda']);
+        }
+        unset($filtros['busqueda']);
+
         $filtros = $this->applyTenantFilters($filtros);
         [$where, $params] = $this->compileFilters($filtros, 'e');
         $where[] = 'e.eliminado = 0';
@@ -32,6 +38,10 @@ class EstudianteModel extends BaseModel
             . ' INNER JOIN colegio c ON c.id_colegio = e.id_colegio'
             . ' INNER JOIN sede s ON s.id_sede = e.id_sede'
             . ' INNER JOIN responsable_financiero r ON r.id_responsable = e.id_responsable';
+        if ($busqueda !== '') {
+            $where[] = '(e.nombre_completo LIKE :busqueda OR e.codigo_estudiante LIKE :busqueda)';
+            $params[':busqueda'] = '%' . $busqueda . '%';
+        }
         if ($where) {
             $sql .= ' WHERE ' . implode(' AND ', $where);
         }

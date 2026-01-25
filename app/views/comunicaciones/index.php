@@ -64,8 +64,8 @@ $datasetJson = json_encode($dataset, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLA
         <div class="chat-grid">
             <aside class="chat-panel chat-panel--notifications">
                 <header>
-                    <h4>Notificaciones entrantes</h4>
-                    <p class="small">Mensajes recibidos desde WhatsApp o SMS por los responsables.</p>
+                    <h4>Chats recientes</h4>
+                    <p class="small">Conversaciones activas con responsables por WhatsApp o SMS.</p>
                 </header>
                 <ul class="chat-notifications" data-chat-notifications>
                     <?php foreach ($notifications as $alerta): ?>
@@ -227,8 +227,8 @@ $datasetJson = json_encode($dataset, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLA
                 </div>
 
                 <div class="chat-section chat-section--subject">
-                    <label for="commsAsunto">Asunto</label>
-                    <input id="commsAsunto" name="asunto" placeholder="Ej: Recordatorio de pago — {{estudiante_nombre}}" required>
+                    <label for="commsAsunto">Asunto (solo correo)</label>
+                    <input id="commsAsunto" name="asunto" placeholder="Ej: Recordatorio de pago — {{estudiante_nombre}}">
                 </div>
 
                 <div class="chat-section">
