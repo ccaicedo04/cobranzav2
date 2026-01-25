@@ -39,8 +39,9 @@ class EstudianteModel extends BaseModel
             . ' INNER JOIN sede s ON s.id_sede = e.id_sede'
             . ' INNER JOIN responsable_financiero r ON r.id_responsable = e.id_responsable';
         if ($busqueda !== '') {
-            $where[] = '(e.nombre_completo LIKE :busqueda OR e.codigo_estudiante LIKE :busqueda)';
-            $params['busqueda'] = '%' . $busqueda . '%';
+            $where[] = '(e.nombre_completo LIKE :busqueda_nombre OR e.codigo_estudiante LIKE :busqueda_codigo)';
+            $params['busqueda_nombre'] = '%' . $busqueda . '%';
+            $params['busqueda_codigo'] = '%' . $busqueda . '%';
         }
         if ($where) {
             $sql .= ' WHERE ' . implode(' AND ', $where);
