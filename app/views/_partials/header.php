@@ -21,12 +21,12 @@ $title = $title ?? 'Sistema de Cobranza Escolar';
 <?php endif; ?>
 <?php if (empty($fullWidth)): ?>
 <div class="app-content">
-    <?php if (!empty($breadcrumbs)): ?>
+    <?php if (!$user && !empty($breadcrumbs)): ?>
         <div class="breadcrumbs">
             <?= htmlspecialchars($breadcrumbs) ?>
         </div>
     <?php endif; ?>
-    <?php if (!empty($pageTitle)): ?>
+    <?php if (!$user && !empty($pageTitle)): ?>
         <h2 class="section"><?= htmlspecialchars($pageTitle) ?></h2>
     <?php endif; ?>
 <?php endif; ?>

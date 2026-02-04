@@ -43,53 +43,50 @@ $sedeNombre = $contexto['sede_nombre'] ?? ($user['sede_nombre'] ?? 'Sede');
 <aside class="sidebar">
     <div class="sidebar-brand">
         <div class="brand-icon">🏫</div>
-        <span>COBRANZA</span>
+        <span class="brand-text">COBRANZA</span>
+        <button class="sidebar-toggle" type="button" aria-label="Contraer menú">⇔</button>
     </div>
     <div class="sidebar-section">
         <p>Principal</p>
         <a href="index.php" class="sidebar-link<?= $routeActual === '' || $routeActual === 'dashboard' ? ' active' : '' ?>">
-            <span>🏠</span> Dashboard
+            <span class="icon">🏠</span><span class="label">Dashboard</span>
         </a>
     </div>
     <?php if (in_array('cobranzas', $modulos, true)): ?>
         <div class="sidebar-section">
             <p>Gestión</p>
-            <a href="index.php?route=responsables" class="sidebar-link<?= $routeActual === 'responsables' ? ' active' : '' ?>"><span>👤</span> Responsables</a>
-            <a href="index.php?route=estudiantes" class="sidebar-link<?= $routeActual === 'estudiantes' ? ' active' : '' ?>"><span>🎓</span> Estudiantes</a>
-            <a href="index.php?route=deudas" class="sidebar-link<?= $routeActual === 'deudas' ? ' active' : '' ?>"><span>💼</span> Cartera</a>
-            <a href="index.php?route=pagos" class="sidebar-link<?= $routeActual === 'pagos' ? ' active' : '' ?>"><span>💳</span> Pagos</a>
+            <a href="index.php?route=responsables" class="sidebar-link<?= $routeActual === 'responsables' ? ' active' : '' ?>"><span class="icon">👤</span><span class="label">Responsables</span></a>
+            <a href="index.php?route=estudiantes" class="sidebar-link<?= $routeActual === 'estudiantes' ? ' active' : '' ?>"><span class="icon">🎓</span><span class="label">Estudiantes</span></a>
+            <a href="index.php?route=deudas" class="sidebar-link<?= $routeActual === 'deudas' ? ' active' : '' ?>"><span class="icon">💼</span><span class="label">Cartera</span></a>
+            <a href="index.php?route=pagos" class="sidebar-link<?= $routeActual === 'pagos' ? ' active' : '' ?>"><span class="icon">💳</span><span class="label">Pagos</span></a>
         </div>
         <div class="sidebar-section">
             <p>Comunicación</p>
-            <a href="index.php?route=comunicaciones" class="sidebar-link<?= $routeActual === 'comunicaciones' ? ' active' : '' ?>"><span>💬</span> Mensajería</a>
+            <a href="index.php?route=comunicaciones" class="sidebar-link<?= $routeActual === 'comunicaciones' ? ' active' : '' ?>"><span class="icon">💬</span><span class="label">Mensajería</span></a>
         </div>
     <?php endif; ?>
     <?php if (in_array('administracion', $modulos, true) || in_array('parametrizacion', $modulos, true)): ?>
         <div class="sidebar-section">
             <p>Configuración</p>
             <?php if (in_array('administracion', $modulos, true)): ?>
-                <a href="index.php?route=colegios" class="sidebar-link<?= $routeActual === 'colegios' ? ' active' : '' ?>"><span>🏫</span> Colegios</a>
-                <a href="index.php?route=carga-masiva" class="sidebar-link<?= $routeActual === 'carga-masiva' ? ' active' : '' ?>"><span>📥</span> Carga Masiva</a>
-                <a href="index.php?route=reportes" class="sidebar-link<?= $routeActual === 'reportes' ? ' active' : '' ?>"><span>📊</span> Reportes</a>
-                <a href="index.php?route=auditoria" class="sidebar-link<?= $routeActual === 'auditoria' ? ' active' : '' ?>"><span>🛡️</span> Auditoría</a>
+                <a href="index.php?route=colegios" class="sidebar-link<?= $routeActual === 'colegios' ? ' active' : '' ?>"><span class="icon">🏫</span><span class="label">Colegios</span></a>
+                <a href="index.php?route=carga-masiva" class="sidebar-link<?= $routeActual === 'carga-masiva' ? ' active' : '' ?>"><span class="icon">📥</span><span class="label">Carga Masiva</span></a>
+                <a href="index.php?route=reportes" class="sidebar-link<?= $routeActual === 'reportes' ? ' active' : '' ?>"><span class="icon">📊</span><span class="label">Reportes</span></a>
+                <a href="index.php?route=auditoria" class="sidebar-link<?= $routeActual === 'auditoria' ? ' active' : '' ?>"><span class="icon">🛡️</span><span class="label">Auditoría</span></a>
             <?php endif; ?>
             <?php if (in_array('parametrizacion', $modulos, true)): ?>
-                <a href="index.php?route=configuracion" class="sidebar-link<?= $routeActual === 'configuracion' ? ' active' : '' ?>"><span>⚙️</span> Configuración</a>
+                <a href="index.php?route=configuracion" class="sidebar-link<?= $routeActual === 'configuracion' ? ' active' : '' ?>"><span class="icon">⚙️</span><span class="label">Configuración</span></a>
             <?php endif; ?>
         </div>
     <?php endif; ?>
     <div class="sidebar-footer">
-        <a href="index.php?route=configuracion" class="sidebar-link"><span>⚙️</span> Configuración</a>
-        <a href="index.php?route=auth/logout" class="sidebar-link danger" data-confirm="¿Deseas cerrar la sesión actual?"><span>🚪</span> Cerrar sesión</a>
+        <a href="index.php?route=configuracion" class="sidebar-link"><span class="icon">⚙️</span><span class="label">Configuración</span></a>
+        <a href="index.php?route=auth/logout" class="sidebar-link danger" data-confirm="¿Deseas cerrar la sesión actual?"><span class="icon">🚪</span><span class="label">Cerrar sesión</span></a>
     </div>
 </aside>
 
 <header class="topbar">
     <div class="topbar-title"><?= htmlspecialchars($pageTitle ?? 'Dashboard') ?></div>
-    <div class="topbar-search">
-        <span aria-hidden="true">🔍</span>
-        <input type="search" placeholder="Buscar responsables, estudiantes..." aria-label="Buscar">
-    </div>
     <div class="topbar-context">
         <span>🏫 <?= htmlspecialchars($colegioNombre) ?></span>
         <small><?= htmlspecialchars($sedeNombre) ?></small>
@@ -97,15 +94,6 @@ $sedeNombre = $contexto['sede_nombre'] ?? ($user['sede_nombre'] ?? 'Sede');
     <form class="topbar-tenant" method="post" action="<?= Helpers::baseUrl('index.php?route=contexto/actualizar') ?>" id="formContextoNav" data-base-path="<?= htmlspecialchars($basePath) ?>">
         <input type="hidden" name="_token" value="<?= htmlspecialchars($tokenNav) ?>">
         <input type="hidden" name="redirect" id="contextRedirect" value="<?= htmlspecialchars($redirectPath) ?>">
-        <div>
-            <label>Colegio</label>
-            <select name="id_colegio" id="navColegio" title="Seleccionar colegio">
-                <option value="">Todos mis colegios</option>
-                <?php foreach ($colegiosDisponibles as $colegio): ?>
-                    <option value="<?= $colegio['id_colegio'] ?>" <?= ($contexto['id_colegio'] ?? null) == $colegio['id_colegio'] ? 'selected' : '' ?>><?= htmlspecialchars($colegio['nombre']) ?></option>
-                <?php endforeach; ?>
-            </select>
-        </div>
         <div>
             <label>Sede</label>
             <select name="id_sede" id="navSede" title="Seleccionar sede">

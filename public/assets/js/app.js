@@ -181,8 +181,8 @@
   function setupContextFiltering() {
     const colegio = document.getElementById('navColegio');
     const sede = document.getElementById('navSede');
-    const form = colegio ? colegio.form : null;
-    if (!colegio || !sede || !form) {
+    const form = (sede && sede.form) || (colegio && colegio.form);
+    if (!sede || !form) {
       return;
     }
 
@@ -255,15 +255,26 @@
       }
     }
 
-    applyFilter();
-
-    colegio.addEventListener('change', function () {
+    if (colegio) {
       applyFilter();
-      scheduleSubmit();
-    });
+      colegio.addEventListener('change', function () {
+        applyFilter();
+        scheduleSubmit();
+      });
+    }
 
     sede.addEventListener('change', function () {
       scheduleSubmit();
+    });
+  }
+
+  function setupSidebarToggle() {
+    const toggle = document.querySelector('.sidebar-toggle');
+    if (!toggle) {
+      return;
+    }
+    toggle.addEventListener('click', function () {
+      document.body.classList.toggle('sidebar-collapsed');
     });
   }
 
@@ -817,5 +828,6 @@
     setupUserMenu();
     setupContextFiltering();
     setupComunicaciones();
+    setupSidebarToggle();
   });
 })();
