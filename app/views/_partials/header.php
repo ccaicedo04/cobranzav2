@@ -15,16 +15,18 @@ $title = $title ?? 'Sistema de Cobranza Escolar';
 </head>
 <body>
 <?php if ($user): ?>
-    <?php include __DIR__ . '/navbar.php'; ?>
+    <div class="app-shell">
+        <?php include __DIR__ . '/navbar.php'; ?>
+        <main class="app-main">
 <?php endif; ?>
 <?php if (empty($fullWidth)): ?>
-<div class="container" style="margin-top:<?= $user ? '32px' : '60px' ?>;">
-<?php if (!empty($breadcrumbs)): ?>
-    <div class="breadcrumbs">
-        <?= htmlspecialchars($breadcrumbs) ?>
-    </div>
-<?php endif; ?>
-<?php if (!empty($pageTitle)): ?>
-    <h2 class="section"><?= htmlspecialchars($pageTitle) ?></h2>
-<?php endif; ?>
+<div class="app-content">
+    <?php if (!empty($breadcrumbs)): ?>
+        <div class="breadcrumbs">
+            <?= htmlspecialchars($breadcrumbs) ?>
+        </div>
+    <?php endif; ?>
+    <?php if (!empty($pageTitle)): ?>
+        <h2 class="section"><?= htmlspecialchars($pageTitle) ?></h2>
+    <?php endif; ?>
 <?php endif; ?>
