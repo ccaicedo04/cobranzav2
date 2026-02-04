@@ -244,6 +244,21 @@ h2.section{margin:6px 0 14px 0;font-size:20px;letter-spacing:.2px}
 h3{margin:0 0 12px 0}
 .section{margin-bottom:8px}
 .chart-card{min-height:260px}
+.dashboard-hero{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,.9fr);gap:24px;align-items:center}
+.dashboard-hero h2{margin:0 0 6px 0;font-size:22px;color:#0f172a}
+.dashboard-hero .small{max-width:520px}
+.dashboard-hero-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.dashboard-hero-meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;background:#f8fafc;border:1px dashed var(--border);border-radius:14px;padding:16px}
+.dashboard-hero-meta span{font-size:11px;text-transform:uppercase;letter-spacing:.35px;color:#64748b;display:block;margin-bottom:4px}
+.dashboard-hero-meta strong{font-size:16px;color:#0f172a}
+.dashboard-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:18px}
+.kpi-card{background:#fff;border-radius:18px;border:1px solid var(--border);box-shadow:0 8px 24px rgba(2,23,42,.06);padding:18px;display:flex;flex-direction:column;gap:6px}
+.kpi-label{font-size:12px;text-transform:uppercase;letter-spacing:.35px;color:#64748b}
+.kpi-value{font-size:26px;font-weight:700;color:#0f172a}
+.kpi-footnote{margin:0;font-size:12px;color:#6b7280}
+.dashboard-charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;margin-bottom:18px}
+.dashboard-table .table{margin-top:12px}
+.card-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px}
 /* simple modals */
 .modal-backdrop{position:fixed;inset:0;background:rgba(2,23,42,.45);display:none;align-items:center;justify-content:center;z-index:2000}
 .modal{background:#fff;border-radius:16px;box-shadow:0 20px 60px rgba(2,23,42,.25);width:min(680px,92vw);border:1px solid var(--border)}
@@ -260,6 +275,10 @@ h3{margin:0 0 12px 0}
   .tenant{order:2;margin-left:0;flex:1 1 100%;width:100%}
   .userbox{order:4;margin-left:0;align-self:flex-end}
   .brand-link{order:1}
+}
+
+@media(max-width:960px){
+  .dashboard-hero{grid-template-columns:1fr}
 }
 
 @media(max-width:1024px){
