@@ -94,6 +94,9 @@ $basePath = rtrim(Helpers::baseUrl(), '/');
                         <a href="index.php?route=colegios" class="link">Colegios</a>
                         <a href="index.php?route=sedes" class="link">Sedes</a>
                         <a href="index.php?route=usuarios" class="link">Usuarios</a>
+                        <?php if (($user['rol'] ?? '') === 'admin_global'): ?>
+                            <a href="index.php?route=mantenimiento/limpiar-cobranzas" class="link">Limpieza cobranzas</a>
+                        <?php endif; ?>
                         <hr style="border:none;border-top:1px solid rgba(255,255,255,.12);margin:6px 0">
                         <a href="index.php?route=reportes" class="link">Reportes</a>
                         <a href="index.php?route=auditoria" class="link">Auditoría</a>

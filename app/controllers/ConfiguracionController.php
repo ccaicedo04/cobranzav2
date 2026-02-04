@@ -42,6 +42,19 @@ class ConfiguracionController extends Controller
         }
 
         $usuario = Session::get('user');
+        $dashboardTop = (int) ($_POST['dashboard_top_responsables'] ?? 5);
+        $dashboardMeses = (int) ($_POST['dashboard_meses_cartera'] ?? 6);
+        if ($dashboardTop < 3) {
+            $dashboardTop = 3;
+        } elseif ($dashboardTop > 15) {
+            $dashboardTop = 15;
+        }
+        if ($dashboardMeses < 3) {
+            $dashboardMeses = 3;
+        } elseif ($dashboardMeses > 12) {
+            $dashboardMeses = 12;
+        }
+
         $payload = [
             'id_colegio' => $usuario['id_colegio'],
             'smtp_host' => trim((string) ($_POST['smtp_host'] ?? '')),
@@ -55,10 +68,13 @@ class ConfiguracionController extends Controller
             'twilio_account_sid' => trim((string) ($_POST['twilio_account_sid'] ?? '')),
             'twilio_auth_token' => trim((string) ($_POST['twilio_auth_token'] ?? '')),
             'twilio_whatsapp_from' => trim((string) ($_POST['twilio_whatsapp_from'] ?? '')),
+            'twilio_whatsapp_template_sid' => trim((string) ($_POST['twilio_whatsapp_template_sid'] ?? '')),
             'twilio_sms_from' => trim((string) ($_POST['twilio_sms_from'] ?? '')),
             'twilio_default_country' => trim((string) ($_POST['twilio_default_country'] ?? '+57')) ?: '+57',
             'twilio_status_callback' => trim((string) ($_POST['twilio_status_callback'] ?? '')),
             'twilio_incoming_webhook' => trim((string) ($_POST['twilio_incoming_webhook'] ?? '')),
+            'dashboard_top_responsables' => $dashboardTop,
+            'dashboard_meses_cartera' => $dashboardMeses,
             'logo_path' => null,
             'actualizado_por' => $usuario['id_usuario'],
             'fecha_actualizacion' => date('Y-m-d H:i:s'),

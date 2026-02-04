@@ -14,6 +14,7 @@ use App\Controllers\DeudaController;
 use App\Controllers\EstudianteController;
 use App\Controllers\PagoController;
 use App\Controllers\ParametroController;
+use App\Controllers\MantenimientoController;
 use App\Controllers\PeriodoController;
 use App\Controllers\PerfilController;
 use App\Controllers\ReporteController;
@@ -82,6 +83,9 @@ $router->post('/carga-masiva/store', [CargaController::class, 'store']);
 $router->get('/reportes', [ReporteController::class, 'index']);
 $router->get('/reportes/export-excel', [ReporteController::class, 'exportExcel']);
 $router->get('/reportes/export-pdf', [ReporteController::class, 'exportPdf']);
+
+$router->get('/mantenimiento/limpiar-cobranzas', [MantenimientoController::class, 'limpiarCobranzas']);
+$router->post('/mantenimiento/ejecutar-limpieza', [MantenimientoController::class, 'ejecutarLimpieza']);
 
 $router->get('/colegios', [ColegioController::class, 'index']);
 $router->post('/colegios/store', [ColegioController::class, 'store']);

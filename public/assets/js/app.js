@@ -597,6 +597,18 @@
       }
     }
 
+    function updateSubjectVisibility() {
+      if (!asuntoInput) {
+        return;
+      }
+      const subjectSection = asuntoInput.closest('.chat-section');
+      const isEmail = canalSelect.value === 'email';
+      asuntoInput.required = isEmail;
+      if (subjectSection) {
+        subjectSection.style.display = isEmail ? '' : 'none';
+      }
+    }
+
     function renderEmailPreview(content, subject, responsableId) {
       const responsable = getResponsableData(responsableId) || {};
       const sede = responsable.sede_id && data.sedes ? data.sedes[String(responsable.sede_id)] : null;
@@ -721,6 +733,7 @@
       renderConversation(Array.isArray(data.conversation) ? data.conversation : []);
       renderNotifications(Array.isArray(data.notifications) ? data.notifications : []);
       updateTemplateOptions();
+      updateSubjectVisibility();
       updateEstudiantes();
       updateResume();
       updateHeader();
@@ -744,6 +757,7 @@
 
     canalSelect.addEventListener('change', function () {
       updateTemplateOptions();
+      updateSubjectVisibility();
       updatePreview();
       fetchConversation();
     });

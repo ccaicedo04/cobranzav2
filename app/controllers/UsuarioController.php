@@ -47,7 +47,13 @@ class UsuarioController extends Controller
             $restricciones['colegios'] = $this->colegiosPermitidosSesion($usuario);
         }
 
-        $lista = $this->usuarios->listadoConContexto($restricciones);
+        $filtros = [
+            'busqueda' => $_GET['busqueda'] ?? '',
+            'estado' => $_GET['estado'] ?? '',
+            'rol' => $_GET['rol'] ?? '',
+        ];
+
+        $lista = $this->usuarios->listadoConContexto($restricciones, array_filter($filtros));
         if (($usuario['rol'] ?? null) === 'admin_colegio') {
             $lista = array_values(array_filter($lista, function (array $fila) use ($usuario): bool {
                 if ((int) ($fila['id_usuario'] ?? 0) === (int) ($usuario['id_usuario'] ?? 0)) {
@@ -72,6 +78,14 @@ class UsuarioController extends Controller
 
         $contextoForm = $this->contextoSelecciones();
         $modulosDisponibles = $this->modulosAsignables((array) $usuario);
+        if (empty($modulosDisponibles)) {
+            $modulosDisponibles = [
+                ['codigo' => 'cobranzas', 'nombre' => 'Cobranzas'],
+                ['codigo' => 'administracion', 'nombre' => 'Administración'],
+                ['codigo' => 'parametrizacion', 'nombre' => 'Parametrización'],
+            ];
+        }
+
         $mapModulos = [];
         foreach ($modulosDisponibles as $modulo) {
             $mapModulos[$modulo['codigo']] = $modulo['nombre'];
@@ -89,6 +103,7 @@ class UsuarioController extends Controller
             'rolesDisponibles' => $this->rolesDisponibles(),
             'modulosPorDefecto' => $this->modulosPorDefecto((array) $usuario),
             'token' => Helpers::csrfToken(),
+            'filtros' => $filtros,
         ]);
     }
 
@@ -108,6 +123,18 @@ class UsuarioController extends Controller
         $permisosColegio = array_values(array_unique(array_filter(array_map('intval', $_POST['permisos_colegios'] ?? []))));
         $permisosSede = array_values(array_unique(array_filter(array_map('intval', $_POST['permisos_sedes'] ?? []))));
         $permisosModulo = array_values(array_unique(array_filter($_POST['permisos_modulos'] ?? [])));
+
+        $passwordPlano = $_POST['password'] ?? '';
+        $passwordConfirmacion = $_POST['password_confirm'] ?? '';
+        if ($passwordPlano === '' && $passwordConfirmacion === '') {
+            $passwordPlano = '123456';
+        } elseif ($passwordConfirmacion !== '' && $passwordPlano !== $passwordConfirmacion) {
+            Helpers::redirect('index.php?route=usuarios');
+        }
+
+        if (strlen($passwordPlano) < 6) {
+            $passwordPlano = '123456';
+        }
 
         $permisosColegio = $this->limitarColegiosPorSesion($permisosColegio, $usuarioSesion, $rol);
         $permisosSede = $this->limitarSedesPorSesion($permisosSede, $usuarioSesion, $permisosColegio, $rol);
@@ -150,7 +177,7 @@ class UsuarioController extends Controller
             'nombre_completo' => $_POST['nombre_completo'] ?? '',
             'email' => $_POST['email'] ?? '',
             'usuario' => $_POST['usuario'] ?? '',
-            'password_hash' => password_hash($_POST['password'] ?? '123456', PASSWORD_DEFAULT),
+            'password_hash' => password_hash($passwordPlano, PASSWORD_DEFAULT),
             'rol' => $rol,
             'estado' => $_POST['estado'] ?? 'activo',
         ];

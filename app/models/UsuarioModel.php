@@ -25,7 +25,7 @@ class UsuarioModel extends BaseModel
     /** @var array */
     protected $tenantColumns = [];
 
-    public function listadoConContexto(array $restricciones = []): array
+    public function listadoConContexto(array $restricciones = [], array $filtros = []): array
     {
         $where = ['u.eliminado = 0'];
         $params = [];
@@ -75,6 +75,26 @@ class UsuarioModel extends BaseModel
                 }
                 $where[] = 'u.rol NOT IN (' . implode(',', $placeholders) . ')';
             }
+        }
+
+        $busqueda = trim($filtros['busqueda'] ?? '');
+        if ($busqueda !== '') {
+            $where[] = '(
+                u.nombre_completo LIKE :busqueda
+                OR u.usuario LIKE :busqueda
+                OR u.email LIKE :busqueda
+            )';
+            $params[':busqueda'] = '%' . $busqueda . '%';
+        }
+
+        if (!empty($filtros['estado']) && in_array($filtros['estado'], ['activo', 'inactivo'], true)) {
+            $where[] = 'u.estado = :estado';
+            $params[':estado'] = $filtros['estado'];
+        }
+
+        if (!empty($filtros['rol']) && in_array($filtros['rol'], ['admin_global', 'admin_colegio', 'agente'], true)) {
+            $where[] = 'u.rol = :rol_filtro';
+            $params[':rol_filtro'] = $filtros['rol'];
         }
 
         $sql = 'SELECT u.*, c.nombre AS colegio_nombre, s.nombre AS sede_nombre

@@ -97,6 +97,45 @@ class TwilioService
         return $this->sendViaHttp('whatsapp', $to, $body, $mediaUrls);
     }
 
+    public function sendWhatsAppTemplate(string $to, string $contentSid, array $contentVariables, array $mediaUrls = []): array
+    {
+        $this->ensureClient();
+
+        $contentSid = trim($contentSid);
+        if ($contentSid === '') {
+            throw new RuntimeException('Configura el Content SID de la plantilla de WhatsApp.');
+        }
+
+        $mediaUrls = array_values(array_filter($mediaUrls, static fn ($value) => is_string($value) && $value !== ''));
+        $encodedVariables = $this->encodeContentVariables($contentVariables);
+
+        if ($this->client) {
+            try {
+                $options = [
+                    'from' => $this->formatFrom('whatsapp'),
+                    'contentSid' => $contentSid,
+                    'contentVariables' => $encodedVariables,
+                ];
+
+                if ($mediaUrls) {
+                    $options['mediaUrl'] = $mediaUrls;
+                }
+
+                if ($this->statusCallback) {
+                    $options['statusCallback'] = $this->statusCallback;
+                }
+
+                $message = $this->client->messages->create($this->formatDestination($to, 'whatsapp'), $options);
+
+                return method_exists($message, 'toArray') ? $message->toArray() : ['sid' => $message->sid ?? null];
+            } catch (\Throwable $e) {
+                throw new RuntimeException($this->formatSdkError($e));
+            }
+        }
+
+        return $this->sendViaHttpTemplate($to, $contentSid, $encodedVariables, $mediaUrls);
+    }
+
     public function sendSms(string $to, string $body): array
     {
         $this->ensureClient();
@@ -397,6 +436,44 @@ class TwilioService
         return ['sid' => null];
     }
 
+    private function sendViaHttpTemplate(string $to, string $contentSid, string $contentVariables, array $mediaUrls = []): array
+    {
+        $endpoint = sprintf('https://api.twilio.com/2010-04-01/Accounts/%s/Messages.json', rawurlencode($this->accountSid));
+
+        $payload = [
+            'To' => $this->formatDestination($to, 'whatsapp'),
+            'From' => $this->formatFrom('whatsapp'),
+            'ContentSid' => $contentSid,
+            'ContentVariables' => $contentVariables,
+        ];
+
+        if ($this->statusCallback) {
+            $payload['StatusCallback'] = $this->statusCallback;
+        }
+
+        if ($mediaUrls) {
+            $payload['MediaUrl'] = $mediaUrls;
+        }
+
+        $response = $this->httpRequest('POST', $endpoint, $payload);
+
+        if ($response['status'] >= 400) {
+            throw new RuntimeException($this->formatHttpError($response['status'], $response['body']));
+        }
+
+        $bodyResponse = $response['body'];
+        if ($bodyResponse === null || $bodyResponse === '') {
+            return ['sid' => null];
+        }
+
+        $decoded = json_decode($bodyResponse, true);
+        if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+            return $decoded;
+        }
+
+        return ['sid' => null];
+    }
+
     private function httpRequest(string $method, string $url, array $data = []): array
     {
         $method = strtoupper($method);
@@ -546,5 +623,39 @@ class TwilioService
         }
 
         return implode('&', $pairs);
+    }
+
+    private function encodeContentVariables(array $variables): string
+    {
+        if (!$variables) {
+            throw new RuntimeException('Configura las variables de la plantilla de WhatsApp.');
+        }
+
+        $normalized = [];
+        $keys = [];
+
+        foreach ($variables as $key => $value) {
+            $key = (string) $key;
+            if (!ctype_digit($key) || $key === '0') {
+                throw new RuntimeException('Las variables de la plantilla de WhatsApp deben usar claves numéricas consecutivas.');
+            }
+            $keys[] = (int) $key;
+            $normalized[$key] = (string) $value;
+        }
+
+        sort($keys);
+        $expected = range(1, count($normalized));
+        if ($keys !== $expected) {
+            throw new RuntimeException('Las variables de la plantilla de WhatsApp deben mantener el orden numérico exacto.');
+        }
+
+        ksort($normalized, SORT_NUMERIC);
+
+        $encoded = json_encode($normalized, JSON_UNESCAPED_UNICODE);
+        if ($encoded === false) {
+            throw new RuntimeException('No fue posible serializar las variables de la plantilla de WhatsApp.');
+        }
+
+        return $encoded;
     }
 }

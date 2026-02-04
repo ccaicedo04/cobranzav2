@@ -33,22 +33,55 @@ class PdfService
             $contenido = '<p>Contenido no disponible para renderizar.</p>';
         }
 
-        if ($this->dompdfDisponible()) {
-            $this->asegurarDirectoriosDompdf();
+        $rowCount = is_array($documento['rows'] ?? null) ? count($documento['rows']) : 0;
+        $rowCountHtml = $this->contarFilasHtml($contenido);
+        $contenidoPesado = strlen($contenido) > 900_000 || $rowCount > 600 || $rowCountHtml > 800;
+        $dompdfExcesivo = strlen($contenido) > 2_400_000 || $rowCount > 4000 || $rowCountHtml > 4000;
 
-            $options = new Options();
-            $options->set('isRemoteEnabled', true);
-            $options->set('defaultFont', 'Arial');
-            $options->set('tempDir', $this->dompdfCacheDir());
-            $options->set('fontDir', $this->dompdfFontsDir());
-            $options->set('fontCache', $this->dompdfFontsDir());
+        if ($this->dompdfDisponible() && !$dompdfExcesivo) {
+            try {
+                // Permitimos más memoria y tiempo en listados grandes antes de caer al fallback.
+                @ini_set('memory_limit', $contenidoPesado ? '6144M' : '3072M');
+                if (function_exists('set_time_limit')) {
+                    @set_time_limit($contenidoPesado ? 420 : 180);
+                }
 
-            $dompdf = new Dompdf($options);
-            $dompdf->loadHtml($contenido);
-            $dompdf->setPaper('A4', $orientacion);
-            $dompdf->render();
-            $dompdf->stream($nombre, ['Attachment' => !$inline]);
-            exit;
+                $this->asegurarDirectoriosDompdf();
+
+                $options = new Options();
+                $options->set('isRemoteEnabled', true);
+                $options->set('defaultFont', 'Arial');
+                $options->set('tempDir', $this->dompdfCacheDir());
+                $options->set('fontDir', $this->dompdfFontsDir());
+                $options->set('fontCache', $this->dompdfFontsDir());
+                $options->set('isHtml5ParserEnabled', true);
+                $options->set('enable_font_subsetting', true);
+                if ($contenidoPesado) {
+                    // Reducir carga de estilos complejos en listados enormes.
+                    $options->set('debugCss', false);
+                    $options->set('debugLayout', false);
+                    $options->set('debugPng', false);
+                }
+
+                $dompdf = new Dompdf($options);
+                $dompdf->loadHtml($contenido, 'UTF-8');
+                $dompdf->setPaper('A4', $orientacion);
+                $dompdf->render();
+                $output = $dompdf->output();
+
+                // Si DOMPDF no generó contenido, forzamos fallback para evitar PDFs en blanco.
+                if (trim((string) $output) === '') {
+                    throw new \RuntimeException('DOMPDF devolvió un PDF vacío');
+                }
+
+                header('Content-Type: application/pdf');
+                header(($inline ? 'Content-Disposition: inline; filename="' : 'Content-Disposition: attachment; filename="') . $nombre . '"');
+                header('Content-Length: ' . strlen($output));
+                echo $output;
+                exit;
+            } catch (Throwable $e) {
+                // Fallback silencioso a SimplePdf si DOMPDF falla en renderizar
+            }
         }
 
         $fallback = $documento ?: [
@@ -187,5 +220,14 @@ class PdfService
     private function dompdfCacheDir(): string
     {
         return dirname(__DIR__, 1) . '/libraries/dompdf/lib/cache';
+    }
+
+    private function contarFilasHtml(string $html): int
+    {
+        if ($html === '') {
+            return 0;
+        }
+
+        return substr_count(strtolower($html), '<tr');
     }
 }

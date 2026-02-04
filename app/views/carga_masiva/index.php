@@ -5,6 +5,12 @@ $breadcrumbs = 'Cobranzas / Carga masiva';
 include __DIR__ . '/../_partials/header.php';
 
 $ventana = $ventana ?? [];
+$colegios = $colegios ?? [];
+$sedes = $sedes ?? [];
+$contexto = \Core\Session::get('context') ?? [];
+$colegioSeleccionado = $contexto['id_colegio'] ?? ($colegios[0]['id_colegio'] ?? '');
+$sedeSeleccionada = $contexto['id_sede'] ?? ($sedes[0]['id_sede'] ?? '');
+$anioSugerido = date('Y');
 $ultima = $ventana['ultima'] ?? null;
 $ultimaFecha = $ultima && !empty($ultima['fecha_registro']) ? date('Y-m-d H:i', strtotime((string) $ultima['fecha_registro'])) : 'Sin registros previos';
 $ultimaArchivo = $ultima['archivo_original'] ?? 'N/D';
@@ -37,11 +43,6 @@ $mapResultado = static function (string $estado): array {
             <strong><?= htmlspecialchars($ultimaFecha) ?></strong>
             <p class="small" style="margin:4px 0 0;">Archivo: <?= htmlspecialchars($ultimaArchivo) ?></p>
             <span class="tag <?= $mapResultado($ultimaResultado)['class'] ?>" style="margin-top:6px;display:inline-flex;">Estado: <?= htmlspecialchars($mapResultado($ultimaResultado)['label']) ?></span>
-        </div>
-        <div>
-            <span>Registros acumulados</span>
-            <strong><?= number_format((int) ($ventana['total_registros'] ?? 0), 0, ',', '.') ?></strong>
-            <p class="small" style="margin:4px 0 0;">Suma de registros procesados en los cargues históricos.</p>
         </div>
         <div>
             <span>Errores detectados</span>
@@ -80,7 +81,7 @@ $mapResultado = static function (string $estado): array {
                         <span><?= htmlspecialchars($carga['archivo_original'] ?? 'N/A') ?></span>
                         <div style="margin:6px 0;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
                             <span class="tag <?= $estado['class'] ?>"><?= htmlspecialchars($estado['label']) ?></span>
-                            <span class="small">Registros: <?= number_format((int) ($carga['total_registros'] ?? 0), 0, ',', '.') ?></span>
+                            <span class="small">Valor cargado: $ <?= number_format((float) ($carga['total_registros'] ?? 0), 0, ',', '.') ?></span>
                             <span class="small">Errores: <?= number_format((int) ($carga['total_errores'] ?? 0), 0, ',', '.') ?></span>
                         </div>
                         <p class="small" style="margin:0;"><?= htmlspecialchars($carga['mensaje'] ?? 'Sin observaciones') ?></p>
@@ -102,9 +103,38 @@ $mapResultado = static function (string $estado): array {
         </p>
         <form method="post" action="index.php?route=carga-masiva/store" enctype="multipart/form-data" data-confirm="¿Deseas iniciar el proceso de carga masiva con el archivo seleccionado?" style="display:flex;flex-direction:column;gap:14px;">
             <input type="hidden" name="_token" value="<?= htmlspecialchars($token) ?>">
+            <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;">
+                <div>
+                    <label for="colegioCarga">Colegio</label>
+                    <select id="colegioCarga" name="id_colegio" required>
+                        <option value="">Seleccione</option>
+                        <?php foreach ($colegios as $colegio): ?>
+                            <option value="<?= htmlspecialchars($colegio['id_colegio']) ?>" <?= (string) $colegioSeleccionado === (string) ($colegio['id_colegio'] ?? '') ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($colegio['nombre'] ?? 'Colegio') ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div>
+                    <label for="sedeCarga">Sede</label>
+                    <select id="sedeCarga" name="id_sede" required>
+                        <option value="">Seleccione</option>
+                        <?php foreach ($sedes as $sede): ?>
+                            <option value="<?= htmlspecialchars($sede['id_sede']) ?>" <?= (string) $sedeSeleccionada === (string) ($sede['id_sede'] ?? '') ? 'selected' : '' ?>>
+                                <?= htmlspecialchars(($sede['colegio_nombre'] ?? '') . ' - ' . ($sede['nombre'] ?? 'Sede')) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div>
+                    <label for="anioCarga">Año</label>
+                    <input id="anioCarga" type="number" name="anio" min="2000" max="2100" value="<?= htmlspecialchars($anioSugerido) ?>" required>
+                </div>
+            </div>
             <div>
                 <label for="archivoCarga">Archivo Excel (.xlsx)</label>
                 <input id="archivoCarga" type="file" name="archivo" accept=".xlsx" required>
+                <p class="small" style="margin:4px 0 0;">Extensión permitida .xlsx | Tamaño máximo 10 MB.</p>
             </div>
             <div>
                 <label for="notasCarga">Notas internas (opcional)</label>
@@ -135,7 +165,7 @@ $mapResultado = static function (string $estado): array {
                     <th>Fecha</th>
                     <th>Archivo</th>
                     <th>Resultado</th>
-                    <th>Registros</th>
+                    <th>Valor cargado ($)</th>
                     <th>Errores</th>
                     <th>Mensaje</th>
                 </tr>
@@ -147,7 +177,7 @@ $mapResultado = static function (string $estado): array {
                         <td><?= htmlspecialchars($carga['fecha_registro'] ?? '') ?></td>
                         <td><?= htmlspecialchars($carga['archivo_original'] ?? '') ?></td>
                         <td><span class="tag <?= $estado['class'] ?>"><?= htmlspecialchars($estado['label']) ?></span></td>
-                        <td><?= number_format((int) ($carga['total_registros'] ?? 0), 0, ',', '.') ?></td>
+                        <td><?= number_format((float) ($carga['total_registros'] ?? 0), 0, ',', '.') ?></td>
                         <td><?= number_format((int) ($carga['total_errores'] ?? 0), 0, ',', '.') ?></td>
                         <td><?= htmlspecialchars($carga['mensaje'] ?? '') ?></td>
                     </tr>
