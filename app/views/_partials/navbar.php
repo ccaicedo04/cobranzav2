@@ -42,6 +42,10 @@ $basePath = rtrim(Helpers::baseUrl(), '/');
             <img src="images/logo-yoyjo.png" alt="Logo" />
             <strong>Sistema de Cobranza</strong>
         </a>
+        <div class="nav-search">
+            <span aria-hidden="true">🔍</span>
+            <input type="search" placeholder="Buscar responsables, estudiantes..." aria-label="Buscar">
+        </div>
         <form class="tenant" method="post" action="<?= Helpers::baseUrl('index.php?route=contexto/actualizar') ?>" id="formContextoNav" data-base-path="<?= htmlspecialchars($basePath) ?>">
             <input type="hidden" name="_token" value="<?= htmlspecialchars($tokenNav) ?>">
             <input type="hidden" name="redirect" id="contextRedirect" value="<?= htmlspecialchars($redirectPath) ?>">
