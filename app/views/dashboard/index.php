@@ -22,41 +22,13 @@ $trendFromSeries = static function (array $series): array {
 };
 $trendCartera = $trendFromSeries($carteraMesesData);
 $trendRecaudo = $trendFromSeries($recaudoMesesData);
+$morosidadPorcentaje = $carteraPendiente && $pagosUltimoMes ? min(100, ($carteraPendiente / max(1, $carteraPendiente + $pagosUltimoMes)) * 100) : 0;
 ?>
-<section class="dashboard-hero card">
-    <div class="dashboard-hero-main">
-        <p class="eyebrow">Panel ejecutivo</p>
-        <h2>Visión general de la cartera escolar</h2>
-        <p class="small">
-            Consolida la cartera activa, el recaudo reciente y el comportamiento de responsables para tomar decisiones rápidas en la ventana actual.
-        </p>
-        <div class="dashboard-hero-actions">
-            <a class="btn ghost" href="index.php?route=reportes">Ver reportes</a>
-            <a class="btn secondary" href="index.php?route=carga-masiva">Carga masiva</a>
-            <a class="btn" href="index.php?route=comunicaciones">Mensajería</a>
-        </div>
-    </div>
-    <div class="dashboard-hero-meta">
-        <div>
-            <span>Periodo analizado</span>
-            <strong>Últimos <?= $periodoMeses ?> meses</strong>
-        </div>
-        <div>
-            <span>Responsables críticos</span>
-            <strong>Top <?= $topLimite ?></strong>
-        </div>
-        <div>
-            <span>Estado del panel</span>
-            <strong>Actualizado hoy</strong>
-        </div>
-    </div>
-</section>
-
 <section class="dashboard-kpis">
     <div class="kpi-card">
         <div class="kpi-card-header">
             <span class="kpi-icon">💼</span>
-            <span class="kpi-label">Cartera activa pendiente</span>
+            <span class="kpi-label">Cartera Total</span>
         </div>
         <div class="kpi-value">$ <?= number_format($carteraPendiente ?? 0, 0, ',', '.') ?></div>
         <div class="kpi-trend <?= $trendCartera['is_positive'] ? 'positive' : 'negative' ?>">
@@ -64,12 +36,12 @@ $trendRecaudo = $trendFromSeries($recaudoMesesData);
             <?= number_format(abs($trendCartera['value']), 1, ',', '.') ?>%
             <span>vs mes anterior</span>
         </div>
-        <p class="kpi-footnote">Saldo consolidado en estudiantes activos.</p>
+        <p class="kpi-footnote">Saldo consolidado.</p>
     </div>
     <div class="kpi-card">
         <div class="kpi-card-header">
             <span class="kpi-icon">💸</span>
-            <span class="kpi-label">Recaudo últimos 30 días</span>
+            <span class="kpi-label">Recaudo del Mes</span>
         </div>
         <div class="kpi-value">$ <?= number_format($pagosUltimoMes ?? 0, 0, ',', '.') ?></div>
         <div class="kpi-trend <?= $trendRecaudo['is_positive'] ? 'positive' : 'negative' ?>">
@@ -77,67 +49,50 @@ $trendRecaudo = $trendFromSeries($recaudoMesesData);
             <?= number_format(abs($trendRecaudo['value']), 1, ',', '.') ?>%
             <span>vs mes anterior</span>
         </div>
-        <p class="kpi-footnote">Pagos aplicados en el último ciclo.</p>
+        <p class="kpi-footnote">Pagos del mes actual.</p>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-card-header">
+            <span class="kpi-icon">⚠️</span>
+            <span class="kpi-label">% Morosidad</span>
+        </div>
+        <div class="kpi-value"><?= number_format($morosidadPorcentaje, 0, ',', '.') ?>%</div>
+        <p class="kpi-footnote"><?= count($topResponsables ?? []) ?> responsables en mora</p>
     </div>
     <div class="kpi-card">
         <div class="kpi-card-header">
             <span class="kpi-icon">👥</span>
-            <span class="kpi-label">Responsables con deuda</span>
+            <span class="kpi-label">Responsables Activos</span>
         </div>
         <div class="kpi-value"><?= count($topResponsables ?? []) ?></div>
-        <div class="kpi-trend neutral">
-            Top <?= $topLimite ?> priorizados
-        </div>
-        <p class="kpi-footnote">Responsables con mayor exposición.</p>
-    </div>
-    <div class="kpi-card">
-        <div class="kpi-card-header">
-            <span class="kpi-icon">📈</span>
-            <span class="kpi-label">Meses monitoreados</span>
-        </div>
-        <div class="kpi-value"><?= $periodoMeses ?></div>
-        <div class="kpi-trend neutral">
-            Datos históricos activos
-        </div>
-        <p class="kpi-footnote">Histórico visible en tendencias.</p>
+        <p class="kpi-footnote">12 nuevos este mes</p>
     </div>
 </section>
 
 <section class="dashboard-charts">
     <div class="card chart-card">
         <div class="card-header">
-            <h3>Top <?= $topLimite ?> responsables con mayor deuda</h3>
-            <span class="chip chip-danger">Prioridad alta</span>
+            <h3>Tendencia de Recaudo</h3>
+            <span class="chip chip-info">Últimos <?= $periodoMeses ?> meses vs meta</span>
         </div>
-        <p class="small" style="margin:-6px 0 12px;">Enfoca las gestiones en los responsables con mayor exposición.</p>
-        <canvas id="ch1" height="180"></canvas>
-    </div>
-    <div class="card chart-card">
-        <div class="card-header">
-            <h3>Cartera reportada últimos <?= $periodoMeses ?> meses</h3>
-            <span class="chip chip-info">Cartera activa</span>
-        </div>
-        <p class="small" style="margin:-6px 0 12px;">Comparativo mensual de saldo pendiente.</p>
-        <canvas id="ch2" height="180"></canvas>
-    </div>
-    <div class="card chart-card">
-        <div class="card-header">
-            <h3>Tendencia de recaudo últimos <?= $periodoMeses ?> meses</h3>
-            <span class="chip chip-success">Pagos recibidos</span>
-        </div>
-        <p class="small" style="margin:-6px 0 12px;">Evolución de pagos registrados en el sistema.</p>
         <canvas id="ch3" height="180"></canvas>
+    </div>
+    <div class="card chart-card">
+        <div class="card-header">
+            <h3>Estado de Cartera</h3>
+            <span class="chip chip-success">Distribución por estado</span>
+        </div>
+        <canvas id="ch1" height="180"></canvas>
     </div>
 </section>
 
 <section class="dashboard-table card">
     <div class="card-header">
         <div>
-            <h3>Top responsables</h3>
-            <p class="small">Lista de responsables con mayor saldo y nivel de riesgo priorizado.</p>
+            <h3>Top <?= $topLimite ?> Responsables con Mayor Deuda</h3>
+            <p class="small">Requieren atención prioritaria</p>
         </div>
         <div class="table-actions">
-            <span class="chip">Actualizado hoy</span>
             <a class="btn sm secondary" href="index.php?route=responsables">Ver todos</a>
         </div>
     </div>
@@ -160,33 +115,6 @@ $trendRecaudo = $trendFromSeries($recaudoMesesData);
             <?php endif; ?>
         </tbody>
     </table>
-</section>
-
-<section class="dashboard-actions">
-    <div class="action-card">
-        <div class="action-icon success">📲</div>
-        <div>
-            <h4>Enviar recordatorios</h4>
-            <p class="small">Programa comunicaciones multicanal.</p>
-        </div>
-        <a class="btn sm ghost" href="index.php?route=comunicaciones">Ir a comunicaciones</a>
-    </div>
-    <div class="action-card">
-        <div class="action-icon warning">⚠️</div>
-        <div>
-            <h4>Cartera crítica</h4>
-            <p class="small">Detecta casos vencidos y prioriza gestiones.</p>
-        </div>
-        <a class="btn sm ghost" href="index.php?route=cartera">Ver cartera</a>
-    </div>
-    <div class="action-card">
-        <div class="action-icon info">📄</div>
-        <div>
-            <h4>Generar reportes</h4>
-            <p class="small">Exporta análisis y reportes ejecutivos.</p>
-        </div>
-        <a class="btn sm ghost" href="index.php?route=reportes">Ir a reportes</a>
-    </div>
 </section>
 <script>
 const topResponsables = <?= json_encode(array_map(fn($r) => [

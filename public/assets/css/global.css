@@ -185,16 +185,22 @@ footer{margin:24px 0 40px 0;color:#4b5563;font-size:13px;text-align:center}
 .topbar-search{flex:1;display:flex;align-items:center;gap:8px;background:#f8fafc;border:1px solid var(--border);border-radius:12px;padding:8px 12px;color:#94a3b8;max-width:360px}
 .topbar-search input{border:none;background:transparent;width:100%;font-size:13px}
 .topbar-search input:focus{outline:none}
+.topbar-context{display:flex;flex-direction:column;gap:2px;font-size:12px;color:#0f172a}
+.topbar-context small{font-size:11px;color:#94a3b8}
 .topbar-tenant{display:flex;align-items:center;gap:12px;margin-left:auto}
 .topbar-tenant label{font-size:10px;text-transform:uppercase;letter-spacing:.35px;color:#64748b;margin:0 0 4px}
 .topbar-tenant select{border:1px solid var(--border);border-radius:10px;padding:6px 10px;background:#f8fafc;font-size:12px}
 .topbar-actions{display:flex;align-items:center;gap:12px}
 .topbar-icon{position:relative;border:none;background:#f1f5f9;border-radius:10px;padding:8px;cursor:pointer}
 .topbar-icon .dot{position:absolute;right:6px;top:6px;width:8px;height:8px;border-radius:999px;background:#ef4444;border:2px solid #fff}
-.topbar-user{display:flex;align-items:center;gap:10px}
+.topbar-user{display:flex;align-items:center;gap:10px;position:relative;cursor:pointer}
 .topbar-user strong{display:block;font-size:12px;color:#0f172a}
 .topbar-user span{font-size:11px;color:#94a3b8}
 .avatar{width:34px;height:34px;border-radius:999px;background:#2563eb;color:#fff;display:flex;align-items:center;justify-content:center}
+.topbar-user-menu{position:absolute;right:0;top:44px;background:#fff;border:1px solid var(--border);border-radius:12px;padding:8px;display:none;min-width:160px;box-shadow:0 12px 24px rgba(15,23,42,.12)}
+.topbar-user-menu a{display:block;padding:8px 10px;border-radius:8px;color:#0f172a;text-decoration:none;font-size:12px}
+.topbar-user-menu a:hover{background:#f1f5f9}
+.topbar-user:hover .topbar-user-menu{display:block}
 .app-main{margin-left:240px;padding-top:80px;width:100%}
 .app-content{max-width:1200px;margin:0 auto;padding:0 24px 32px}
 
@@ -272,17 +278,17 @@ h3{margin:0 0 12px 0}
 .dashboard-hero-meta span{font-size:11px;text-transform:uppercase;letter-spacing:.35px;color:#64748b;display:block;margin-bottom:4px}
 .dashboard-hero-meta strong{font-size:16px;color:#0f172a}
 .dashboard-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:18px}
-.kpi-card{background:#fff;border-radius:18px;border:1px solid var(--border);box-shadow:0 8px 24px rgba(2,23,42,.06);padding:18px;display:flex;flex-direction:column;gap:6px}
-.kpi-card-header{display:flex;align-items:center;gap:10px}
-.kpi-icon{width:36px;height:36px;border-radius:12px;background:#f1f5f9;display:flex;align-items:center;justify-content:center;font-size:18px}
+.kpi-card{background:#fff;border-radius:16px;border:1px solid var(--border);box-shadow:0 6px 18px rgba(15,23,42,.08);padding:18px;display:flex;flex-direction:column;gap:8px;min-height:120px}
+.kpi-card-header{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.kpi-icon{width:34px;height:34px;border-radius:10px;background:#eef2ff;display:flex;align-items:center;justify-content:center;font-size:16px;color:#1d4ed8}
 .kpi-label{font-size:12px;text-transform:uppercase;letter-spacing:.35px;color:#64748b}
 .kpi-value{font-size:26px;font-weight:700;color:#0f172a}
 .kpi-footnote{margin:0;font-size:12px;color:#6b7280}
-.kpi-trend{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#64748b}
+.kpi-trend{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:#64748b;background:#f1f5f9;border-radius:999px;padding:4px 8px;width:max-content}
 .kpi-trend span{font-weight:500;color:#94a3b8}
-.kpi-trend.positive{color:#15803d}
-.kpi-trend.negative{color:#b91c1c}
-.kpi-trend.neutral{color:#0f172a}
+.kpi-trend.positive{color:#15803d;background:#dcfce7}
+.kpi-trend.negative{color:#b91c1c;background:#fee2e2}
+.kpi-trend.neutral{color:#0f172a;background:#e2e8f0}
 .dashboard-charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;margin-bottom:18px}
 .dashboard-table .table{margin-top:12px}
 .card-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px}

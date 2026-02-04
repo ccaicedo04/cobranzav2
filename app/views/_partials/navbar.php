@@ -90,6 +90,10 @@ $sedeNombre = $contexto['sede_nombre'] ?? ($user['sede_nombre'] ?? 'Sede');
         <span aria-hidden="true">🔍</span>
         <input type="search" placeholder="Buscar responsables, estudiantes..." aria-label="Buscar">
     </div>
+    <div class="topbar-context">
+        <span>🏫 <?= htmlspecialchars($colegioNombre) ?></span>
+        <small><?= htmlspecialchars($sedeNombre) ?></small>
+    </div>
     <form class="topbar-tenant" method="post" action="<?= Helpers::baseUrl('index.php?route=contexto/actualizar') ?>" id="formContextoNav" data-base-path="<?= htmlspecialchars($basePath) ?>">
         <input type="hidden" name="_token" value="<?= htmlspecialchars($tokenNav) ?>">
         <input type="hidden" name="redirect" id="contextRedirect" value="<?= htmlspecialchars($redirectPath) ?>">
@@ -132,6 +136,10 @@ $sedeNombre = $contexto['sede_nombre'] ?? ($user['sede_nombre'] ?? 'Sede');
                 <span><?= htmlspecialchars($usuarioRol) ?></span>
             </div>
             <div class="avatar">👤</div>
+            <div class="topbar-user-menu">
+                <a href="index.php?route=perfil">Ver perfil</a>
+                <a href="index.php?route=auth/logout" data-confirm="¿Deseas cerrar la sesión actual?">Cerrar sesión</a>
+            </div>
         </div>
     </div>
 </header>
