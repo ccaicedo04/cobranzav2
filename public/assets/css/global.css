@@ -55,6 +55,7 @@ footer{margin:24px 0 40px 0;color:#4b5563;font-size:13px;text-align:center}
 .comms-highlight>div{background:#0f325d;color:#f8fafc;border-radius:14px;padding:12px 18px;min-width:160px;box-shadow:0 12px 30px rgba(15,47,90,.2)}
 .comms-highlight .label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.4px;opacity:.76;margin-bottom:4px}
 .comms-highlight strong{font-size:22px;line-height:1.1}
+.comms-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:18px}
 .comms-shell{margin-bottom:20px}
 .comms-layout{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:20px;align-items:start}
 .comms-form{display:flex;flex-direction:column;gap:18px}
@@ -112,6 +113,7 @@ footer{margin:24px 0 40px 0;color:#4b5563;font-size:13px;text-align:center}
 .chat-notification-tag{position:absolute;top:10px;right:12px;font-size:10px;background:#00a884;color:#fff;padding:2px 8px;border-radius:999px;text-transform:uppercase;letter-spacing:.4px}
 .chat-notification.empty{padding:18px;text-align:center;background:#f8fafc;border-radius:12px;color:#64748b;font-size:13px}
 .chat-panel--main{min-height:720px;background:#efeae2;padding:0}
+.chat-panel--main::before{content:'';display:block;height:0}
 .chat-panel-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;border-bottom:1px solid rgba(15,23,42,.1);padding:16px 18px;background:#f0f2f5}
 .chat-panel-header h4{margin:4px 0;font-size:18px}
 .chat-panel-header .small{color:#475569}
@@ -138,6 +140,10 @@ footer{margin:24px 0 40px 0;color:#4b5563;font-size:13px;text-align:center}
 .chat-section{display:flex;flex-direction:column;gap:6px;background:#f8fafc;border:1px solid var(--border);border-radius:14px;padding:12px}
 .chat-section label{font-size:12px;text-transform:uppercase;letter-spacing:.35px;color:#475569;font-weight:600}
 .chat-section input,.chat-section select{background:#fff}
+.channel-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.channel-tab{border:1px solid var(--border);background:#f8fafc;color:#0f172a;border-radius:999px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer}
+.channel-tab.active{background:#2563eb;color:#fff;border-color:#2563eb}
+.chat-section select#commsCanal{margin-top:10px}
 .chat-resume{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;padding:12px;border-radius:14px;background:#f8fafc;border:1px dashed var(--border)}
 .chat-resume span{font-size:11px;text-transform:uppercase;letter-spacing:.35px;color:#64748b}
 .chat-resume strong{font-size:17px;color:#0f172a}
@@ -170,12 +176,15 @@ footer{margin:24px 0 40px 0;color:#4b5563;font-size:13px;text-align:center}
 /* Header single-row */
 .app-shell{display:flex;min-height:100vh;background:#f8fafc}
 .sidebar{width:240px;background:linear-gradient(180deg,#0f172a,#111827);color:#e2e8f0;position:fixed;left:0;top:0;bottom:0;padding:18px 16px;display:flex;flex-direction:column;gap:18px}
+.sidebar{transition:width .2s ease}
 .sidebar-brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px;color:#fff;margin-bottom:8px}
 .brand-icon{width:36px;height:36px;border-radius:12px;background:#1d4ed8;display:flex;align-items:center;justify-content:center}
 .brand-text{white-space:nowrap}
 .sidebar-toggle{margin-left:auto;border:none;background:rgba(255,255,255,.12);color:#fff;border-radius:10px;padding:4px 8px;cursor:pointer}
 .sidebar-section p{font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:rgba(226,232,240,.6);margin:12px 0 6px}
 .sidebar-link{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;color:#cbd5f5;text-decoration:none;font-weight:500;font-size:13px}
+.sidebar-link{transition:background .2s ease,color .2s ease,transform .2s ease}
+.sidebar-link:hover{transform:translateX(2px)}
 .sidebar-link .icon{width:18px;text-align:center}
 .sidebar-link .label{white-space:nowrap}
 .sidebar-link:hover{background:rgba(59,130,246,.15);color:#fff}
@@ -191,7 +200,7 @@ footer{margin:24px 0 40px 0;color:#4b5563;font-size:13px;text-align:center}
 .topbar-context{display:flex;flex-direction:column;gap:2px;font-size:12px;color:#0f172a}
 .topbar-context small{font-size:11px;color:#94a3b8}
 .topbar-tenant{display:flex;align-items:center;gap:12px;margin-left:auto}
-.topbar-tenant label{font-size:10px;text-transform:uppercase;letter-spacing:.35px;color:#64748b;margin:0 0 4px}
+.topbar-tenant label{display:none}
 .topbar-tenant select{border:1px solid var(--border);border-radius:10px;padding:6px 10px;background:#f8fafc;font-size:12px}
 .topbar-actions{display:flex;align-items:center;gap:12px}
 .topbar-icon{position:relative;border:none;background:#f1f5f9;border-radius:10px;padding:8px;cursor:pointer}

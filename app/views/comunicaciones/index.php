@@ -22,27 +22,38 @@ $defaultEstudiante = $defaultEstudiante ?? null;
 $datasetJson = json_encode($dataset, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 ?>
 
-<div class="card comms-header">
-    <div>
-        <h3>Gestiona tus comunicaciones en tiempo real</h3>
-        <p class="small">
-            Envía correos, mensajes de WhatsApp o SMS y registra llamadas desde una interfaz inspirada en chats.
-            Visualiza el historial con el responsable, recibe adjuntos y mantén el control de la cartera en un solo lugar.
-        </p>
+<div class="comms-kpis">
+    <div class="kpi-card">
+        <div class="kpi-card-header">
+            <span class="kpi-icon">💬</span>
+            <span class="kpi-label">Conversaciones activas</span>
+        </div>
+        <div class="kpi-value"><?= count($notifications) ?></div>
+        <p class="kpi-footnote">Chats abiertos en WhatsApp y SMS.</p>
     </div>
-    <div class="comms-highlight">
-        <div>
-            <span class="label">Plantillas activas</span>
-            <strong><?= count($plantillas) ?></strong>
+    <div class="kpi-card">
+        <div class="kpi-card-header">
+            <span class="kpi-icon">📨</span>
+            <span class="kpi-label">Comunicaciones registradas</span>
         </div>
-        <div>
-            <span class="label">Responsables cargados</span>
-            <strong><?= count($responsables) ?></strong>
+        <div class="kpi-value"><?= count($comunicaciones) ?></div>
+        <p class="kpi-footnote">Histórico de mensajes enviados.</p>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-card-header">
+            <span class="kpi-icon">📄</span>
+            <span class="kpi-label">Plantillas activas</span>
         </div>
-        <div>
-            <span class="label">Comunicaciones registradas</span>
-            <strong><?= count($comunicaciones) ?></strong>
+        <div class="kpi-value"><?= count($plantillas) ?></div>
+        <p class="kpi-footnote">Plantillas disponibles para envío.</p>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-card-header">
+            <span class="kpi-icon">👥</span>
+            <span class="kpi-label">Responsables cargados</span>
         </div>
+        <div class="kpi-value"><?= count($responsables) ?></div>
+        <p class="kpi-footnote">Responsables disponibles para gestionar.</p>
     </div>
 </div>
 
@@ -208,6 +219,12 @@ $datasetJson = json_encode($dataset, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLA
 
                 <div class="chat-section">
                     <label for="commsCanal">Canal de contacto</label>
+                    <div class="channel-tabs" data-channel-tabs>
+                        <button type="button" class="channel-tab<?= $selectedCanal === 'email' ? ' active' : '' ?>" data-channel="email">Correo</button>
+                        <button type="button" class="channel-tab<?= $selectedCanal === 'whatsapp' ? ' active' : '' ?>" data-channel="whatsapp">WhatsApp</button>
+                        <button type="button" class="channel-tab<?= $selectedCanal === 'sms' ? ' active' : '' ?>" data-channel="sms">SMS</button>
+                        <button type="button" class="channel-tab<?= $selectedCanal === 'llamada' ? ' active' : '' ?>" data-channel="llamada">Llamada</button>
+                    </div>
                     <select name="canal" id="commsCanal">
                         <option value="email" <?= $selectedCanal === 'email' ? 'selected' : '' ?>>Correo electrónico</option>
                         <option value="whatsapp" <?= $selectedCanal === 'whatsapp' ? 'selected' : '' ?>>WhatsApp</option>
