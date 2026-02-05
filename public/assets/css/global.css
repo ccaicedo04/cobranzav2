@@ -96,8 +96,11 @@ footer{margin:24px 0 40px 0;color:#4b5563;font-size:13px;text-align:center}
 .comms-form textarea{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,'Helvetica Neue',Arial}
 .chat-shell{margin-bottom:20px}
 .chat-form{display:flex;flex-direction:column;gap:18px}
-.chat-grid{display:grid;grid-template-columns:280px minmax(0,1.4fr) 320px;gap:20px;align-items:start}
+.chat-grid{display:grid;grid-template-columns:300px minmax(0,1.6fr) 320px;gap:20px;align-items:start}
+.comms-grid{gap:24px}
 .chat-panel{background:#fff;border-radius:18px;border:1px solid var(--border);box-shadow:0 8px 24px rgba(2,23,42,.06);padding:18px;display:flex;flex-direction:column;gap:16px;min-height:0}
+.chat-panel--details{max-height:720px;overflow:auto}
+.chat-panel--notifications{max-height:720px}
 .chat-panel--notifications{max-height:720px;background:#f0f2f5;padding:0}
 .chat-panel--notifications header{padding:18px 18px 0}
 .chat-panel--notifications header{display:flex;flex-direction:column;gap:4px}
@@ -131,6 +134,8 @@ footer{margin:24px 0 40px 0;color:#4b5563;font-size:13px;text-align:center}
 .status-pill.online{background:#dcfce7;color:#166534}
 .status-pill.offline{background:#fee2e2;color:#b91c1c}
 .chat-thread{flex:1;display:flex;flex-direction:column;gap:12px;padding:18px;max-height:460px;overflow:auto;background:#efeae2}
+.chat-thread::-webkit-scrollbar{width:6px}
+.chat-thread::-webkit-scrollbar-thumb{background:#cbd5f5;border-radius:999px}
 .chat-thread-empty{padding:40px 20px;text-align:center;color:#64748b;font-size:13px}
 .chat-message{max-width:78%;padding:10px 14px;border-radius:14px;box-shadow:0 10px 18px rgba(15,47,90,.08);position:relative;font-size:14px;line-height:1.6}
 .chat-message.incoming{align-self:flex-start;background:#ffffff;color:#111827;border-top-left-radius:6px}
@@ -187,12 +192,17 @@ footer{margin:24px 0 40px 0;color:#4b5563;font-size:13px;text-align:center}
 .app-shell{display:flex;min-height:100vh;background:#f8fafc}
 .sidebar{width:240px;background:linear-gradient(180deg,#0f172a,#111827);color:#e2e8f0;position:fixed;left:0;top:0;bottom:0;padding:18px 16px;display:flex;flex-direction:column;gap:18px}
 .sidebar{transition:width .2s ease}
-.sidebar{overflow-y:auto}
+.sidebar{overflow:hidden}
 .sidebar-brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px;color:#fff;margin-bottom:8px}
 .brand-icon{width:36px;height:36px;border-radius:12px;background:#1d4ed8;display:flex;align-items:center;justify-content:center}
 .brand-text{white-space:nowrap}
 .sidebar-toggle{margin-left:auto;border:none;background:rgba(255,255,255,.12);color:#fff;border-radius:10px;padding:4px 8px;cursor:pointer}
-.sidebar-section p{font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:rgba(226,232,240,.6);margin:12px 0 6px}
+.sidebar-section{display:flex;flex-direction:column;gap:6px}
+.sidebar-section-toggle{display:flex;align-items:center;justify-content:space-between;gap:8px;border:none;background:transparent;color:rgba(226,232,240,.7);font-size:11px;text-transform:uppercase;letter-spacing:.4px;margin:8px 0 2px;padding:0 6px;cursor:pointer}
+.sidebar-section-toggle .chevron{transition:transform .2s ease}
+.sidebar-section.open .sidebar-section-toggle .chevron{transform:rotate(0deg)}
+.sidebar-section:not(.open) .sidebar-link{display:none}
+.sidebar-section:not(.open) .sidebar-section-toggle .chevron{transform:rotate(-90deg)}
 .sidebar-link{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;color:#cbd5f5;text-decoration:none;font-weight:500;font-size:13px}
 .sidebar-link{transition:background .2s ease,color .2s ease,transform .2s ease}
 .sidebar-link:hover{transform:translateX(2px)}
@@ -233,9 +243,10 @@ footer{margin:24px 0 40px 0;color:#4b5563;font-size:13px;text-align:center}
 .sidebar-collapsed .sidebar{width:72px}
 .sidebar-collapsed .topbar{left:72px}
 .sidebar-collapsed .app-main{margin-left:72px}
-.sidebar-collapsed .sidebar-section p,
+.sidebar-collapsed .sidebar-section-toggle,
 .sidebar-collapsed .sidebar-link .label,
 .sidebar-collapsed .brand-text{display:none}
+.sidebar-collapsed .sidebar-link{display:flex}
 .sidebar-collapsed .sidebar-link{justify-content:center}
 .sidebar-collapsed .sidebar-toggle{margin-left:0}
 .sidebar-collapsed .sidebar-link{padding:10px}

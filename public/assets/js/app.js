@@ -278,6 +278,22 @@
     });
   }
 
+  function setupSidebarSections() {
+    const sections = document.querySelectorAll('[data-section]');
+    if (!sections.length) {
+      return;
+    }
+    sections.forEach(function (section) {
+      const toggle = section.querySelector('.sidebar-section-toggle');
+      if (!toggle) {
+        return;
+      }
+      toggle.addEventListener('click', function () {
+        section.classList.toggle('open');
+      });
+    });
+  }
+
   function setupComunicaciones() {
     const shell = document.getElementById('comunicacionesApp');
     if (!shell || typeof window.COMMS_DATA !== 'object' || window.COMMS_DATA === null) {
@@ -829,5 +845,6 @@
     setupContextFiltering();
     setupComunicaciones();
     setupSidebarToggle();
+    setupSidebarSections();
   });
 })();

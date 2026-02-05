@@ -46,28 +46,40 @@ $sedeNombre = $contexto['sede_nombre'] ?? ($user['sede_nombre'] ?? 'Sede');
         <span class="brand-text">COBRANZA</span>
         <button class="sidebar-toggle" type="button" aria-label="Contraer menú">⇔</button>
     </div>
-    <div class="sidebar-section">
-        <p>Principal</p>
+    <div class="sidebar-section open" data-section>
+        <button class="sidebar-section-toggle" type="button">
+            <span>Principal</span>
+            <span class="chevron">▾</span>
+        </button>
         <a href="index.php" class="sidebar-link<?= $routeActual === '' || $routeActual === 'dashboard' ? ' active' : '' ?>" title="Dashboard">
             <span class="icon">🏠</span><span class="label">Dashboard</span>
         </a>
     </div>
     <?php if (in_array('cobranzas', $modulos, true)): ?>
-        <div class="sidebar-section">
-            <p>Gestión</p>
+        <div class="sidebar-section open" data-section>
+            <button class="sidebar-section-toggle" type="button">
+                <span>Gestión</span>
+                <span class="chevron">▾</span>
+            </button>
             <a href="index.php?route=responsables" class="sidebar-link<?= $routeActual === 'responsables' ? ' active' : '' ?>" title="Responsables"><span class="icon">👤</span><span class="label">Responsables</span></a>
             <a href="index.php?route=estudiantes" class="sidebar-link<?= $routeActual === 'estudiantes' ? ' active' : '' ?>" title="Estudiantes"><span class="icon">🎓</span><span class="label">Estudiantes</span></a>
             <a href="index.php?route=deudas" class="sidebar-link<?= $routeActual === 'deudas' ? ' active' : '' ?>" title="Cartera"><span class="icon">💼</span><span class="label">Cartera</span></a>
             <a href="index.php?route=pagos" class="sidebar-link<?= $routeActual === 'pagos' ? ' active' : '' ?>" title="Pagos"><span class="icon">💳</span><span class="label">Pagos</span></a>
         </div>
-        <div class="sidebar-section">
-            <p>Comunicación</p>
+        <div class="sidebar-section open" data-section>
+            <button class="sidebar-section-toggle" type="button">
+                <span>Comunicación</span>
+                <span class="chevron">▾</span>
+            </button>
             <a href="index.php?route=comunicaciones" class="sidebar-link<?= $routeActual === 'comunicaciones' ? ' active' : '' ?>" title="Mensajería"><span class="icon">💬</span><span class="label">Mensajería</span></a>
         </div>
     <?php endif; ?>
     <?php if (in_array('administracion', $modulos, true) || in_array('parametrizacion', $modulos, true)): ?>
-        <div class="sidebar-section">
-            <p>Configuración</p>
+        <div class="sidebar-section open" data-section>
+            <button class="sidebar-section-toggle" type="button">
+                <span>Configuración</span>
+                <span class="chevron">▾</span>
+            </button>
             <?php if (in_array('administracion', $modulos, true)): ?>
                 <a href="index.php?route=colegios" class="sidebar-link<?= $routeActual === 'colegios' ? ' active' : '' ?>" title="Colegios"><span class="icon">🏫</span><span class="label">Colegios</span></a>
                 <a href="index.php?route=carga-masiva" class="sidebar-link<?= $routeActual === 'carga-masiva' ? ' active' : '' ?>" title="Carga Masiva"><span class="icon">📥</span><span class="label">Carga Masiva</span></a>

@@ -72,7 +72,7 @@ $datasetJson = json_encode($dataset, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLA
     <form class="chat-form" method="post" action="index.php?route=comunicaciones/store" enctype="multipart/form-data"
           data-confirm="¿Deseas registrar la comunicación con la información diligenciada?">
         <input type="hidden" name="_token" value="<?= htmlspecialchars($token) ?>">
-        <div class="chat-grid">
+        <div class="chat-grid comms-grid">
             <aside class="chat-panel chat-panel--notifications">
                 <header class="chat-notifications-header">
                     <div>
