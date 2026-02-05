@@ -62,10 +62,10 @@ $morosidadPorcentaje = $carteraPendiente && $pagosUltimoMes ? min(100, ($cartera
     <div class="kpi-card">
         <div class="kpi-card-header">
             <span class="kpi-icon">👥</span>
-            <span class="kpi-label">Responsables Activos</span>
+            <span class="kpi-label">Total Responsables</span>
         </div>
-        <div class="kpi-value"><?= count($topResponsables ?? []) ?></div>
-        <p class="kpi-footnote">12 nuevos este mes</p>
+        <div class="kpi-value"><?= number_format((int) ($totalResponsables ?? count($topResponsables ?? [])), 0, ',', '.') ?></div>
+        <p class="kpi-footnote">Base total registrada.</p>
     </div>
 </section>
 
@@ -96,22 +96,38 @@ $morosidadPorcentaje = $carteraPendiente && $pagosUltimoMes ? min(100, ($cartera
             <a class="btn sm secondary" href="index.php?route=responsables">Ver todos</a>
         </div>
     </div>
-    <table class="table">
+    <table class="table table-clean">
         <thead>
             <tr>
                 <th>Responsable</th>
-                <th>Total deuda</th>
+                <th>Estudiantes</th>
+                <th>Deuda total</th>
+                <th>Días vencido</th>
+                <th>Estado</th>
+                <th>Acciones</th>
             </tr>
         </thead>
         <tbody>
             <?php foreach (($topResponsables ?? []) as $responsable): ?>
                 <tr>
-                    <td><?= htmlspecialchars($responsable['nombre_completo']) ?></td>
+                    <td>
+                        <strong><?= htmlspecialchars($responsable['nombre_completo']) ?></strong>
+                        <div class="small">CC: <?= htmlspecialchars($responsable['numero_documento'] ?? 'N/D') ?></div>
+                    </td>
+                    <td><?= (int) ($responsable['estudiantes'] ?? 0) ?></td>
                     <td>$ <?= number_format($responsable['total'], 0, ',', '.') ?></td>
+                    <td><?= (int) ($responsable['dias_vencido'] ?? 0) ?> días</td>
+                    <td><span class="status-pill pending">Pendiente</span></td>
+                    <td class="table-actions-inline">
+                        <button type="button" class="icon-btn" aria-label="WhatsApp">💬</button>
+                        <button type="button" class="icon-btn" aria-label="Llamar">📞</button>
+                        <button type="button" class="icon-btn" aria-label="Email">✉️</button>
+                        <button type="button" class="icon-btn" aria-label="Más">⋯</button>
+                    </td>
                 </tr>
             <?php endforeach; ?>
             <?php if (empty($topResponsables)): ?>
-                <tr><td colspan="2">No hay datos disponibles.</td></tr>
+                <tr><td colspan="7">No hay datos disponibles.</td></tr>
             <?php endif; ?>
         </tbody>
     </table>

@@ -105,7 +105,11 @@ class ReporteModel
     public function topResponsables(int $limit = 5): array
     {
         [$where, $params] = $this->tenantConditions();
-        $sql = 'SELECT r.nombre_completo, SUM(d.saldo_actual) AS total
+        $sql = 'SELECT r.nombre_completo,
+                       r.numero_documento,
+                       COUNT(DISTINCT e.id_estudiante) AS estudiantes,
+                       SUM(d.saldo_actual) AS total,
+                       COALESCE(MAX(DATEDIFF(CURDATE(), d.fecha_vencimiento)), 0) AS dias_vencido
                 FROM deuda d
                 INNER JOIN estudiante e ON e.id_estudiante = d.id_estudiante
                 INNER JOIN responsable_financiero r ON r.id_responsable = e.id_responsable
@@ -122,6 +126,22 @@ class ReporteModel
         $stmt->execute();
 
         return $stmt->fetchAll();
+    }
+
+    public function totalResponsables(): int
+    {
+        [$where, $params] = $this->tenantConditions([
+            'colegio' => 'r.id_colegio',
+            'sede' => 'r.id_sede',
+        ]);
+        $sql = 'SELECT COUNT(*) FROM responsable_financiero r WHERE r.eliminado = 0';
+        if ($where) {
+            $sql .= ' AND ' . implode(' AND ', $where);
+        }
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+
+        return (int) $stmt->fetchColumn();
     }
 
     public function carteraUltimosMeses(int $meses = 6): array

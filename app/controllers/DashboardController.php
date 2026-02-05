@@ -46,6 +46,7 @@ class DashboardController extends Controller
             'carteraPendiente' => $this->reportes->carteraPendiente(),
             'pagosUltimoMes' => $this->reportes->totalPagosUltimoMes(),
             'topResponsables' => $this->reportes->topResponsables($topResponsablesLimite),
+            'totalResponsables' => $this->reportes->totalResponsables(),
             'carteraMeses' => $this->reportes->carteraUltimosMeses($mesesCartera),
             'recaudoMeses' => $this->reportes->recaudoUltimosMeses($mesesCartera),
             'dashboardTopLimite' => $topResponsablesLimite,

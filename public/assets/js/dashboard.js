@@ -16,7 +16,7 @@
           labels: responsables.map(r => r.nombre),
           datasets: [{
             data: responsables.map(r => r.total),
-            backgroundColor: ['#1658a0','#0f172a','#3b82f6','#1d4ed8','#6366f1']
+            backgroundColor: ['#16a34a','#f59e0b','#ef4444','#2563eb','#0ea5e9']
           }]
         },
         options: {
@@ -36,7 +36,7 @@
           datasets: [{
             label: 'Cartera',
             data: cartera.map(row => Number(row.total)),
-            backgroundColor: '#1d4ed8'
+            backgroundColor: '#2563eb'
           }]
         }
       });
@@ -52,7 +52,7 @@
             label: 'Recaudo',
             data: recaudo.map(row => Number(row.total)),
             borderColor: '#10b981',
-            backgroundColor: 'rgba(16,185,129,.2)',
+            backgroundColor: 'rgba(16,185,129,.18)',
             tension: 0.3,
             fill: true
           }]

@@ -89,9 +89,7 @@ $sedeNombre = $contexto['sede_nombre'] ?? ($user['sede_nombre'] ?? 'Sede');
     <div class="topbar-title"><?= htmlspecialchars($pageTitle ?? 'Dashboard') ?></div>
     <div class="topbar-context">
         <span>🏫 <?= htmlspecialchars($colegioNombre) ?></span>
-        <small><?= htmlspecialchars($sedeNombre) ?></small>
-    </div>
-    <form class="topbar-tenant" method="post" action="<?= Helpers::baseUrl('index.php?route=contexto/actualizar') ?>" id="formContextoNav" data-base-path="<?= htmlspecialchars($basePath) ?>">
+        <form class="topbar-tenant" method="post" action="<?= Helpers::baseUrl('index.php?route=contexto/actualizar') ?>" id="formContextoNav" data-base-path="<?= htmlspecialchars($basePath) ?>">
         <input type="hidden" name="_token" value="<?= htmlspecialchars($tokenNav) ?>">
         <input type="hidden" name="redirect" id="contextRedirect" value="<?= htmlspecialchars($redirectPath) ?>">
         <div>
@@ -112,7 +110,9 @@ $sedeNombre = $contexto['sede_nombre'] ?? ($user['sede_nombre'] ?? 'Sede');
                 <?php endforeach; ?>
             </select>
         </div>
-    </form>
+        </form>
+        <small><?= htmlspecialchars($sedeNombre) ?></small>
+    </div>
     <div class="topbar-actions">
         <button class="topbar-icon" type="button" aria-label="Notificaciones">
             🔔
