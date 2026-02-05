@@ -99,7 +99,7 @@ footer{margin:24px 0 40px 0;color:#4b5563;font-size:13px;text-align:center}
 .chat-grid{display:grid;grid-template-columns:300px minmax(0,1.6fr) 320px;gap:20px;align-items:start}
 .comms-grid{gap:24px}
 .chat-panel{background:#fff;border-radius:18px;border:1px solid var(--border);box-shadow:0 8px 24px rgba(2,23,42,.06);padding:18px;display:flex;flex-direction:column;gap:16px;min-height:0}
-.chat-panel--details{max-height:720px;overflow:auto}
+.chat-panel--details{max-height:720px;overflow:auto;gap:12px}
 .chat-panel--notifications{max-height:720px}
 .chat-panel--notifications{max-height:720px;background:#f0f2f5;padding:0}
 .chat-panel--notifications header{padding:18px 18px 0}
@@ -152,7 +152,7 @@ footer{margin:24px 0 40px 0;color:#4b5563;font-size:13px;text-align:center}
 .chat-attachment input{display:none}
 .chat-composer-actions{display:flex;gap:10px}
 .chat-panel--details{gap:14px}
-.chat-section{display:flex;flex-direction:column;gap:6px;background:#f8fafc;border:1px solid var(--border);border-radius:14px;padding:12px}
+.chat-section{display:flex;flex-direction:column;gap:6px;background:#f8fafc;border:1px solid var(--border);border-radius:14px;padding:10px}
 .chat-section label{font-size:12px;text-transform:uppercase;letter-spacing:.35px;color:#475569;font-weight:600}
 .chat-section input,.chat-section select{background:#fff}
 .channel-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
