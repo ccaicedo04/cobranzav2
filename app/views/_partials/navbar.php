@@ -86,32 +86,33 @@ $sedeNombre = $contexto['sede_nombre'] ?? ($user['sede_nombre'] ?? 'Sede');
 </aside>
 
 <header class="topbar">
-    <div class="topbar-title"><?= htmlspecialchars($pageTitle ?? 'Dashboard') ?></div>
-    <div class="topbar-context">
-        <span>🏫 <?= htmlspecialchars($colegioNombre) ?></span>
-        <form class="topbar-tenant" method="post" action="<?= Helpers::baseUrl('index.php?route=contexto/actualizar') ?>" id="formContextoNav" data-base-path="<?= htmlspecialchars($basePath) ?>">
-        <input type="hidden" name="_token" value="<?= htmlspecialchars($tokenNav) ?>">
-        <input type="hidden" name="redirect" id="contextRedirect" value="<?= htmlspecialchars($redirectPath) ?>">
-        <div>
-            <label>Sede</label>
-            <select name="id_sede" id="navSede" title="Seleccionar sede">
-                <option value="">Todas mis sedes</option>
-                <?php foreach ($colegiosDisponibles as $colegio): ?>
-                    <?php $sedesColegio = $sedesAgrupadas[$colegio['id_colegio']] ?? []; ?>
-                    <?php if ($sedesColegio): ?>
-                        <optgroup label="<?= htmlspecialchars($colegio['nombre']) ?>" data-colegio="<?= $colegio['id_colegio'] ?>">
-                            <?php foreach ($sedesColegio as $sede): ?>
-                                <option value="<?= $sede['id_sede'] ?>" <?= ($contexto['id_sede'] ?? null) == $sede['id_sede'] ? 'selected' : '' ?>>
-                                    <?= htmlspecialchars($sede['nombre']) ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </optgroup>
-                    <?php endif; ?>
-                <?php endforeach; ?>
-            </select>
+    <div class="topbar-left">
+        <div class="topbar-title"><?= htmlspecialchars($pageTitle ?? 'Dashboard') ?></div>
+        <div class="topbar-context">
+            <span>🏫 <?= htmlspecialchars($colegioNombre) ?></span>
+            <form class="topbar-tenant" method="post" action="<?= Helpers::baseUrl('index.php?route=contexto/actualizar') ?>" id="formContextoNav" data-base-path="<?= htmlspecialchars($basePath) ?>">
+                <input type="hidden" name="_token" value="<?= htmlspecialchars($tokenNav) ?>">
+                <input type="hidden" name="redirect" id="contextRedirect" value="<?= htmlspecialchars($redirectPath) ?>">
+                <div>
+                    <label>Sede</label>
+                    <select name="id_sede" id="navSede" title="Seleccionar sede">
+                        <option value="">Todas mis sedes</option>
+                        <?php foreach ($colegiosDisponibles as $colegio): ?>
+                            <?php $sedesColegio = $sedesAgrupadas[$colegio['id_colegio']] ?? []; ?>
+                            <?php if ($sedesColegio): ?>
+                                <optgroup label="<?= htmlspecialchars($colegio['nombre']) ?>" data-colegio="<?= $colegio['id_colegio'] ?>">
+                                    <?php foreach ($sedesColegio as $sede): ?>
+                                        <option value="<?= $sede['id_sede'] ?>" <?= ($contexto['id_sede'] ?? null) == $sede['id_sede'] ? 'selected' : '' ?>>
+                                            <?= htmlspecialchars($sede['nombre']) ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </optgroup>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+            </form>
         </div>
-        </form>
-        <small><?= htmlspecialchars($sedeNombre) ?></small>
     </div>
     <div class="topbar-actions">
         <button class="topbar-icon" type="button" aria-label="Notificaciones">

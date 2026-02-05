@@ -104,9 +104,9 @@ $datasetJson = json_encode($dataset, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLA
                 </ul>
             </aside>
 
-            <section class="chat-panel chat-panel--main">
+            <section class="chat-panel chat-panel--main whatsapp-shell">
                 <header class="chat-panel-header">
-                    <div>
+                    <div class="chat-header-main">
                         <span class="label">Conversación activa</span>
                         <h4 data-chat-responsable><?= htmlspecialchars($selectedResponsableInfo['nombre_completo'] ?? 'Selecciona un responsable') ?></h4>
                         <span class="small" data-chat-contact>
@@ -116,6 +116,11 @@ $datasetJson = json_encode($dataset, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLA
                                 Selecciona un responsable para ver su información de contacto.
                             <?php endif; ?>
                         </span>
+                    </div>
+                    <div class="chat-header-actions">
+                        <button type="button" class="icon-btn" aria-label="Llamada">📞</button>
+                        <button type="button" class="icon-btn" aria-label="Video">🎥</button>
+                        <button type="button" class="icon-btn" aria-label="Buscar">🔍</button>
                     </div>
                     <div class="chat-status">
                         <span class="status-pill <?= $twilioConfigured ? 'online' : 'offline' ?>">
@@ -157,22 +162,19 @@ $datasetJson = json_encode($dataset, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLA
                     <?php endif; ?>
                 </div>
 
-                <div class="chat-composer">
-                    <label for="commsMensaje">Escribe tu mensaje</label>
-                    <textarea id="commsMensaje" name="mensaje" rows="4"
-                              placeholder="Saluda al responsable o reutiliza una plantilla personalizada"
-                              required></textarea>
-                    <p class="small">Las variables como <code>{{responsable_nombre}}</code> se reemplazarán automáticamente con los datos reales.</p>
-                    <div class="chat-composer-footer">
+                <div class="chat-composer whatsapp-composer">
+                    <div class="composer-row">
+                        <button type="button" class="icon-btn" aria-label="Emoji">😊</button>
                         <label class="chat-attachment">
                             <input type="file" name="adjuntos[]" multiple data-chat-attachments>
-                            <span>Adjuntar archivos</span>
+                            📎
                         </label>
-                        <div class="chat-composer-actions">
-                            <button type="button" class="btn secondary" data-clear-mensaje>Limpiar</button>
-                            <button class="btn" type="submit">Enviar / Registrar</button>
-                        </div>
+                        <textarea id="commsMensaje" name="mensaje" rows="2"
+                                  placeholder="Escribe un mensaje"
+                                  required></textarea>
+                        <button type="submit" class="btn">Enviar</button>
                     </div>
+                    <p class="small">Las variables como <code>{{responsable_nombre}}</code> se reemplazarán automáticamente.</p>
                 </div>
             </section>
 
