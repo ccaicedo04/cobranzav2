@@ -12,8 +12,12 @@ body{margin:0;background:var(--bg);font-family:Inter,system-ui,-apple-system,Seg
 .table th,.table td{padding:12px 14px;border-bottom:1px solid var(--border);text-align:left;font-size:14px}
 .table th{background:#f8fafc;text-transform:uppercase;font-size:12px;color:#6b7280}.table tr:last-child td{border-bottom:none}
 .badge{padding:4px 10px;border-radius:999px;background:#eef2ff;font-size:12px}
+.tag{display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;background:#e0f2fe;color:#1d4ed8;font-weight:600;font-size:12px}
 .btn{display:inline-flex;align-items:center;gap:8px;background:var(--primary);color:#fff;border:none;border-radius:999px;padding:10px 16px;cursor:pointer;text-decoration:none;font-weight:600}
 .btn:hover{background:var(--primary-strong)}.btn.secondary{background:#f3f4f6;color:#111827;border:1px solid var(--border)}
+.btn.sm{padding:6px 12px;font-size:13px}
+.btn.ghost{background:transparent;color:#0f4c92;border:1px solid rgba(15,76,146,.35)}
+.btn.ghost:hover{background:rgba(15,76,146,.08)}
 input,select,textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:12px;font-size:14px;background:#fff;outline:none}
 input:focus,select:focus,textarea:focus{box-shadow:0 0 0 3px var(--ring);border-color:#93c5fd}
 label{font-size:13px;color:#374151;margin-bottom:6px;display:block}
@@ -23,18 +27,22 @@ footer{margin:24px 0 40px 0;color:#4b5563;font-size:13px;text-align:center}
 
 /* Header single-row */
 .appbar{background:linear-gradient(0deg,var(--nav-2),var(--nav));color:var(--nav-txt);padding:10px 12px;box-shadow:0 4px 16px rgba(2,23,42,.18);position:sticky;top:0;z-index:1000}
-.appbar .container{display:flex;align-items:center;gap:12px;flex-wrap:nowrap}
-.nav{flex:1;display:flex;gap:6px;align-items:center;overflow:visible}
+.appbar .container{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.brand-link{display:flex;align-items:center;gap:8px;text-decoration:none;color:inherit;font-weight:600}
+.brand-link img{height:36px;width:auto}
+.nav{flex:1;display:flex;gap:6px;align-items:center;justify-content:flex-end;flex-wrap:wrap}
 .nav .group{position:relative}
-.nav button,.nav a.link{background:transparent;color:var(--nav-txt);border:none;padding:8px 10px;border-radius:10px;cursor:pointer;text-decoration:none;font-weight:600;white-space:nowrap}
-.nav button:hover,.nav a.link:hover{background:rgba(255,255,255,.08)}
-.dropdown{position:absolute;top:40px;left:0;background:#0f325d;border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:8px;display:none;min-width:240px;z-index:1200}
+.nav .nav-toggle,.nav a.link{background:transparent;color:var(--nav-txt);border:none;padding:8px 10px;border-radius:10px;cursor:pointer;text-decoration:none;font-weight:600;white-space:nowrap;display:inline-flex;align-items:center;gap:4px}
+.nav .nav-toggle:hover,.nav a.link:hover{background:rgba(255,255,255,.08)}
+.dropdown{position:absolute;top:40px;left:0;background:#0f325d;border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:8px;display:none;min-width:220px;z-index:1200}
 .dropdown a{display:block;color:#e8f1ff;padding:9px 12px;border-radius:10px;text-decoration:none}.dropdown a:hover{background:rgba(255,255,255,.1)}
-.tenant{display:flex;gap:6px;align-items:center;background:rgba(255,255,255,.08);padding:6px 8px;border-radius:12px;flex-shrink:0}
-.tenant .label{color:#cfe0ff;font-size:12px}
-.tenant select{appearance:none;background:#0f325d;border:1px solid rgba(255,255,255,.15);color:#e8f1ff;border-radius:10px;padding:6px 8px;min-width:150px}
+.tenant{display:flex;align-items:flex-end;gap:10px;padding:0;margin-left:auto;flex-shrink:0}
+.tenant-field{display:flex;flex-direction:column;gap:4px;min-width:160px}
+.tenant-field-label{font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:rgba(207,224,255,.72)}
+.tenant select{appearance:none;background:rgba(15,50,93,.88);border:1px solid rgba(255,255,255,.18);color:#f8fbff;border-radius:10px;padding:6px 10px;font-size:13px;min-width:160px;cursor:pointer}
+.tenant select:focus{outline:2px solid rgba(147,197,253,.4)}
 .userbox{flex-shrink:0;position:relative}
-.userbox > button{background:#0f325d;color:#e8f1ff;border:1px solid rgba(255,255,255,.15);padding:6px 10px;border-radius:10px;cursor:pointer}
+.userbox .user-toggle{background:#0f325d;color:#e8f1ff;border:1px solid rgba(255,255,255,.15);padding:6px 10px;border-radius:10px;cursor:pointer}
 .userbox .menu{position:absolute;right:0;top:40px;background:#0f325d;border:1px solid rgba(255,255,255,.22);border-radius:12px;padding:8px;display:none;min-width:220px;z-index:1300}
 .userbox .menu a{display:block;color:#e8f1ff;text-decoration:none;padding:8px 10px;border-radius:8px}
 .userbox .menu a:hover{background:rgba(255,255,255,.10)}
@@ -53,11 +61,14 @@ h2.section{margin:6px 0 14px 0;font-size:20px;letter-spacing:.2px}
 @media(max-width:1024px){ .login-wrap{grid-template-columns:1fr} .login-right{display:none} }
 
 /* fix8 header spacing */
-.appbar .container{gap:8px}
-.appbar img[alt="Logo"]{margin-right:6px}
+.appbar .container{gap:12px}
 .tenant{margin-right:8px}
 .userbox{margin-left:8px}
 .dropdown{overflow:visible}
+.nav .group:hover .dropdown,.nav .group.open .dropdown,.nav .group:focus-within .dropdown{display:block}
+.nav .group:hover .nav-toggle,.nav .group.open .nav-toggle,.nav .group:focus-within .nav-toggle{background:rgba(255,255,255,.12)}
+.userbox.open .menu{display:block}
+.tenant select{cursor:pointer}
 
 /* fix9 spacing */
 .grid{gap:20px;margin-bottom:18px}
@@ -73,3 +84,19 @@ h3{margin:0 0 12px 0}
 .close-x{border:none;background:transparent;font-size:18px;cursor:pointer;float:right}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 @media(max-width:720px){.two{grid-template-columns:1fr}}
+
+@media(max-width:1024px){
+  .tenant{order:3;width:100%;justify-content:flex-start;margin:6px 0 0 0}
+  .tenant-field{flex:1;min-width:0}
+  .tenant select{width:100%}
+  .nav{order:2;justify-content:flex-start}
+  .brand-link{order:1}
+  .userbox{order:4;margin-left:0}
+}
+
+@media(max-width:640px){
+  .appbar .container{justify-content:flex-start}
+  .nav{gap:4px}
+  .nav .nav-toggle,.nav a.link{padding:6px 8px;font-size:13px}
+  .brand-link strong{font-size:15px}
+}
